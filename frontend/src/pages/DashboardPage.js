@@ -25,22 +25,30 @@ function DashboardPage() {
 	const [error, setError] = useState(null);
 
 	useEffect(() => {
-		// Fetch rudiments to populate the dropdown
-		const fetchRudiments = async () => {
+		const fetchAllData = async () => {
 			try {
-				const response = await api.get('/rudiments');
+				// We'll set loading to true at the start
+				setIsLoading(true);
+				setError(null); // Clear any old errors
 
-				setRudiments(response.data);
-				fetchDashboardStats();
+				// Fetch both things
+				const rudimentResponse = await api.get('/rudiments');
+				const statsResponse = await api.get('/dashboard/stats');
+
+				// Set all your state
+				setRudiments(rudimentResponse.data);
+				setStats(statsResponse.data);
 			} catch (error) {
-				console.error('Failed to fetch rudiments:', error);
+				console.error('Failed to load dashboard:', error);
+				setError('Failed to load your dashboard. Please try again.');
 			} finally {
+				// This *always* runs, after the try or the catch
 				setIsLoading(false);
 			}
 		};
 
-		fetchRudiments();
-	}, []); // Empty array = runs once on load
+		fetchAllData();
+	}, []);
 
 	const handleSessionSubmit = async (event) => {
 		event.preventDefault(); // Stop the form from refreshing
@@ -65,7 +73,7 @@ function DashboardPage() {
 			setTempo('');
 			fetchDashboardStats();
 
-			// In Phase 7, you'll also re-fetch the dashboard data here!
+			fetchDashboardStats();
 		} catch (error) {
 			console.error('Failed to save session:', error);
 
