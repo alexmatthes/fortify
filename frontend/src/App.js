@@ -1,25 +1,43 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+
+// 1. Import the tools from react-router-dom
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
+// 2. Import your new page components
+import DashboardPage from './pages/DashboardPage';
+import LibraryPage from './pages/LibraryPage';
+import LoginPage from './pages/LoginPage';
+
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	return (
+		// 3. BrowserRouter is the "wrapper" for your whole app
+		<BrowserRouter>
+			{/* 4. 'Routes' is the "switch" that shows one page at a time */}
+			<Routes>
+				{/* 5. These are your 'Route' definitions */}
+				<Route path="/login" element={<LoginPage />} />
+
+				<Route
+					path="/"
+					element={
+						<ProtectedRoute>
+							<DashboardPage />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/rudiments"
+					element={
+						<ProtectedRoute>
+							<LibraryPage />
+						</ProtectedRoute>
+					}
+				/>
+			</Routes>
+		</BrowserRouter>
+	);
 }
 
 export default App;

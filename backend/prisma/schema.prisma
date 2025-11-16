@@ -1,15 +1,60 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
+// This block tells Prisma how to connect to your database.
+// It gets the URL from your .env file.
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// This block tells Prisma to generate its "translator" (the Prisma Client).
+generator client {
+  provider = "prisma-client-js"
+}
+
+//
+// YOUR DATABASE MODELS START HERE
+//
+
+// This model will become the "User" table
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String    // Will be hashed
+
+  // These two lines are "relations". They
+  // tell Prisma that one User can have MANY Rudiments
+  // and MANY PracticeSessions.
+  rudiments Rudiment[]
+  sessions  PracticeSession[]
+}
+
+// This model will become the "Rudiment" table (for screen3)
+model Rudiment {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  // The '?' means this field is optional
+  category    String?
+  tempoIncrement Int   @default(2) // For progressive overload
+
+  // This links the rudiment back to its User
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+
+  // This links a rudiment to all its practice sessions
+  sessions PracticeSession[]
+}
+
+// This model will become the "PracticeSession" table (for screen2)
+model PracticeSession {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  duration  Int      // in minutes
+  tempo     Int      // in BPM
+
+  // This links the session back to its User
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+
+  // This links the session to a single Rudiment
+  rudiment   Rudiment @relation(fields: [rudimentId], references: [id])
+  rudimentId String
 }
