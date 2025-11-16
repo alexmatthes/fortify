@@ -4,6 +4,8 @@ import api from '../api';
 import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
+import Metronome from '../components/Metronome';
+
 // This 'registers' the components Chart.js needs
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -149,6 +151,8 @@ function DashboardPage() {
 	return (
 		<div>
 			<h1>Dashboard Page</h1>
+			<Metronome />
+			<hr />
 
 			{stats && (
 				<div>
