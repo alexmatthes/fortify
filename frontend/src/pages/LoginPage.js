@@ -19,7 +19,7 @@ function LoginPage() {
 		try {
 			// 1. Send the email and password to your backend API
 			const response = await api.post(
-				'auth/login', // Your backend's login URL
+				'/auth/login', // Your backend's login URL
 				{
 					email: email, // The 'email' state variable
 					password: password, // The 'password' state variable
