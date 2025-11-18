@@ -158,8 +158,6 @@ function DashboardPage() {
 
 	return (
 		<div>
-			<h1>Dashboard Page</h1>
-			<Metronome />
 			<hr />
 
 			{stats && (
@@ -242,6 +240,7 @@ function DashboardPage() {
 					</div>
 				</div>
 			)}
+			<Metronome />
 		</div>
 	);
 }

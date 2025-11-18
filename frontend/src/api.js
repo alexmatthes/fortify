@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 1. Create the instance AND save it to a variable named 'api'
 const api = axios.create({
-	baseURL: process.env.REACT_APP_API_URL,
+	baseURL: 'http://localhost:8000/api',
 });
 
 // 2. Add the interceptor *to your new instance* ('api')

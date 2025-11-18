@@ -1,5 +1,5 @@
-import React, { useState } from 'react'; // Import React and 'useState'
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 
 // 'useState' is a "Hook" that lets you add a 'state variable' to a component.
@@ -64,6 +64,9 @@ function LoginPage() {
 				</div>
 				<button type="submit">Login</button>
 			</form>
+			<p>
+				Need an account? <Link to="/signup">Sign up</Link>
+			</p>
 		</div>
 	);
 }
