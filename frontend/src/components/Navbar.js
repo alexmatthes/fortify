@@ -10,16 +10,16 @@ function Navbar() {
 	};
 
 	return (
-		<nav style={styles.nav}>
+		<nav class="flex justify-between items-center px-8 py-4 bg-card-bg border-gray-800">
 			<div style={styles.brand}>Fortify</div>
-			<div style={styles.links}>
+			<div class="text-gray-300 hover:text-white transition-colors">
 				<Link to="/" style={styles.link}>
 					Dashboard
 				</Link>
 				<Link to="/rudiments" style={styles.link}>
 					Library
 				</Link>
-				<button onClick={handleLogout} style={styles.logoutBtn}>
+				<button onClick={handleLogout} class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
 					Logout
 				</button>
 			</div>
