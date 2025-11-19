@@ -10,43 +10,29 @@ function Navbar() {
 	};
 
 	return (
-		<nav class="flex justify-between items-center px-8 py-4 bg-card-bg border-gray-800">
-			<div style={styles.brand}>Fortify</div>
-			<div class="text-gray-300 hover:text-white transition-colors">
-				<Link to="/" style={styles.link}>
+		// 1. Container: Flexbox, dark background, spacing, and a subtle bottom border
+		<nav className="flex justify-between items-center px-8 py-4 bg-card-bg border-b border-gray-800">
+			{/* 2. Brand: Large, bold text */}
+			<div className="text-2xl font-bold tracking-wide">Fortify</div>
+
+			{/* 3. Links Container: Flex with a gap */}
+			<div className="flex items-center gap-6">
+				{/* 4. Links: Light gray text that turns white on hover */}
+				<Link to="/" className="text-gray-400 hover:text-white text-lg transition-colors duration-200">
 					Dashboard
 				</Link>
-				<Link to="/rudiments" style={styles.link}>
+
+				<Link to="/rudiments" className="text-gray-400 hover:text-white text-lg transition-colors duration-200">
 					Library
 				</Link>
-				<button onClick={handleLogout} class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+
+				{/* 5. Logout Button: Red background with hover effect */}
+				<button onClick={handleLogout} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-200 font-medium">
 					Logout
 				</button>
 			</div>
 		</nav>
 	);
 }
-
-const styles = {
-	nav: {
-		display: 'flex',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		padding: '1rem 2rem',
-		backgroundColor: '#282c34',
-		color: 'white',
-	},
-	brand: { fontSize: '1.5rem', fontWeight: 'bold' },
-	links: { display: 'flex', gap: '20px', alignItems: 'center' },
-	link: { color: 'white', textDecoration: 'none', fontSize: '1.1rem' },
-	logoutBtn: {
-		padding: '5px 10px',
-		backgroundColor: '#dc3545',
-		color: 'white',
-		border: 'none',
-		borderRadius: '4px',
-		cursor: 'pointer',
-	},
-};
 
 export default Navbar;

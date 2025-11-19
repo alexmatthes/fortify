@@ -161,25 +161,32 @@ function DashboardPage() {
 			<hr />
 
 			{stats && (
-				<div>
-					<div>
-						<h3>Total Practice Time</h3>
-						<p>{stats.totalTime} hours</p>
+				<div className="grid grid-cols-1 md:grid-cols3 gap-6 mb-8">
+					<div className="bg-card-bg p-6 rounded-xl shadow-lg border border-gray-800">
+						<h3 className="text-gray-400 text-sm">Total Practice Time</h3>
+						<p className="text-3xl font-bold text-white">{stats.totalTime} hours</p>
 					</div>
-					<div>
-						<h3>Fastest Tempo</h3>
-						<p>{stats.fastestTempo} BPM</p>
+					<div className="bg-card-bg p-6 rounded-xl shadow-lg border border-gray-800">
+						<h3 className="text-gray-400 text-sm">Fastest Tempo</h3>
+						<p className="text-3xl font-bold text-white">{stats.fastestTempo} BPM</p>
 					</div>
-					<div>
-						<h3>Most Practiced</h3>
-						<p>{stats.mostPracticed}</p>
+					<div className="bg-card-bg p-6 rounded-xl shadow-lg border border-gray-800">
+						<h3 className="text-gray-400 text-sm">Most Practiced</h3>
+						<p className="text-3xl font-bold text-white">{stats.mostPracticed}</p>
 					</div>
 				</div>
 			)}
 
-			<button onClick={() => setIsModalOpen(true)}>Log New Practice Session</button>
+			<button onClick={() => setIsModalOpen(true)} className="bg-primary hover:bg-primary-hover text-white font-medium py-2 px-4 rounded-lg transition-colors">
+				Log New Practice Session
+			</button>
 
-			<select value={selectedRudiment} onChange={(e) => handleChartRudimentChange(e.target.value)} required>
+			<select
+				value={selectedRudiment}
+				onChange={(e) => handleChartRudimentChange(e.target.value)}
+				required
+				className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-4"
+			>
 				<option value="">Select Rudiment</option>
 				{rudiments.map((rudiment) => (
 					<option key={rudiment.id} value={rudiment.id}>
@@ -196,8 +203,8 @@ function DashboardPage() {
 			)}
 
 			{isModalOpen && (
-				<div style={styles.modalBackdrop}>
-					<div style={styles.modalContent}>
+				<div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
+					<div className="bg-card-bg p-8 rounded-2xl border border-gray-700 w-full max-w-md shadow-2xl">
 						<h2>Log New Practice Session</h2>
 
 						<form onSubmit={handleSessionSubmit}>
@@ -207,7 +214,12 @@ function DashboardPage() {
 								<label>Rudiment</label>
 
 								{/* ADD 'value' and 'onChange' */}
-								<select value={selectedRudiment} onChange={(e) => handleModalRudimentChange(e.target.value)} required>
+								<select
+									value={selectedRudiment}
+									onChange={(e) => handleModalRudimentChange(e.target.value)}
+									required
+									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-4"
+								>
 									<option value="">Select Rudiment</option>
 									{rudiments.map((rudiment) => (
 										<option key={rudiment.id} value={rudiment.id}>
@@ -220,13 +232,27 @@ function DashboardPage() {
 								<label>Duration (minutes)</label>
 
 								{/* ADD 'value' and 'onChange' */}
-								<input type="number" placeholder="e.g., 30" value={duration} onChange={(e) => setDuration(e.target.value)} required />
+								<input
+									type="number"
+									placeholder="e.g., 30"
+									value={duration}
+									onChange={(e) => setDuration(e.target.value)}
+									required
+									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-4"
+								/>
 							</div>
 							<div>
 								<label>Speed (BPM)</label>
 
 								{/* ADD 'value' and 'onChange' */}
-								<input type="number" placeholder="e.g., 120" value={tempo} onChange={(e) => setTempo(e.target.value)} required />
+								<input
+									type="number"
+									placeholder="e.g., 120"
+									value={tempo}
+									onChange={(e) => setTempo(e.target.value)}
+									required
+									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary mb-4"
+								/>
 							</div>
 							<div style={{ marginTop: '20px' }}>
 								<button type="button" onClick={() => setIsModalOpen(false)}>
