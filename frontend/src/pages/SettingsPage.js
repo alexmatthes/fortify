@@ -30,6 +30,10 @@ function SettingsPage() {
 					</div>
 				</section>
 			</div>
+
+			<footer className="text-center py-8 text-gray-600 text-sm">
+				<p>&copy; {new Date().getFullYear()} Fortify. Built by a drummer, for drummers.</p>
+			</footer>
 		</div>
 	);
 }

@@ -1,15 +1,29 @@
-import { ArcElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import {
+	ArcElement,
+	CategoryScale,
+	Chart as ChartJS, // 1. Import ArcElement for Doughnut charts
+	Filler,
+	Legend,
+	LinearScale,
+	LineElement,
+	PointElement,
+	Title,
+	Tooltip,
+} from 'chart.js';
 import React, { useEffect, useState } from 'react';
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
 import api from '../api';
+import Card from '../components/Card';
 import Metronome from '../components/Metronome';
+// Ensure you created this component from the previous step
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+// 2. Register ALL elements, including ArcElement
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler);
 
 function DashboardPage() {
 	const [showLogModal, setShowLogModal] = useState(false);
-	const [showMetronome, setShowMetronome] = useState(false); // State for Metronome
+	const [showMetronome, setShowMetronome] = useState(false);
 	const [loading, setLoading] = useState(true);
 
 	// Data States
@@ -43,48 +57,85 @@ function DashboardPage() {
 			toast.success('Session logged successfully!');
 			setShowLogModal(false);
 			setFormData({ rudimentId: '', duration: '', tempo: '' });
-			const statsRes = await api.get('/dashboard/stats');
+			// Refresh stats
+			const [statsRes, sessionsRes] = await Promise.all([api.get('/dashboard/stats'), api.get('/sessions')]);
 			setStats(statsRes.data);
+			setChartData(sessionsRes.data);
 		} catch (error) {
 			toast.error('Could not log session. Please try again.');
 		}
+	};
+
+	// 3. Define modernChartOptions here
+	const modernChartOptions = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: { display: false }, // Hide legend for cleaner look
+			tooltip: {
+				backgroundColor: '#0A0A0A',
+				titleColor: '#ffffff',
+				bodyColor: '#9ca3af',
+				borderColor: '#374151',
+				borderWidth: 1,
+				padding: 10,
+				displayColors: false,
+			},
+		},
+		scales: {
+			y: {
+				grid: {
+					color: '#202020', // Very subtle grid
+					drawBorder: false,
+				},
+				ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } },
+			},
+			x: {
+				grid: { display: false },
+				ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } },
+			},
+		},
+		elements: {
+			line: {
+				tension: 0.4, // Smooth curves
+			},
+			point: {
+				radius: 4,
+				backgroundColor: '#0A0A0A',
+				borderWidth: 2,
+				hoverRadius: 6,
+			},
+		},
 	};
 
 	const chartConfig = {
 		labels: chartData.map((session) => new Date(session.date).toLocaleDateString()),
 		datasets: [
 			{
-				label: 'Practice Tempo (BPM)',
+				label: 'Tempo',
 				data: chartData.map((session) => session.tempo),
-				borderColor: '#2563EB',
-				backgroundColor: 'rgba(37, 99, 235, 0.5)',
-				tension: 0.4,
+				borderColor: '#3B82F6', // Primary Blue
+				backgroundColor: (context) => {
+					const ctx = context.chart.ctx;
+					const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+					gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
+					gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+					return gradient;
+				},
+				fill: true,
 			},
 		],
 	};
 
-	const chartOptions = {
-		responsive: true,
-		plugins: {
-			legend: { labels: { color: 'white' } },
-			title: { display: true, text: 'Progress Over Time', color: 'gray' },
-		},
-		scales: {
-			y: { grid: { color: '#374151' }, ticks: { color: 'gray' } },
-			x: { grid: { display: false }, ticks: { color: 'gray' } },
-		},
-	};
+	if (loading) return <div className="min-h-screen bg-dark-bg p-8 text-white font-mono animate-pulse">Initializing...</div>;
 
-	if (loading) return <div className="p-8 text-white">Loading Dashboard...</div>;
-
-	// Helper to count occurrences of each rudimentId in sessions
+	// Helper to count occurrences
 	const sessionCounts = {};
 	chartData.forEach((session) => {
 		const id = session.rudimentId;
 		sessionCounts[id] = (sessionCounts[id] || 0) + 1;
 	});
 
-	// Prepare data for the Doughnut chart
 	const doughnutData = {
 		labels: Object.keys(sessionCounts).map((id) => {
 			const r = rudiments.find((r) => r.id === id);
@@ -94,39 +145,44 @@ function DashboardPage() {
 			{
 				data: Object.values(sessionCounts),
 				backgroundColor: [
-					'#2B8CEE', // Primary Blue
-					'#34D399', // Green
-					'#F87171', // Red
-					'#A78BFA', // Purple
-					'#FBBF24', // Yellow
-					'#9CA3AF', // Gray
+					'#3B82F6', // Blue
+					'#10B981', // Emerald
+					'#8B5CF6', // Violet
+					'#F59E0B', // Amber
+					'#EF4444', // Red
+					'#6366F1', // Indigo
 				],
 				borderWidth: 0,
+				hoverOffset: 4,
 			},
 		],
 	};
 
 	const doughnutOptions = {
+		responsive: true,
+		maintainAspectRatio: false,
 		plugins: {
 			legend: {
 				position: 'right',
-				labels: { color: 'white' },
+				labels: {
+					color: '#9ca3af',
+					font: { family: 'Inter', size: 11 },
+					usePointStyle: true,
+					pointStyle: 'circle',
+				},
 			},
 		},
+		cutout: '75%', // Thinner ring
 	};
 
 	const handleRudimentChange = async (e) => {
 		const selectedId = e.target.value;
-
-		// 1. Update the form ID immediately
 		setFormData({ ...formData, rudimentId: selectedId });
 
 		if (!selectedId) return;
 
-		// 2. Fetch the "Smart Tempo"
 		try {
 			const response = await api.get(`/rudiments/${selectedId}/suggested-tempo`);
-			// 3. Auto-fill the tempo field
 			setFormData((prev) => ({
 				...prev,
 				tempo: response.data.suggested_tempo,
@@ -137,62 +193,65 @@ function DashboardPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-dark-bg p-8 text-white relative">
-			<header className="mb-10">
-				<h1 className="text-4xl font-bold mb-2">Welcome back!</h1>
-				<p className="text-gray-400">Here is your practice summary.</p>
+		<div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto">
+			<header className="mb-12 flex justify-between items-end">
+				<div>
+					<h1 className="text-5xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Dashboard</h1>
+					<p className="text-gray-400 font-mono text-sm">Good afternoon. Ready to grind?</p>
+				</div>
+				<button onClick={() => setShowLogModal(true)} className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-full transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+					+ Log Session
+				</button>
 			</header>
 
-			{/* Stats Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-				<div className="bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg">
-					<h3 className="text-gray-400 text-sm uppercase tracking-wider mb-2">Total Practice Time</h3>
-					<div className="text-3xl font-bold text-primary">
-						{Math.floor(stats.totalTime / 60)}h {stats.totalTime % 60}m
+			{/* BENTO GRID LAYOUT */}
+			<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+				{/* Stat 1: Total Time */}
+				<Card>
+					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Total Time</h3>
+					<div className="text-4xl font-mono font-bold text-white">
+						{Math.floor(stats.totalTime / 60)}
+						<span className="text-gray-600">h</span> {stats.totalTime % 60}
+						<span className="text-gray-600">m</span>
 					</div>
-				</div>
-				<div className="bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg">
-					<h3 className="text-gray-400 text-sm uppercase tracking-wider mb-2">Fastest Tempo</h3>
-					<div className="text-3xl font-bold text-green-400">{stats.fastestTempo} BPM</div>
-				</div>
-				<div className="bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg">
-					<h3 className="text-gray-400 text-sm uppercase tracking-wider mb-2">Most Practiced</h3>
-					<div className="text-3xl font-bold text-purple-400 truncate">{stats.mostPracticed}</div>
-				</div>
-			</div>
+				</Card>
 
-			{/* Main Action Button (For Logging) */}
-			<div className="flex justify-end mb-6">
-				<button onClick={() => setShowLogModal(true)} className="bg-primary hover:bg-primary-hover text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
-					+ Log New Session
-				</button>
-			</div>
-
-			{/* Charts Section */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-				{/* Line Chart (Span 2 columns) */}
-				<div className="lg:col-span-2 bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg">
-					<h3 className="text-white font-bold mb-4">Speed Progress</h3>
-					<div className="h-64">{chartData.length > 0 ? <Line options={chartOptions} data={chartConfig} /> : <div className="h-full flex items-center justify-center text-gray-500">No data</div>}</div>
-				</div>
-
-				{/* Doughnut Chart (Span 1 column) */}
-				<div className="bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg">
-					<h3 className="text-white font-bold mb-4">Rudiment Focus</h3>
-					<div className="h-64 flex justify-center">
-						{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex items-center justify-center text-gray-500">No sessions</div>}
+				{/* Stat 2: Top Speed */}
+				<Card>
+					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Max Speed</h3>
+					<div className="text-4xl font-mono font-bold text-accent">
+						{stats.fastestTempo} <span className="text-sm text-gray-600 align-top">BPM</span>
 					</div>
-				</div>
+				</Card>
+
+				{/* Stat 3: Most Practiced (Spans 2 cols) */}
+				<Card className="md:col-span-2">
+					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Focus Rudiment</h3>
+					<div className="text-3xl font-bold text-white truncate bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">{stats.mostPracticed}</div>
+				</Card>
+
+				{/* Chart Section (Spans 2 Rows, 3 Cols) */}
+				<Card className="md:col-span-3 md:row-span-2 min-h-[300px]">
+					<div className="flex justify-between items-center mb-6">
+						<h3 className="text-gray-300 font-semibold">Velocity Trajectory</h3>
+						<span className="text-xs text-primary border border-primary/30 px-2 py-1 rounded bg-primary/10">Last 30 Days</span>
+					</div>
+					<div className="h-64 w-full">{chartData.length > 0 ? <Line options={modernChartOptions} data={chartConfig} /> : <div className="text-gray-600 h-full flex items-center justify-center font-mono text-sm">No data logged</div>}</div>
+				</Card>
+
+				{/* Doughnut Chart */}
+				<Card className="md:col-span-1 md:row-span-2 flex flex-col justify-center">
+					<div className="h-48">{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex items-center justify-center text-gray-500 h-full">No sessions</div>}</div>
+					<div className="text-center mt-4 text-sm text-gray-500 font-mono">Distribution</div>
+				</Card>
 			</div>
 
-			{/* Floating Action Button (The Metronome!) */}
+			{/* Floating Metronome Button */}
 			<button
 				onClick={() => setShowMetronome(true)}
-				className="fixed bottom-8 right-8 w-16 h-16 bg-primary hover:bg-primary-hover text-white rounded-full shadow-2xl flex items-center justify-center transition-transform transform hover:scale-110 z-50 border-4 border-dark-bg"
-				title="Open Metronome"
+				className="fixed bottom-10 right-10 w-16 h-16 bg-black border border-gray-700 text-primary rounded-full shadow-[0_0_30px_rgba(59,130,246,0.4)] flex items-center justify-center hover:scale-110 hover:border-primary transition-all z-50 group"
 			>
-				{/* Music Note Icon */}
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 group-hover:animate-pulse">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -204,11 +263,11 @@ function DashboardPage() {
 			{/* Metronome Modal */}
 			{showMetronome && (
 				<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-					<div className="bg-card-bg p-8 rounded-2xl border border-gray-700 w-full max-w-sm shadow-2xl relative">
+					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-sm shadow-2xl relative">
 						<button onClick={() => setShowMetronome(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
 							✕
 						</button>
-						<h2 className="text-xl font-bold text-white mb-6 text-center">Metronome</h2>
+						<h2 className="text-xl font-bold text-white mb-6 text-center font-mono">METRONOME</h2>
 						<Metronome />
 					</div>
 				</div>
@@ -217,7 +276,7 @@ function DashboardPage() {
 			{/* Log Session Modal */}
 			{showLogModal && (
 				<div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
-					<div className="bg-card-bg p-8 rounded-2xl border border-gray-700 w-full max-w-md shadow-2xl animate-fade-in">
+					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-md shadow-2xl animate-fade-in">
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-2xl font-bold text-white">Log Session</h2>
 							<button onClick={() => setShowLogModal(false)} className="text-gray-400 hover:text-white">
@@ -226,8 +285,13 @@ function DashboardPage() {
 						</div>
 						<form onSubmit={handleSubmit} className="space-y-4">
 							<div>
-								<label className="block text-gray-400 text-sm mb-2">Rudiment</label>
-								<select required className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary" value={formData.rudimentId} onChange={handleRudimentChange}>
+								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Rudiment</label>
+								<select
+									required
+									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+									value={formData.rudimentId}
+									onChange={handleRudimentChange}
+								>
 									<option value="">Select a rudiment...</option>
 									{rudiments.map((r) => (
 										<option key={r.id} value={r.id}>
@@ -238,35 +302,39 @@ function DashboardPage() {
 							</div>
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<label className="block text-gray-400 text-sm mb-2">Duration (min)</label>
+									<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Duration (min)</label>
 									<input
 										type="number"
 										required
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary"
+										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
 										placeholder="15"
 										value={formData.duration}
 										onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
 									/>
 								</div>
 								<div>
-									<label className="block text-gray-400 text-sm mb-2">BPM</label>
+									<label className="block text-gray-400 text-xs uppercase font-bold mb-2">BPM</label>
 									<input
 										type="number"
 										required
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary"
+										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
 										placeholder="120"
 										value={formData.tempo}
 										onChange={(e) => setFormData({ ...formData, tempo: e.target.value })}
 									/>
 								</div>
 							</div>
-							<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg mt-4 transition-colors">
+							<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg mt-4 transition-colors shadow-lg shadow-primary/20">
 								Save Session
 							</button>
 						</form>
 					</div>
 				</div>
 			)}
+
+			<footer className="text-center py-8 text-gray-600 text-sm">
+				<p>&copy; {new Date().getFullYear()} Fortify. Built by a drummer, for drummers.</p>
+			</footer>
 		</div>
 	);
 }
