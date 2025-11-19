@@ -31,15 +31,15 @@ model User {
 model Rudiment {
   id          String   @id @default(cuid())
   name        String
-  description String?  // The '?' means this field is optional
+  description String?
   category    String?
-  tempoIncrement Int   @default(2) // For progressive overload
+  tempoIncrement Int   @default(2)
 
-  // This links the rudiment back to its User
-  user   User     @relation(fields: [userId], references: [id])
-  userId String
+  isStandard  Boolean  @default(false)
 
-  // This links a rudiment to all its practice sessions
+  user   User?    @relation(fields: [userId], references: [id])
+  userId String?
+
   sessions PracticeSession[]
 }
 

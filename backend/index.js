@@ -137,20 +137,22 @@ app.post('/api/rudiments', auth, async (req, res) => {
 	}
 });
 
-// 2. READ all of a user's rudiments
+// 2. READ all rudiments (User's Custom + System Standard)
 app.get('/api/rudiments', auth, async (req, res) => {
 	try {
-		// Get the user ID from the 'auth' middleware
 		const userId = req.userId;
 
-		// Find all rudiments that *belong to this user*
 		const rudiments = await prisma.rudiment.findMany({
 			where: {
-				userId: userId, // This is the security filter!
+				OR: [
+					{ userId: userId }, // 1. Belong to the user
+					{ isStandard: true }, // 2. OR are standard system rudiments
+				],
 			},
-			orderBy: {
-				name: 'asc', // Sort them alphabetically
-			},
+			orderBy: [
+				{ isStandard: 'desc' }, // Show Standard ones first (optional preference)
+				{ name: 'asc' }, // Then sort alphabetically
+			],
 		});
 
 		res.status(200).json(rudiments);
@@ -196,26 +198,31 @@ app.put('/api/rudiments/:id', auth, async (req, res) => {
 	}
 });
 
-// 4. DELETE a rudiment
 app.delete('/api/rudiments/:id', auth, async (req, res) => {
 	try {
-		const { id } = req.params; // Get ID from URL
-		const userId = req.userId; // Get user ID
+		const { id } = req.params;
+		const userId = req.userId;
 
-		// Same security check as UPDATE.
-		// Only delete if the 'id' matches AND the 'userId' matches.
-		const result = await prisma.rudiment.deleteMany({
-			where: {
-				id: id,
-				userId: userId, // <-- The security check!
-			},
-		});
+		// Check if the rudiment exists first
+		const rudiment = await prisma.rudiment.findUnique({ where: { id } });
 
-		if (result.count === 0) {
-			return res.status(404).json({ message: 'Rudiment not found or you do not have permission.' });
+		if (!rudiment) {
+			return res.status(404).json({ message: 'Rudiment not found' });
 		}
 
-		// 204 means "No Content", a standard success response for a delete.
+		// CRITICAL: Prevent deleting standard rudiments
+		if (rudiment.isStandard) {
+			return res.status(403).json({ message: 'You cannot delete standard rudiments.' });
+		}
+
+		// CRITICAL: Verify ownership
+		if (rudiment.userId !== userId) {
+			return res.status(403).json({ message: 'You do not have permission to delete this.' });
+		}
+
+		// If we pass those checks, delete it
+		await prisma.rudiment.delete({ where: { id } });
+
 		res.status(204).send();
 	} catch (error) {
 		res.status(500).json({ message: 'Something went wrong.', error: error.message });
