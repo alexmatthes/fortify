@@ -30,6 +30,13 @@ const STANDARD_RUDIMENTS = [
 		isStandard: true,
 		tempoIncrement: 2,
 	},
+	{
+		name: 'Double Paradiddle',
+		category: 'Diddles',
+		description: 'Four alternating notes followed by a diddle (RLRLRR LRLRLL).',
+		isStandard: true,
+		tempoIncrement: 2,
+	},
 ];
 
 async function main() {

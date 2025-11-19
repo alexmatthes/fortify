@@ -1,72 +1,78 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../api';
-
-// 'useState' is a "Hook" that lets you add a 'state variable' to a component.
-// It's how you store data that can change, like what a user is typing.
+import api from '../api'; // Ensure this path matches your file structure
 
 function LoginPage() {
-	// 1. Create state variables
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [error, setError] = useState('');
 	const navigate = useNavigate();
 
-	// This function will run when the user clicks "Login"
-	const handleLogin = async (event) => {
-		// Make the function 'async'
-		event.preventDefault(); // Stop the page from refreshing
-
+	const handleLogin = async (e) => {
+		e.preventDefault();
 		try {
-			// 1. Send the email and password to your backend API
-			const response = await api.post(
-				'/auth/login', // Your backend's login URL
-				{
-					email: email, // The 'email' state variable
-					password: password, // The 'password' state variable
-				}
-			);
-
-			// 2. If login is successful, the API sends back a token
-			const { token } = response.data;
-
-			// 3. Save the token!
-			// 'localStorage' is a simple storage built into your browser.
-			// It's like a tiny, insecure notepad.
-			localStorage.setItem('token', token);
-
-			// 4. Log the token and redirect (for testing)
-			console.log('Login successful, token saved:', token);
-
-			// We will redirect to the dashboard here
+			const response = await api.post('/auth/login', { email, password });
+			// Save the token and redirect
+			localStorage.setItem('token', response.data.token);
 			navigate('/');
-		} catch (error) {
-			// If the API sends back a 400 or 500 error, 'axios' will 'catch' it
-			console.error('Login failed:', error.response.data.message);
-			// You could set an error message in state here to show the user
+		} catch (err) {
+			setError('Invalid email or password.');
 		}
 	};
 
 	return (
-		<div>
-			<h2>Login</h2>
-			{/* This is a 'controlled form'. 
-        The 'value' is tied to our state.
-        The 'onChange' event updates our state.
-      */}
-			<form onSubmit={handleLogin}>
-				<div>
-					<label>Email:</label>
-					<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+		// 1. Full Screen Dark Background with Flex Center
+		<div className="min-h-screen bg-dark-bg flex items-center justify-center p-4">
+			{/* 2. The Login Card */}
+			<div className="bg-card-bg w-full max-w-md p-8 rounded-2xl shadow-2xl border border-gray-800">
+				{/* Header */}
+				<div className="text-center mb-8">
+					<h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+					<p className="text-gray-400">Sign in to continue your progress</p>
 				</div>
-				<div>
-					<label>Password:</label>
-					<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+
+				{/* Error Message */}
+				{error && <div className="bg-red-900/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6 text-sm text-center">{error}</div>}
+
+				{/* Form */}
+				<form onSubmit={handleLogin} className="space-y-6">
+					<div>
+						<label className="block text-gray-400 text-sm font-medium mb-2">Email Address</label>
+						<input
+							type="email"
+							required
+							className="w-full bg-dark-bg border border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+							placeholder="you@example.com"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+						/>
+					</div>
+
+					<div>
+						<label className="block text-gray-400 text-sm font-medium mb-2">Password</label>
+						<input
+							type="password"
+							required
+							className="w-full bg-dark-bg border border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+							placeholder="••••••••"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+						/>
+					</div>
+
+					<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-primary/20">
+						Sign In
+					</button>
+				</form>
+
+				{/* Footer Link */}
+				<div className="mt-6 text-center text-gray-400 text-sm">
+					Don't have an account?{' '}
+					<Link to="/signup" className="text-primary hover:text-primary-hover font-medium transition-colors">
+						Sign up
+					</Link>
 				</div>
-				<button type="submit">Login</button>
-			</form>
-			<p>
-				Need an account? <Link to="/signup">Sign up</Link>
-			</p>
+			</div>
 		</div>
 	);
 }

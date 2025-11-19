@@ -1,69 +1,66 @@
-import React, { useState } from 'react';
-
-// 1. Standard Rudiments (Immutable "Built-ins")
-const STANDARD_RUDIMENTS = [
-	{
-		id: 'std-1',
-		name: 'Single Stroke Roll',
-		description: 'Alternating strokes between the hands (RLRL...). The foundation of many other rudiments.',
-		category: 'Rolls',
-		isStandard: true,
-	},
-	{
-		id: 'std-2',
-		name: 'Double Stroke Roll',
-		description: 'Two strokes per hand (RRLL...). Essential for building speed and control.',
-		category: 'Rolls',
-		isStandard: true,
-	},
-	{
-		id: 'std-3',
-		name: 'Single Paradiddle',
-		description: 'A four-note pattern combining single and double strokes (RLRR LRLL).',
-		category: 'Diddles',
-		isStandard: true,
-	},
-	{
-		id: 'std-4',
-		name: 'Flam',
-		description: 'Two strokes played at almost the same time, with one grace note preceding the primary note.',
-		category: 'Flams',
-		isStandard: true,
-	},
-];
+import React, { useEffect, useState } from 'react';
+import api from '../api'; // Import your axios helper that handles the token
 
 function LibraryPage() {
-	// Initialize state with the Standard Rudiments
-	const [rudiments, setRudiments] = useState(STANDARD_RUDIMENTS);
+	const [rudiments, setRudiments] = useState([]); // Start empty, fetch later
+	const [isLoading, setIsLoading] = useState(true);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
-	// Form State for new rudiment
+	// Form State
 	const [newRudiment, setNewRudiment] = useState({ name: '', category: '', description: '' });
 
-	// Handle adding a new custom rudiment
-	const handleAddRudiment = (e) => {
+	// 1. Fetch Rudiments on Load
+	useEffect(() => {
+		const fetchRudiments = async () => {
+			try {
+				const response = await api.get('/rudiments');
+				setRudiments(response.data);
+				setIsLoading(false);
+			} catch (error) {
+				console.error('Failed to fetch rudiments:', error);
+				setIsLoading(false);
+			}
+		};
+
+		fetchRudiments();
+	}, []);
+
+	// 2. Add Rudiment (Send to Backend)
+	const handleAddRudiment = async (e) => {
 		e.preventDefault();
 		if (!newRudiment.name) return;
 
-		const customRudiment = {
-			id: Date.now(), // Simple unique ID for now
-			...newRudiment,
-			isStandard: false, // Mark as custom so it can be deleted later
-		};
+		try {
+			const response = await api.post('/rudiments', newRudiment);
+			// Add the real rudiment from the DB to our list
+			setRudiments([...rudiments, response.data]);
 
-		setRudiments([...rudiments, customRudiment]);
-		setNewRudiment({ name: '', category: '', description: '' }); // Reset form
-		setIsModalOpen(false); // Close modal
+			// Reset and Close
+			setNewRudiment({ name: '', category: '', description: '' });
+			setIsModalOpen(false);
+		} catch (error) {
+			alert('Failed to add rudiment.');
+			console.error(error);
+		}
 	};
 
-	// Handle deleting a rudiment (Only for custom ones)
-	const handleDelete = (id) => {
-		setRudiments(rudiments.filter((r) => r.id !== id));
+	// 3. Delete Rudiment (Send to Backend)
+	const handleDelete = async (id) => {
+		if (!window.confirm('Are you sure you want to delete this rudiment?')) return;
+
+		try {
+			await api.delete(`/rudiments/${id}`);
+			// Remove it from the screen only if the backend delete succeeded
+			setRudiments(rudiments.filter((r) => r.id !== id));
+		} catch (error) {
+			alert('Could not delete rudiment. You might not own it.');
+			console.error(error);
+		}
 	};
 
 	return (
 		<div className="min-h-screen bg-dark-bg p-8 text-white font-sans">
-			{/* Header Section */}
+			{/* Header */}
 			<div className="flex justify-between items-center mb-8">
 				<div>
 					<h1 className="text-3xl font-bold tracking-tight">Rudiment Library</h1>
@@ -74,7 +71,7 @@ function LibraryPage() {
 				</button>
 			</div>
 
-			{/* Category Filter Pills (Visual only for now) */}
+			{/* Filters */}
 			<div className="flex gap-2 mb-6">
 				{['All', 'Rolls', 'Diddles', 'Flams', 'Drags'].map((filter) => (
 					<button key={filter} className="px-4 py-1.5 rounded-full bg-card-bg border border-gray-700 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
@@ -83,64 +80,64 @@ function LibraryPage() {
 				))}
 			</div>
 
-			{/* Table Layout (Matches rudiment_library.html) */}
+			{/* Table */}
 			<div className="bg-card-bg rounded-xl border border-gray-800 overflow-hidden shadow-xl">
-				<table className="w-full text-left border-collapse">
-					<thead>
-						<tr className="bg-gray-900/50 border-b border-gray-700 text-gray-400 text-sm uppercase tracking-wider">
-							<th className="p-4 font-medium">Name</th>
-							<th className="p-4 font-medium w-1/2">Description</th>
-							<th className="p-4 font-medium">Category</th>
-							<th className="p-4 font-medium text-right">Actions</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-gray-800">
-						{rudiments.map((rudiment) => (
-							<tr key={rudiment.id} className="hover:bg-gray-800/50 transition-colors group">
-								<td className="p-4 font-semibold text-white">{rudiment.name}</td>
-								<td className="p-4 text-gray-400 text-sm">{rudiment.description}</td>
-								<td className="p-4">
-									<span
-										className={`px-3 py-1 rounded-full text-xs font-medium border ${
-											rudiment.category === 'Rolls'
-												? 'bg-blue-900/30 text-blue-200 border-blue-800'
-												: rudiment.category === 'Diddles'
-												? 'bg-green-900/30 text-green-200 border-green-800'
-												: 'bg-gray-800 text-gray-300 border-gray-700'
-										}`}
-									>
-										{rudiment.category}
-									</span>
-								</td>
-								<td className="p-4 text-right">
-									<div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-										{/* Play Button (Visual placeholder) */}
-										<button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors" title="Play Audio">
-											▶
-										</button>
-
-										{/* Delete Button (Only show if NOT standard) */}
-										{!rudiment.isStandard && (
-											<button onClick={() => handleDelete(rudiment.id)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-colors" title="Delete Rudiment">
-												✕
-											</button>
-										)}
-
-										{/* Lock Icon for Standard Rudiments */}
-										{rudiment.isStandard && (
-											<span className="p-2 text-gray-600 cursor-not-allowed" title="Standard rudiment (cannot be deleted)">
-												🔒
-											</span>
-										)}
-									</div>
-								</td>
+				{isLoading ? (
+					<div className="p-8 text-center text-gray-400">Loading your rudiments...</div>
+				) : (
+					<table className="w-full text-left border-collapse">
+						<thead>
+							<tr className="bg-gray-900/50 border-b border-gray-700 text-gray-400 text-sm uppercase tracking-wider">
+								<th className="p-4 font-medium">Name</th>
+								<th className="p-4 font-medium w-1/2">Description</th>
+								<th className="p-4 font-medium">Category</th>
+								<th className="p-4 font-medium text-right">Actions</th>
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</thead>
+						<tbody className="divide-y divide-gray-800">
+							{rudiments.map((rudiment) => (
+								<tr key={rudiment.id} className="hover:bg-gray-800/50 transition-colors group">
+									<td className="p-4 font-semibold text-white">{rudiment.name}</td>
+									<td className="p-4 text-gray-400 text-sm">{rudiment.description}</td>
+									<td className="p-4">
+										<span
+											className={`px-3 py-1 rounded-full text-xs font-medium border ${
+												rudiment.category === 'Rolls'
+													? 'bg-blue-900/30 text-blue-200 border-blue-800'
+													: rudiment.category === 'Diddles'
+													? 'bg-green-900/30 text-green-200 border-green-800'
+													: 'bg-gray-800 text-gray-300 border-gray-700'
+											}`}
+										>
+											{rudiment.category}
+										</span>
+									</td>
+									<td className="p-4 text-right">
+										<div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+											<button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors" title="Play Audio">
+												▶
+											</button>
+
+											{/* Logic: If isStandard is TRUE, show Lock. If FALSE, show Delete. */}
+											{!rudiment.isStandard ? (
+												<button onClick={() => handleDelete(rudiment.id)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-colors" title="Delete Rudiment">
+													✕
+												</button>
+											) : (
+												<span className="p-2 text-gray-600 cursor-not-allowed" title="Standard rudiment (cannot be deleted)">
+													🔒
+												</span>
+											)}
+										</div>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				)}
 			</div>
 
-			{/* Add Rudiment Modal */}
+			{/* Modal */}
 			{isModalOpen && (
 				<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
 					<div className="bg-card-bg w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in">
