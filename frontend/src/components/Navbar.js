@@ -1,35 +1,64 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 function Navbar() {
 	const navigate = useNavigate();
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const dropdownRef = useRef(null);
 
 	const handleLogout = () => {
-		localStorage.removeItem('token'); // Destroy the "VIP Pass"
+		localStorage.removeItem('token');
 		navigate('/login');
 	};
 
-	return (
-		// 1. Container: Flexbox, dark background, spacing, and a subtle bottom border
-		<nav className="flex justify-between items-center px-8 py-4 bg-card-bg border-b border-gray-800">
-			{/* 2. Brand: Large, bold text */}
-			<div className="text-2xl font-bold tracking-wide">Fortify</div>
+	// Close dropdown if clicking outside
+	useEffect(() => {
+		function handleClickOutside(event) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+				setIsDropdownOpen(false);
+			}
+		}
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, [dropdownRef]);
 
-			{/* 3. Links Container: Flex with a gap */}
+	return (
+		<nav className="flex justify-between items-center px-8 py-4 bg-card-bg border-b border-gray-800 relative z-50">
+			<Link to="/dashboard" className="text-2xl font-bold tracking-wide text-white">
+				Fortify
+			</Link>
+
 			<div className="flex items-center gap-6">
-				{/* 4. Links: Light gray text that turns white on hover */}
-				<Link to="/" className="text-gray-400 hover:text-white text-lg transition-colors duration-200">
+				{/* Main Nav Links */}
+				<Link to="/dashboard" className="text-gray-400 hover:text-white transition-colors">
 					Dashboard
 				</Link>
-
-				<Link to="/rudiments" className="text-gray-400 hover:text-white text-lg transition-colors duration-200">
+				<Link to="/rudiments" className="text-gray-400 hover:text-white transition-colors">
 					Library
 				</Link>
 
-				{/* 5. Logout Button: Red background with hover effect */}
-				<button onClick={handleLogout} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-200 font-medium">
-					Logout
-				</button>
+				{/* Profile Dropdown */}
+				<div className="relative" ref={dropdownRef}>
+					<button
+						onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+						className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white font-bold transition-colors focus:outline-none ring-2 ring-transparent focus:ring-primary"
+					>
+						{/* Placeholder Avatar (Initials) */}U
+					</button>
+
+					{/* Dropdown Menu */}
+					{isDropdownOpen && (
+						<div className="absolute right-0 mt-2 w-48 bg-card-bg border border-gray-700 rounded-lg shadow-xl py-2 animate-fade-in">
+							<Link to="/settings" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white" onClick={() => setIsDropdownOpen(false)}>
+								Settings
+							</Link>
+							<div className="border-t border-gray-700 my-1"></div>
+							<button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300">
+								Logout
+							</button>
+						</div>
+					)}
+				</div>
 			</div>
 		</nav>
 	);
