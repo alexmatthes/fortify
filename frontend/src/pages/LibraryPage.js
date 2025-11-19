@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import api from '../api'; // Import your axios helper that handles the token
+import toast from 'react-hot-toast';
+import api from '../api';
 
 function LibraryPage() {
 	const [rudiments, setRudiments] = useState([]); // Start empty, fetch later
@@ -40,7 +41,7 @@ function LibraryPage() {
 			setNewRudiment({ name: '', category: '', description: '' });
 			setIsModalOpen(false);
 		} catch (error) {
-			alert('Failed to add rudiment.');
+			toast.error('Failed to add rudiment.');
 			console.error(error);
 		}
 	};
@@ -54,7 +55,7 @@ function LibraryPage() {
 			// Remove it from the screen only if the backend delete succeeded
 			setRudiments(rudiments.filter((r) => r.id !== id));
 		} catch (error) {
-			alert('Could not delete rudiment. You might not own it.');
+			toast.error('Failed to delete rudiment.');
 			console.error(error);
 		}
 	};

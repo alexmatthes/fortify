@@ -1,24 +1,47 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const Metronome = () => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [bpm, setBpm] = useState(100);
 
-	// Refs for audio timing
 	const audioContext = useRef(null);
 	const nextNoteTime = useRef(0.0);
-	const timerID = useRef(null);
-	const bpmRef = useRef(bpm);
+	const worker = useRef(null); // Reference to our worker
 
-	const lookahead = 25.0;
+	// "Lookahead" is how far ahead we schedule audio (in seconds)
+	const lookahead = 0.1;
+	// "ScheduleAheadTime" is how far ahead the audio web API schedules (in seconds)
 	const scheduleAheadTime = 0.1;
 
+	// Initialize Worker on Mount
 	useEffect(() => {
-		bpmRef.current = bpm;
-	}, [bpm]);
+		// Create the worker instance
+		worker.current = new Worker(new URL('./metronome.worker.js', import.meta.url));
+
+		// Define what happens when the worker says "TICK"
+		worker.current.onmessage = function (e) {
+			if (e.data === 'tick') {
+				scheduler();
+			}
+		};
+
+		return () => {
+			worker.current.terminate(); // Clean up on unmount
+		};
+	}, []); // Empty dependency array = run once
+
+	// Ensure scheduler always uses fresh state/refs
+	const scheduler = () => {
+		// While there are notes that will need to play before the next interval,
+		// schedule them and advance the pointer.
+		while (nextNoteTime.current < audioContext.current.currentTime + scheduleAheadTime) {
+			scheduleNote(nextNoteTime.current);
+			nextNote();
+		}
+	};
 
 	const nextNote = () => {
-		const secondsPerBeat = 60.0 / bpmRef.current;
+		const secondsPerBeat = 60.0 / bpm;
 		nextNoteTime.current += secondsPerBeat;
 	};
 
@@ -38,17 +61,9 @@ const Metronome = () => {
 		osc.stop(time + 0.03);
 	};
 
-	const scheduler = () => {
-		while (nextNoteTime.current < audioContext.current.currentTime + scheduleAheadTime) {
-			scheduleNote(nextNoteTime.current);
-			nextNote();
-		}
-		timerID.current = window.setTimeout(scheduler, lookahead);
-	};
-
 	const startStop = () => {
 		if (isPlaying) {
-			window.clearTimeout(timerID.current);
+			worker.current.postMessage('stop'); // Tell worker to stop ticking
 			setIsPlaying(false);
 		} else {
 			if (audioContext.current === null) {
@@ -57,20 +72,13 @@ const Metronome = () => {
 			if (audioContext.current.state === 'suspended') {
 				audioContext.current.resume();
 			}
+
 			nextNoteTime.current = audioContext.current.currentTime + 0.05;
-			scheduler();
+
+			worker.current.postMessage('start'); // Tell worker to start ticking
 			setIsPlaying(true);
 		}
 	};
-
-	useEffect(() => {
-		return () => {
-			window.clearTimeout(timerID.current);
-			if (audioContext.current) {
-				audioContext.current.close();
-			}
-		};
-	}, []);
 
 	return (
 		<div className="flex flex-col items-center w-full">

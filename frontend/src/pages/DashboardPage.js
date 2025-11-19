@@ -1,8 +1,9 @@
 import { ArcElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React, { useEffect, useState } from 'react';
 import { Doughnut, Line } from 'react-chartjs-2';
+import toast from 'react-hot-toast';
 import api from '../api';
-import Metronome from '../components/Metronome'; // Import the component
+import Metronome from '../components/Metronome';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -39,13 +40,13 @@ function DashboardPage() {
 		e.preventDefault();
 		try {
 			await api.post('/sessions', formData);
-			alert('Practice session logged!');
+			toast.success('Session logged successfully!');
 			setShowLogModal(false);
 			setFormData({ rudimentId: '', duration: '', tempo: '' });
 			const statsRes = await api.get('/dashboard/stats');
 			setStats(statsRes.data);
 		} catch (error) {
-			alert('Failed to log session.');
+			toast.error('Could not log session. Please try again.');
 		}
 	};
 
@@ -112,6 +113,27 @@ function DashboardPage() {
 				labels: { color: 'white' },
 			},
 		},
+	};
+
+	const handleRudimentChange = async (e) => {
+		const selectedId = e.target.value;
+
+		// 1. Update the form ID immediately
+		setFormData({ ...formData, rudimentId: selectedId });
+
+		if (!selectedId) return;
+
+		// 2. Fetch the "Smart Tempo"
+		try {
+			const response = await api.get(`/rudiments/${selectedId}/suggested-tempo`);
+			// 3. Auto-fill the tempo field
+			setFormData((prev) => ({
+				...prev,
+				tempo: response.data.suggested_tempo,
+			}));
+		} catch (error) {
+			console.error('Could not fetch suggested tempo');
+		}
 	};
 
 	return (
@@ -205,12 +227,7 @@ function DashboardPage() {
 						<form onSubmit={handleSubmit} className="space-y-4">
 							<div>
 								<label className="block text-gray-400 text-sm mb-2">Rudiment</label>
-								<select
-									required
-									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary"
-									value={formData.rudimentId}
-									onChange={(e) => setFormData({ ...formData, rudimentId: e.target.value })}
-								>
+								<select required className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary" value={formData.rudimentId} onChange={handleRudimentChange}>
 									<option value="">Select a rudiment...</option>
 									{rudiments.map((r) => (
 										<option key={r.id} value={r.id}>

@@ -1,9 +1,5 @@
-// src/App.js
-
-// 1. Import the tools from react-router-dom
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-// 2. Import your new page components
 import DashboardPage from './pages/DashboardPage';
 import LibraryPage from './pages/LibraryPage';
 import LoginPage from './pages/LoginPage';
@@ -12,11 +8,14 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignupPage from './pages/SignupPage';
 
+import { Toaster } from 'react-hot-toast';
+
 import './App.css';
 
 function App() {
 	return (
 		<BrowserRouter>
+			<Toaster position="top-center" />
 			<Routes>
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/signup" element={<SignupPage />} />
