@@ -1,6 +1,6 @@
-import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import { ArcElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Doughnut, Line } from 'react-chartjs-2';
 import api from '../api';
 import Metronome from '../components/Metronome'; // Import the component
 
@@ -76,6 +76,44 @@ function DashboardPage() {
 
 	if (loading) return <div className="p-8 text-white">Loading Dashboard...</div>;
 
+	// Helper to count occurrences of each rudimentId in sessions
+	const sessionCounts = {};
+	chartData.forEach((session) => {
+		const id = session.rudimentId;
+		sessionCounts[id] = (sessionCounts[id] || 0) + 1;
+	});
+
+	// Prepare data for the Doughnut chart
+	const doughnutData = {
+		labels: Object.keys(sessionCounts).map((id) => {
+			const r = rudiments.find((r) => r.id === id);
+			return r ? r.name : 'Unknown';
+		}),
+		datasets: [
+			{
+				data: Object.values(sessionCounts),
+				backgroundColor: [
+					'#2B8CEE', // Primary Blue
+					'#34D399', // Green
+					'#F87171', // Red
+					'#A78BFA', // Purple
+					'#FBBF24', // Yellow
+					'#9CA3AF', // Gray
+				],
+				borderWidth: 0,
+			},
+		],
+	};
+
+	const doughnutOptions = {
+		plugins: {
+			legend: {
+				position: 'right',
+				labels: { color: 'white' },
+			},
+		},
+	};
+
 	return (
 		<div className="min-h-screen bg-dark-bg p-8 text-white relative">
 			<header className="mb-10">
@@ -108,10 +146,20 @@ function DashboardPage() {
 				</button>
 			</div>
 
-			{/* Chart Section */}
-			<div className="bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg mb-10">
-				<div className="h-80">
-					{chartData.length > 0 ? <Line options={chartOptions} data={chartConfig} /> : <div className="h-full flex items-center justify-center text-gray-500">No practice data yet. Log a session to see your graph!</div>}
+			{/* Charts Section */}
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+				{/* Line Chart (Span 2 columns) */}
+				<div className="lg:col-span-2 bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg">
+					<h3 className="text-white font-bold mb-4">Speed Progress</h3>
+					<div className="h-64">{chartData.length > 0 ? <Line options={chartOptions} data={chartConfig} /> : <div className="h-full flex items-center justify-center text-gray-500">No data</div>}</div>
+				</div>
+
+				{/* Doughnut Chart (Span 1 column) */}
+				<div className="bg-card-bg p-6 rounded-xl border border-gray-800 shadow-lg">
+					<h3 className="text-white font-bold mb-4">Rudiment Focus</h3>
+					<div className="h-64 flex justify-center">
+						{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex items-center justify-center text-gray-500">No sessions</div>}
+					</div>
 				</div>
 			</div>
 

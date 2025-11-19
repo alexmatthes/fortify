@@ -7,22 +7,28 @@ function SignupPage() {
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 	const navigate = useNavigate();
+	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSignup = async (e) => {
 		e.preventDefault();
+		setError(''); // Clear previous errors
+		setIsLoading(true); // Start loading
+
 		try {
 			// 1. Create the account
 			await api.post('/auth/signup', { email, password });
 
-			// 2. Auto-login immediately after signup (Better UX!)
+			// 2. Auto-login
 			const loginResponse = await api.post('/auth/login', { email, password });
 			localStorage.setItem('token', loginResponse.data.token);
 
-			// 3. Redirect to Dashboard
+			// 3. Redirect
 			navigate('/');
 		} catch (err) {
 			setError(err.response?.data?.message || 'Failed to create account.');
+			setIsLoading(false); // Stop loading on error
 		}
+		// Note: We don't set false on success because we are navigating away immediately
 	};
 
 	return (
@@ -61,8 +67,24 @@ function SignupPage() {
 						<p className="text-xs text-gray-500 mt-2">Must be at least 6 characters long.</p>
 					</div>
 
-					<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-primary/20">
-						Create Account
+					<button
+						type="submit"
+						disabled={isLoading} // Disable when loading
+						className={`w-full text-white font-bold py-3 rounded-lg transition-colors shadow-lg 
+                        ${isLoading ? 'bg-gray-600 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover shadow-primary/20'}`}
+					>
+						{isLoading ? (
+							<span className="flex items-center justify-center gap-2">
+								{/* Simple Spinner SVG */}
+								<svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+									<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+									<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+								</svg>
+								Creating Account...
+							</span>
+						) : (
+							'Create Account'
+						)}
 					</button>
 				</form>
 
