@@ -22,12 +22,8 @@ app.get('/', (req, res) => {
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/rudiments', rudimentRoutes);
-
-// Note: In your original code, you had /api/sessions AND /api/dashboard
-// I grouped them under /api/sessions for cleanliness, but you can split them if you prefer.
-// To match your Frontend exactly as it is now (which calls /dashboard/stats):
 app.use('/api/sessions', sessionRoutes);
-app.use('/api/dashboard', sessionRoutes); // Re-using sessionRoutes to handle dashboard requests
+app.use('/api/dashboard', sessionRoutes);
 
 app.listen(PORT, () => {
 	console.log(`Server is running on http://localhost:${PORT}`);
