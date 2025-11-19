@@ -1,7 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-const auth = (req: Request, res: Response, next: NextFunction) => {
+// Extend the Express Request type to include 'userId'
+export interface AuthRequest extends Request {
+	userId?: string;
+}
+
+const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
 	try {
 		const authHeader = req.header('Authorization');
 		if (!authHeader || !authHeader.startsWith('Bearer ')) {

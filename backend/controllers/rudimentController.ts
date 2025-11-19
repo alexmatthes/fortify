@@ -1,7 +1,12 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 
-export const createRudiment = async (req: Request, res: Response) => {
+// Custom type to let TS know 'userId' exists on the request
+interface AuthRequest extends Request {
+	userId?: string;
+}
+
+export const createRudiment = async (req: AuthRequest, res: Response) => {
 	try {
 		const { name, description, category, tempoIncrement } = req.body;
 		// We use req.userId! (asserting it exists with !)
@@ -20,7 +25,7 @@ export const createRudiment = async (req: Request, res: Response) => {
 	}
 };
 
-export const getAllRudiments = async (req: Request, res: Response) => {
+export const getAllRudiments = async (req: AuthRequest, res: Response) => {
 	try {
 		const rudiments = await prisma.rudiment.findMany({
 			where: {
@@ -34,7 +39,7 @@ export const getAllRudiments = async (req: Request, res: Response) => {
 	}
 };
 
-export const deleteRudiment = async (req: Request, res: Response) => {
+export const deleteRudiment = async (req: AuthRequest, res: Response) => {
 	try {
 		const { id } = req.params;
 		const rudiment = await prisma.rudiment.findUnique({ where: { id } });
@@ -59,7 +64,7 @@ export const deleteRudiment = async (req: Request, res: Response) => {
 	}
 };
 
-export const getSuggestedTempo = async (req: Request, res: Response) => {
+export const getSuggestedTempo = async (req: AuthRequest, res: Response) => {
 	try {
 		const { id } = req.params;
 		const rudiment = await prisma.rudiment.findUnique({ where: { id } });

@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 
-export const logSession = async (req: Request, res: Response) => {
+interface AuthRequest extends Request {
+	userId?: string;
+}
+
+export const logSession = async (req: AuthRequest, res: Response) => {
 	try {
 		const { rudimentId, duration, tempo } = req.body;
 
@@ -19,7 +23,7 @@ export const logSession = async (req: Request, res: Response) => {
 	}
 };
 
-export const getAllSessions = async (req: Request, res: Response) => {
+export const getAllSessions = async (req: AuthRequest, res: Response) => {
 	try {
 		const sessions = await prisma.practiceSession.findMany({
 			where: { userId: req.userId },
@@ -31,7 +35,7 @@ export const getAllSessions = async (req: Request, res: Response) => {
 	}
 };
 
-export const getDashboardStats = async (req: Request, res: Response) => {
+export const getDashboardStats = async (req: AuthRequest, res: Response) => {
 	try {
 		// Note: Prisma aggregates can be tricky in TS, but this standard usage usually works
 		const statsAggregated = await prisma.practiceSession.aggregate({
