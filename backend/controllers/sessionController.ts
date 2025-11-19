@@ -1,14 +1,10 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 
-interface AuthRequest extends Request {
-	userId?: string;
-}
-
-export constVB logSession = async (req: AuthRequest, res: Response) => {
+export const logSession = async (req: Request, res: Response) => {
 	try {
 		const { rudimentId, duration, tempo } = req.body;
-        
+
 		const newSession = await prisma.practiceSession.create({
 			data: {
 				duration, // Zod has already validated these are numbers!
@@ -23,7 +19,7 @@ export constVB logSession = async (req: AuthRequest, res: Response) => {
 	}
 };
 
-export const getAllSessions = async (req: AuthRequest, res: Response) => {
+export const getAllSessions = async (req: Request, res: Response) => {
 	try {
 		const sessions = await prisma.practiceSession.findMany({
 			where: { userId: req.userId },
@@ -35,22 +31,22 @@ export const getAllSessions = async (req: AuthRequest, res: Response) => {
 	}
 };
 
-export const getDashboardStats = async (req: AuthRequest, res: Response) => {
+export const getDashboardStats = async (req: Request, res: Response) => {
 	try {
-        // Note: Prisma aggregates can be tricky in TS, but this standard usage usually works
+		// Note: Prisma aggregates can be tricky in TS, but this standard usage usually works
 		const statsAggregated = await prisma.practiceSession.aggregate({
-            where: { userId: req.userId },
-            _sum: { duration: true },
-            _max: { tempo: true },
-        });
+			where: { userId: req.userId },
+			_sum: { duration: true },
+			_max: { tempo: true },
+		});
 
-        const statsMostPracticed = await prisma.practiceSession.groupBy({
-            by: ['rudimentId'],
-            where: { userId: req.userId },
-            _count: { id: true },
-            orderBy: { _count: { id: 'desc' } },
-            take: 1,
-        });
+		const statsMostPracticed = await prisma.practiceSession.groupBy({
+			by: ['rudimentId'],
+			where: { userId: req.userId },
+			_count: { id: true },
+			orderBy: { _count: { id: 'desc' } },
+			take: 1,
+		});
 
 		let mostPracticedName = 'N/A';
 		if (statsMostPracticed.length > 0) {
