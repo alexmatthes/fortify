@@ -40,3 +40,10 @@ body::before {
 ::-webkit-scrollbar-thumb {
 	@apply bg-gray-800 rounded-full;
 }
+
+/* Make inputs feel structural */
+input[type='text'],
+input[type='number'],
+select {
+	@apply font-mono border-2 border-gray-800 bg-black text-white rounded-md focus:border-primary focus:ring-0 transition-colors duration-100;
+}
