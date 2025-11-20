@@ -57,8 +57,13 @@ const Metronome = () => {
 		osc.connect(envelope);
 		envelope.connect(audioContext.current.destination);
 
-		osc.start(time);
-		osc.stop(time + 0.03);
+        osc.start(time);
+		// Start instantly (for the sharp attack of a metronome)
+        envelope.gain.setValueAtTime(1, time);
+        // Decay quickly
+        envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+        // Stop just after the decay
+        osc.stop(time + 0.035);
 	};
 
 	const startStop = () => {
