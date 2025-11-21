@@ -78,17 +78,57 @@ Follow these steps to get a local copy up and running.
     npm install
 
     # Create a .env file in the backend directory
-    # Add your database connection string and a secret for JWT
+    # Copy backend/.env.example to backend/.env and fill in your values
+    # Required variables:
     # DATABASE_URL="postgresql://user:password@localhost:5432/fortify?schema=public"
-    # JWT_SECRET="your_super_secret_key"
+    # JWT_SECRET="your_super_secret_key" (REQUIRED - use a strong random string)
 
     # Run migrations and seed the database with standard rudiments
     npx prisma migrate dev --name init
-    node prisma/seed.js
+    npm run seed
 
     # Start the backend server
     npm run dev
     ```
+
+3.  **Setup Frontend**
+
+    ```bash
+    cd frontend
+    npm install
+
+    # Optional: Create a .env file in the frontend directory
+    # Copy frontend/.env.example to frontend/.env and configure if needed
+    # REACT_APP_API_URL="http://localhost:8000/api" (defaults to this if not set)
+
+    # Start the frontend development server
+    npm start
+    ```
+
+## ⚙️ Configuration
+
+### Backend Environment Variables
+
+Create a `.env` file in the `backend` directory with the following variables:
+
+| Variable | Required | Description | Default |
+|----------|----------|-------------|---------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string | - |
+| `JWT_SECRET` | Yes | Secret key for JWT token signing | - |
+| `PORT` | No | Server port number | `8000` |
+| `NODE_ENV` | No | Environment (development/production) | `development` |
+| `FRONTEND_URL` | No | Frontend URL for CORS configuration | - |
+
+### Frontend Environment Variables
+
+Create a `.env` file in the `frontend` directory (optional):
+
+| Variable | Required | Description | Default |
+|----------|----------|-------------|---------|
+| `REACT_APP_API_URL` | No | Backend API URL | `http://localhost:8000/api` |
+| `REACT_APP_POSTHOG_KEY` | No | PostHog analytics key | - |
+
+**Note:** The backend will fail to start if `JWT_SECRET` is not set. This is a security feature to prevent using default secrets in production.
 
 ## 🤝 Contributing
 

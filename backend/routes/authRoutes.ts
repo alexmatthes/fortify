@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import * as authController from '../controllers/authController';
 import validate from '../middleware/validate';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ const loginSchema = z.object({
     password: z.string()
 });
 
-router.post('/signup', validate(signupSchema), authController.signup);
-router.post('/login', validate(loginSchema), authController.login);
+router.post('/signup', validate(signupSchema), asyncHandler(authController.signup));
+router.post('/login', validate(loginSchema), asyncHandler(authController.login));
 
 export default router;
