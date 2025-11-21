@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../api';
+import { Rudiment } from '../types'; // <--- The Contract
 
 function LibraryPage() {
-	const [rudiments, setRudiments] = useState([]); // Start empty, fetch later
+	// 1. Strictly typed state
+	const [rudiments, setRudiments] = useState<Rudiment[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
 
-	// Form State
+	// For the form, we can infer types (strings), so no special generic needed here
 	const [newRudiment, setNewRudiment] = useState({ name: '', category: '', description: '' });
 
-	// 1. Fetch Rudiments on Load
 	useEffect(() => {
 		const fetchRudiments = async () => {
 			try {
-				const response = await api.get('/rudiments');
+				const response = await api.get<Rudiment[]>('/rudiments'); // <--- API knows it returns Rudiments
 				setRudiments(response.data);
 				setIsLoading(false);
 			} catch (error) {
-				console.error('Failed to fetch rudiments:', error);
+				toast.error('Failed to fetch rudiments.');
 				setIsLoading(false);
 			}
 		};
@@ -27,36 +28,31 @@ function LibraryPage() {
 		fetchRudiments();
 	}, []);
 
-	// 2. Add Rudiment (Send to Backend)
-	const handleAddRudiment = async (e) => {
+	// 2. Typed Event Handler
+	const handleAddRudiment = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!newRudiment.name) return;
 
 		try {
-			const response = await api.post('/rudiments', newRudiment);
-			// Add the real rudiment from the DB to our list
+			const response = await api.post<Rudiment>('/rudiments', newRudiment);
 			setRudiments([...rudiments, response.data]);
-
-			// Reset and Close
 			setNewRudiment({ name: '', category: '', description: '' });
 			setIsModalOpen(false);
+			toast.success('Rudiment added!');
 		} catch (error) {
 			toast.error('Failed to add rudiment.');
-			console.error(error);
 		}
 	};
 
-	// 3. Delete Rudiment (Send to Backend)
-	const handleDelete = async (id) => {
+	const handleDelete = async (id: string) => {
 		if (!window.confirm('Are you sure you want to delete this rudiment?')) return;
 
 		try {
 			await api.delete(`/rudiments/${id}`);
-			// Remove it from the screen only if the backend delete succeeded
 			setRudiments(rudiments.filter((r) => r.id !== id));
+			toast.success('Rudiment deleted.');
 		} catch (error) {
-			toast.error('Failed to delete rudiment.');
-			console.error(error);
+			toast.error('Could not delete rudiment. You might not own it.');
 		}
 	};
 
@@ -202,7 +198,7 @@ function LibraryPage() {
 							<div>
 								<label className="block text-sm font-medium text-gray-400 mb-1">Description</label>
 								<textarea
-									rows="3"
+									rows={3}
 									className="w-full bg-dark-bg border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
 									placeholder="Briefly describe the pattern..."
 									value={newRudiment.description}

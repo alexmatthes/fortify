@@ -1,43 +1,30 @@
-import {
-	ArcElement,
-	CategoryScale,
-	Chart as ChartJS, // 1. Import ArcElement for Doughnut charts
-	Filler,
-	Legend,
-	LinearScale,
-	LineElement,
-	PointElement,
-	Title,
-	Tooltip,
-} from 'chart.js';
+import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React, { useEffect, useState } from 'react';
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
 import api from '../api';
 import Card from '../components/Card';
 import Metronome from '../components/Metronome';
-// Ensure you created this component from the previous step
-
-// 2. Register ALL elements, including ArcElement
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler);
+import { DashboardStats, Rudiment, Session } from '../types'; // <--- Import all types
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 function DashboardPage() {
 	const [showLogModal, setShowLogModal] = useState(false);
 	const [showMetronome, setShowMetronome] = useState(false);
 	const [loading, setLoading] = useState(true);
 
-	// Data States
-	const [stats, setStats] = useState({ totalTime: 0, fastestTempo: 0, mostPracticed: 'N/A' });
-	const [rudiments, setRudiments] = useState([]);
-	const [chartData, setChartData] = useState([]);
+	// 1. Typed Data States
+	const [stats, setStats] = useState<DashboardStats>({ totalTime: 0, fastestTempo: 0, mostPracticed: 'N/A' });
+	const [rudiments, setRudiments] = useState<Rudiment[]>([]);
+	const [chartData, setChartData] = useState<Session[]>([]);
 
-	// Form State
 	const [formData, setFormData] = useState({ rudimentId: '', duration: '', tempo: '' });
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const [statsRes, rudimentsRes, sessionsRes] = await Promise.all([api.get('/dashboard/stats'), api.get('/rudiments'), api.get('/sessions')]);
+				// TS knows exactly what each API call returns
+				const [statsRes, rudimentsRes, sessionsRes] = await Promise.all([api.get<DashboardStats>('/dashboard/stats'), api.get<Rudiment[]>('/rudiments'), api.get<Session[]>('/sessions')]);
 				setStats(statsRes.data);
 				setRudiments(rudimentsRes.data);
 				setChartData(sessionsRes.data);
@@ -50,107 +37,91 @@ function DashboardPage() {
 		fetchData();
 	}, []);
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
+	// 2. Typed "Smart Tempo" Handler
+	const handleRudimentChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const selectedId = e.target.value;
+		setFormData((prev) => ({ ...prev, rudimentId: selectedId }));
+
+		if (!selectedId) return;
+
 		try {
-			await api.post('/sessions', formData);
-			toast.success('Session logged successfully!');
-			setShowLogModal(false);
-			setFormData({ rudimentId: '', duration: '', tempo: '' });
-			// Refresh stats
-			const [statsRes, sessionsRes] = await Promise.all([api.get('/dashboard/stats'), api.get('/sessions')]);
-			setStats(statsRes.data);
-			setChartData(sessionsRes.data);
+			const response = await api.get<{ suggested_tempo: number }>(`/rudiments/${selectedId}/suggested-tempo`);
+			if (response.data.suggested_tempo) {
+				setFormData((prev) => ({
+					...prev,
+					tempo: String(response.data.suggested_tempo), // Inputs expect strings
+				}));
+			}
 		} catch (error) {
-			toast.error('Could not log session. Please try again.');
+			console.error('Could not fetch suggested tempo');
 		}
 	};
 
-	// 3. Define modernChartOptions here
-	const modernChartOptions = {
-		responsive: true,
-		maintainAspectRatio: false,
-		plugins: {
-			legend: { display: false }, // Hide legend for cleaner look
-			tooltip: {
-				backgroundColor: '#0A0A0A',
-				titleColor: '#ffffff',
-				bodyColor: '#9ca3af',
-				borderColor: '#374151',
-				borderWidth: 1,
-				padding: 10,
-				displayColors: false,
-			},
-		},
-		scales: {
-			y: {
-				grid: {
-					color: '#202020', // Very subtle grid
-					drawBorder: false,
-				},
-				ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } },
-			},
-			x: {
-				grid: { display: false },
-				ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } },
-			},
-		},
-		elements: {
-			line: {
-				tension: 0.4, // Smooth curves
-			},
-			point: {
-				radius: 4,
-				backgroundColor: '#0A0A0A',
-				borderWidth: 2,
-				hoverRadius: 6,
-			},
-		},
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		try {
+			await api.post('/sessions', formData);
+			toast.success('Practice session logged!');
+			setShowLogModal(false);
+			setFormData({ rudimentId: '', duration: '', tempo: '' });
+
+			// Refresh data
+			const statsRes = await api.get<DashboardStats>('/dashboard/stats');
+			const sessionRes = await api.get<Session[]>('/sessions');
+			setStats(statsRes.data);
+			setChartData(sessionRes.data);
+		} catch (error) {
+			toast.error('Failed to log session.');
+		}
 	};
 
-	const chartConfig = {
-		labels: chartData.map((session) => new Date(session.date).toLocaleDateString()),
+	// ... Chart Config and JSX remain mostly the same ...
+	// Just ensure your <select> uses the new handler:
+	// <select onChange={handleRudimentChange} ... >
+
+	// --- 1. Calculate Data for Charts ---
+
+	// Prepare Line Chart Data (Progress over time)
+	// We reverse the array so the oldest session is on the left
+	const sortedSessions = [...chartData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+	const lineChartData = {
+		labels: sortedSessions.map((s) => new Date(s.date).toLocaleDateString()),
 		datasets: [
 			{
-				label: 'Tempo',
-				data: chartData.map((session) => session.tempo),
-				borderColor: '#3B82F6', // Primary Blue
-				backgroundColor: (context) => {
-					const ctx = context.chart.ctx;
-					const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-					gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
-					gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
-					return gradient;
-				},
+				label: 'Tempo (BPM)',
+				data: sortedSessions.map((s) => s.tempo),
+				borderColor: '#00E5FF', // Cyan (Primary)
+				backgroundColor: 'rgba(0, 229, 255, 0.1)', // Faint glow
+				tension: 0.4, // Smooth curves
 				fill: true,
+				pointBackgroundColor: '#00E5FF',
+				pointBorderColor: '#fff',
+				pointRadius: 4,
 			},
 		],
 	};
 
-	if (loading) return <div className="min-h-screen bg-dark-bg p-8 text-white font-mono animate-pulse">Initializing...</div>;
-
-	// Helper to count occurrences
-	const sessionCounts = {};
+	// Prepare Doughnut Chart Data (Sessions per Rudiment)
+	const sessionCounts: Record<string, number> = {};
 	chartData.forEach((session) => {
-		const id = session.rudimentId;
-		sessionCounts[id] = (sessionCounts[id] || 0) + 1;
+		// Find the name of the rudiment for this session
+		const rName = rudiments.find((r) => r.id === session.rudimentId)?.name || 'Unknown';
+		sessionCounts[rName] = (sessionCounts[rName] || 0) + 1;
 	});
 
 	const doughnutData = {
-		labels: Object.keys(sessionCounts).map((id) => {
-			const r = rudiments.find((r) => r.id === id);
-			return r ? r.name : 'Unknown';
-		}),
+		labels: Object.keys(sessionCounts),
 		datasets: [
 			{
 				data: Object.values(sessionCounts),
 				backgroundColor: [
-					'#3B82F6', // Blue
+					'#00E5FF', // Cyan
+					'#7C3AED', // Violet
+					'#FF2975', // Pink
+					'#FF9900', // Orange
 					'#10B981', // Emerald
-					'#8B5CF6', // Violet
-					'#F59E0B', // Amber
-					'#EF4444', // Red
-					'#6366F1', // Indigo
+					'#3B82F6', // Blue
 				],
 				borderWidth: 0,
 				hoverOffset: 4,
@@ -158,39 +129,48 @@ function DashboardPage() {
 		],
 	};
 
-	const doughnutOptions = {
+	// --- 2. Define Chart Options (The "Look & Feel") ---
+
+	const modernChartOptions: any = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: { display: false }, // Hide legend for cleaner look
+			tooltip: {
+				backgroundColor: '#1C2834',
+				titleColor: '#fff',
+				bodyColor: '#cbd5e1',
+				borderColor: '#334155',
+				borderWidth: 1,
+				padding: 10,
+				displayColors: false,
+			},
+		},
+		scales: {
+			y: {
+				grid: { color: '#334155', drawBorder: false },
+				ticks: { color: '#94a3b8', font: { family: 'sans-serif' } },
+			},
+			x: {
+				grid: { display: false },
+				ticks: { color: '#94a3b8', maxTicksLimit: 8 }, // Limit labels so they don't overlap
+			},
+		},
+	};
+
+	const doughnutOptions: any = {
 		responsive: true,
 		maintainAspectRatio: false,
 		plugins: {
 			legend: {
 				position: 'right',
-				labels: {
-					color: '#9ca3af',
-					font: { family: 'Inter', size: 11 },
-					usePointStyle: true,
-					pointStyle: 'circle',
-				},
+				labels: { color: '#cbd5e1', font: { size: 12 } },
 			},
 		},
-		cutout: '75%', // Thinner ring
+		cutout: '70%', // Makes the donut thinner
 	};
 
-	const handleRudimentChange = async (e) => {
-		const selectedId = e.target.value;
-		setFormData({ ...formData, rudimentId: selectedId });
-
-		if (!selectedId) return;
-
-		try {
-			const response = await api.get(`/rudiments/${selectedId}/suggested-tempo`);
-			setFormData((prev) => ({
-				...prev,
-				tempo: response.data.suggested_tempo,
-			}));
-		} catch (error) {
-			console.error('Could not fetch suggested tempo');
-		}
-	};
+	if (loading) return <div className="p-8 text-white">Loading Dashboard...</div>;
 
 	return (
 		<div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto">
@@ -236,13 +216,19 @@ function DashboardPage() {
 						<h3 className="text-gray-300 font-semibold">Velocity Trajectory</h3>
 						<span className="text-xs text-primary border border-primary/30 px-2 py-1 rounded bg-primary/10">Last 30 Days</span>
 					</div>
-					<div className="h-64 w-full">{chartData.length > 0 ? <Line options={modernChartOptions} data={chartConfig} /> : <div className="text-gray-600 h-full flex items-center justify-center font-mono text-sm">No data logged</div>}</div>
+					<div className="h-64 w-full">
+						{chartData.length > 0 ? <Line options={modernChartOptions} data={modernChartOptions} /> : <div className="text-gray-600 h-full flex items-center justify-center font-mono text-sm">No data logged</div>}
+					</div>
+					<div className="h-80">{chartData.length > 0 ? <Line data={lineChartData} options={modernChartOptions} /> : <div className="flex h-full items-center justify-center text-gray-500">No practice history yet.</div>}</div>
 				</Card>
 
 				{/* Doughnut Chart */}
 				<Card className="md:col-span-1 md:row-span-2 flex flex-col justify-center">
 					<div className="h-48">{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex items-center justify-center text-gray-500 h-full">No sessions</div>}</div>
 					<div className="text-center mt-4 text-sm text-gray-500 font-mono">Distribution</div>
+					<div className="h-64 relative">
+						{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex h-full items-center justify-center text-gray-500">No distribution data.</div>}
+					</div>
 				</Card>
 			</div>
 
