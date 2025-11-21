@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 1. Try to get the URL from the environment variable (Vercel)
 // 2. If it doesn't exist (local dev), fall back to localhost
-const API_URL = 'https://fortify-production-c31d.up.railway.app/';
+const API_URL = 'https://fortify-production-c31d.up.railway.app/api';
 
 const api = axios.create({
 	baseURL: API_URL,
