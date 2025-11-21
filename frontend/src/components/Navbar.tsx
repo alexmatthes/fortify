@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 function Navbar() {
 	const navigate = useNavigate();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-	const dropdownRef = useRef(null);
+	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	const handleLogout = () => {
 		localStorage.removeItem('token');
@@ -13,8 +13,8 @@ function Navbar() {
 
 	// Close dropdown if clicking outside
 	useEffect(() => {
-		function handleClickOutside(event) {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+		function handleClickOutside(event: MouseEvent) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
 				setIsDropdownOpen(false);
 			}
 		}
