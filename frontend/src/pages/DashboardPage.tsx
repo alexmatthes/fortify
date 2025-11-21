@@ -2,10 +2,11 @@ import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, Poin
 import React, { useEffect, useState } from 'react';
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
-import api from '../api';
-import Card from '../components/Card';
-import Metronome from '../components/Metronome';
-import { DashboardStats, Rudiment, Session } from '../types'; // <--- Import all types
+import api from '../api.ts';
+import Card from '../components/Card.tsx';
+import Metronome from '../components/Metronome.tsx';
+import { DashboardStats, Rudiment, Session } from '../types.ts'; // <--- Import all types
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 function DashboardPage() {

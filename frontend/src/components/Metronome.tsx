@@ -53,7 +53,7 @@ const Metronome: React.FC = () => {
 
 	// 4. The Worker Effect
 	useEffect(() => {
-		worker.current = new Worker(new URL('./metronome.worker.js', import.meta.url));
+		worker.current = new Worker(new URL('./metronome.worker.ts', import.meta.url));
 
 		worker.current.onmessage = (e: MessageEvent) => {
 			if (e.data === 'tick') {
