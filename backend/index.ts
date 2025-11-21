@@ -10,6 +10,7 @@ import rudimentRoutes from './routes/rudimentRoutes';
 import sessionRoutes from './routes/sessionRoutes';
 
 const app = express();
+const PORT = process.env.PORT || 8000;
 
 // Allow requests from your local dev OR your future production domain
 const allowedOrigins = [
