@@ -1,6 +1,7 @@
-import React from 'react';
+import posthog from 'posthog-js';
+import React, { useEffect } from 'react'; // Added useEffect
 import { Toaster } from 'react-hot-toast';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'; // Added useLocation
 
 // Pages
 import DashboardPage from './pages/DashboardPage';
@@ -16,12 +17,23 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import './App.css';
 
+// Helper Component to track page changes
+function PostHogPageTracker() {
+	const location = useLocation();
+	useEffect(() => {
+		if (process.env.REACT_APP_POSTHOG_KEY) {
+			posthog.capture('$pageview');
+		}
+	}, [location]);
+	return null;
+}
+
 function App() {
-	// Helper to determine if user is logged in (for redirecting away from Landing Page)
 	const isAuthenticated = !!localStorage.getItem('token');
 
 	return (
 		<BrowserRouter>
+			<PostHogPageTracker />
 			<Toaster
 				position="top-center"
 				toastOptions={{
@@ -35,7 +47,7 @@ function App() {
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/signup" element={<SignupPage />} />
 
-				{/* Protected Routes (All include Navbar) */}
+				{/* Protected Routes */}
 				<Route
 					path="/dashboard"
 					element={

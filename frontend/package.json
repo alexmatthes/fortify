@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
+    "posthog-js": "^1.297.2",
     "react": "^19.2.0",
     "react-calendar-heatmap": "^1.10.0",
     "react-chartjs-2": "^5.3.1",
