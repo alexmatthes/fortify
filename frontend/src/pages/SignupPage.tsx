@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../api.ts';
+import api from '../api';
 
 const SignupPage: React.FC = () => {
 	const [email, setEmail] = useState('');

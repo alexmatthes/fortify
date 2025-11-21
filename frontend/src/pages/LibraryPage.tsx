@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import api from '../api.ts';
-import { Rudiment } from '../types.ts';
+import api from '../api';
+import { Rudiment } from '../types';
 
 function LibraryPage() {
 	// 1. Strictly typed state

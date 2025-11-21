@@ -3,16 +3,16 @@ import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 // Pages
-import DashboardPage from './pages/DashboardPage.tsx';
-import LandingPage from './pages/LandingPage.tsx';
-import LibraryPage from './pages/LibraryPage.tsx';
-import LoginPage from './pages/LoginPage.tsx';
-import SettingsPage from './pages/SettingsPage.tsx';
-import SignupPage from './pages/SignupPage.tsx';
+import DashboardPage from './pages/DashboardPage';
+import LandingPage from './pages/LandingPage';
+import LibraryPage from './pages/LibraryPage';
+import LoginPage from './pages/LoginPage';
+import SettingsPage from './pages/SettingsPage';
+import SignupPage from './pages/SignupPage';
 
 // Components
-import Navbar from './components/Navbar.tsx';
-import ProtectedRoute from './components/ProtectedRoute.tsx';
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import './App.css';
 

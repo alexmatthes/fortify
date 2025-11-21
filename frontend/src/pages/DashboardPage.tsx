@@ -4,11 +4,10 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css'; // We will override this in CSS
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
-import api from '../api.ts';
-import Card from '../components/Card.tsx';
-import Metronome from '../components/Metronome.tsx';
-import { SessionHistory } from '../types'; // Add this to your imports
-import { DashboardStats, Rudiment, Session } from '../types.ts';
+import api from '../api';
+import Card from '../components/Card';
+import Metronome from '../components/Metronome';
+import { DashboardStats, Rudiment, Session, SessionHistory } from '../types'; // Add this to your imports
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
