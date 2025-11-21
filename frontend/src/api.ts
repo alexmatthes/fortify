@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Allow the API URL to be set via environment variable, fallback to localhost for dev
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const api = axios.create({
-	baseURL: 'http://localhost:8000/api',
+	baseURL: API_URL,
 });
 
 api.interceptors.request.use(

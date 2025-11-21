@@ -10,9 +10,24 @@ import rudimentRoutes from './routes/rudimentRoutes';
 import sessionRoutes from './routes/sessionRoutes';
 
 const app = express();
-const PORT = process.env.PORT || 8000;
 
-app.use(cors());
+// Allow requests from your local dev OR your future production domain
+const allowedOrigins = [
+	'http://localhost:3000',
+	process.env.FRONTEND_URL, // We will set this in Railway later
+];
+
+app.use(
+	cors({
+		origin: (origin, callback) => {
+			if (!origin || allowedOrigins.includes(origin)) {
+				callback(null, true);
+			} else {
+				callback(new Error('Not allowed by CORS'));
+			}
+		},
+	})
+);
 app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
