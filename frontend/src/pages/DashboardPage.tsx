@@ -1,4 +1,4 @@
-import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import { ArcElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React, { useEffect, useState } from 'react';
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
@@ -7,7 +7,7 @@ import Card from '../components/Card.tsx';
 import Metronome from '../components/Metronome.tsx';
 import { DashboardStats, Rudiment, Session } from '../types.ts'; // <--- Import all types
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
 function DashboardPage() {
 	const [showLogModal, setShowLogModal] = useState(false);
@@ -217,10 +217,7 @@ function DashboardPage() {
 						<h3 className="text-gray-300 font-semibold">Velocity Trajectory</h3>
 						<span className="text-xs text-primary border border-primary/30 px-2 py-1 rounded bg-primary/10">Last 30 Days</span>
 					</div>
-					<div className="h-64 w-full">
-						{chartData.length > 0 ? <Line options={modernChartOptions} data={modernChartOptions} /> : <div className="text-gray-600 h-full flex items-center justify-center font-mono text-sm">No data logged</div>}
-					</div>
-					<div className="h-80">{chartData.length > 0 ? <Line data={lineChartData} options={modernChartOptions} /> : <div className="flex h-full items-center justify-center text-gray-500">No practice history yet.</div>}</div>
+					<div className="h-80 w-full">{chartData.length > 0 ? <Line data={lineChartData} options={modernChartOptions} /> : <div className="flex h-full items-center justify-center text-gray-500">No practice history yet.</div>}</div>
 				</Card>
 
 				{/* Doughnut Chart */}

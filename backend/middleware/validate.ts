@@ -3,7 +3,8 @@ import { AnyZodObject, ZodError } from 'zod';
 
 const validate = (schema: AnyZodObject) => async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		await schema.parseAsync(req.body);
+		// FIX: Assign the parsed/transformed data back to req.body
+		req.body = await schema.parseAsync(req.body);
 		next();
 	} catch (error) {
 		if (error instanceof ZodError) {
