@@ -47,3 +47,38 @@ input[type='number'],
 select {
 	@apply font-mono border-2 border-gray-800 bg-black text-white rounded-md focus:border-primary focus:ring-0 transition-colors duration-100;
 }
+
+/* --- Heatmap Overrides --- */
+
+/* Labels (Mon, Wed, Fri, Jan, Feb...) */
+.react-calendar-heatmap text {
+	font-size: 10px;
+	fill: #64748b; /* Tailwind slate-500 */
+	font-family: monospace;
+}
+
+/* Empty Days (Dark Grey) */
+.react-calendar-heatmap .color-empty {
+	fill: #1e293b; /* Tailwind slate-800 */
+	outline: 1px solid #0f172a; /* Tiny border for grid effect */
+}
+
+/* Activity Levels (Cyan/Blue Gradient) */
+.react-calendar-heatmap .color-scale-1 {
+	fill: #0e7490;
+} /* 1-15 mins (Dark Cyan) */
+.react-calendar-heatmap .color-scale-2 {
+	fill: #06b6d4;
+} /* 16-30 mins */
+.react-calendar-heatmap .color-scale-3 {
+	fill: #22d3ee;
+} /* 31-45 mins */
+.react-calendar-heatmap .color-scale-4 {
+	fill: #67e8f9;
+} /* 45+ mins (Bright Cyan) */
+
+/* Hover State */
+.react-calendar-heatmap rect:hover {
+	stroke: #fff;
+	stroke-width: 1px;
+}

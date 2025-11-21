@@ -20,3 +20,8 @@ export interface DashboardStats {
 	fastestTempo: number;
 	mostPracticed: string;
 }
+
+export interface SessionHistory {
+	date: string;
+	count: number;
+}

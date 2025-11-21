@@ -1,11 +1,14 @@
 import { ArcElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React, { useEffect, useState } from 'react';
+import CalendarHeatmap from 'react-calendar-heatmap';
+import 'react-calendar-heatmap/dist/styles.css'; // We will override this in CSS
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
 import api from '../api.ts';
 import Card from '../components/Card.tsx';
 import Metronome from '../components/Metronome.tsx';
-import { DashboardStats, Rudiment, Session } from '../types.ts'; // <--- Import all types
+import { SessionHistory } from '../types'; // Add this to your imports
+import { DashboardStats, Rudiment, Session } from '../types.ts';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
@@ -21,15 +24,22 @@ function DashboardPage() {
 
 	const [formData, setFormData] = useState({ rudimentId: '', duration: '', tempo: '' });
 
+	const [history, setHistory] = useState<SessionHistory[]>([]);
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				// TS knows exactly what each API call returns
-				const [statsRes, rudimentsRes, sessionsRes] = await Promise.all([api.get<DashboardStats>('/dashboard/stats'), api.get<Rudiment[]>('/rudiments'), api.get<Session[]>('/sessions')]);
+				const [statsRes, rudimentsRes, sessionsRes, historyRes] = await Promise.all([
+					api.get<DashboardStats>('/dashboard/stats'),
+					api.get<Rudiment[]>('/rudiments'),
+					api.get<Session[]>('/sessions'),
+					api.get<SessionHistory[]>('/sessions/history'),
+				]);
 				setStats(statsRes.data);
 				setRudiments(rudimentsRes.data);
 				setChartData(sessionsRes.data);
 				setLoading(false);
+				setHistory(historyRes.data);
 			} catch (error) {
 				console.error('Error fetching dashboard data', error);
 				setLoading(false);
@@ -209,6 +219,34 @@ function DashboardPage() {
 				<Card className="md:col-span-2">
 					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Focus Rudiment</h3>
 					<div className="text-3xl font-bold text-white truncate bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">{stats.mostPracticed}</div>
+				</Card>
+
+				{/* Consistency Heatmap Card */}
+				<Card className="md:col-span-4">
+					<div className="flex justify-between items-end mb-4">
+						<h3 className="text-gray-300 font-semibold">Consistency Streak</h3>
+						<span className="text-xs text-gray-500 font-mono">Last 365 Days</span>
+					</div>
+					<div className="w-full overflow-x-auto pb-2">
+						{/* We wrap it in a div to ensure it handles width gracefully */}
+						<CalendarHeatmap
+							startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+							endDate={new Date()}
+							values={history}
+							classForValue={(value: any) => {
+								if (!value) {
+									return 'color-empty';
+								}
+								// Scale: 1=Short, 2=Medium, 3=Long, 4=Marathon Session
+								return `color-scale-${Math.min(4, Math.ceil(value.count / 15))}`;
+							}}
+							titleForValue={(value: any) => {
+								return value ? `${value.date}: ${value.count} mins` : 'No practice';
+							}}
+							showWeekdayLabels={true}
+							gutterSize={2} // Spacing between squares
+						/>
+					</div>
 				</Card>
 
 				{/* Chart Section (Spans 2 Rows, 3 Cols) */}
