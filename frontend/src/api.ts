@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Allow the API URL to be set via environment variable, fallback to localhost for dev
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// 1. Try to get the URL from the environment variable (Vercel)
+// 2. If it doesn't exist (local dev), fall back to localhost
+const API_URL = process.env.REACT_APP_API_URL;
 
 const api = axios.create({
 	baseURL: API_URL,
