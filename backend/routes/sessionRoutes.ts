@@ -13,6 +13,7 @@ const sessionSchema = z.object({
 	tempo: z.preprocess((val) => Number(val), z.number().min(30).max(300, 'Tempo out of range')),
 });
 
+router.get('/history', auth, sessionController.getConsistencyData);
 router.post('/', auth, validate(sessionSchema), sessionController.logSession);
 router.get('/', auth, sessionController.getAllSessions);
 router.get('/stats', auth, sessionController.getDashboardStats);

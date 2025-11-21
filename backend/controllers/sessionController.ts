@@ -5,6 +5,39 @@ interface AuthRequest extends Request {
 	userId?: string;
 }
 
+export const getConsistencyData = async (req: Request, res: Response) => {
+	try {
+		// 1. Fetch all sessions for the user (just date and duration)
+		const sessions = await prisma.practiceSession.findMany({
+			where: { userId: req.userId },
+			select: { date: true, duration: true },
+		});
+
+		// 2. Aggregate minutes by date (YYYY-MM-DD)
+		const historyMap: Record<string, number> = {};
+
+		sessions.forEach((session) => {
+			// Split ISO string to get just the date part (e.g., "2025-11-20")
+			const dateKey = session.date.toISOString().split('T')[0];
+
+			if (!historyMap[dateKey]) {
+				historyMap[dateKey] = 0;
+			}
+			historyMap[dateKey] += session.duration;
+		});
+
+		// 3. Convert to array format for the frontend
+		const history = Object.keys(historyMap).map((date) => ({
+			date,
+			count: historyMap[date], // 'count' = total minutes that day
+		}));
+
+		res.status(200).json(history);
+	} catch (error: any) {
+		res.status(500).json({ message: 'Error fetching history.', error: error.message });
+	}
+};
+
 export const logSession = async (req: AuthRequest, res: Response) => {
 	try {
 		const { rudimentId, duration, tempo } = req.body;
