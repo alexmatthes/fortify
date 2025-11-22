@@ -355,6 +355,21 @@ function DashboardPage() {
 									/>
 								</div>
 							</div>
+
+							<div>
+								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Quality</label>
+								<select
+									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
+									value={formData.quality}
+									onChange={(e) => setFormData({ ...formData, quality: e.target.value })}
+								>
+									<option value="1">1 - Sloppy</option>
+									<option value="2">2 - Okay</option>
+									<option value="3">3 - Good</option>
+									<option value="4">4 - Flawless</option>
+								</select>
+							</div>
+
 							<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold h-10 rounded-lg mt-4 transition-colors shadow-lg shadow-primary/20">
 								Save Session
 							</button>
