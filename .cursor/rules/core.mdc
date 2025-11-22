@@ -1,0 +1,28 @@
+---
+description: Core standards for TypeScript, naming, and functional programming.
+globs: **/*.{ts,tsx,js,jsx}
+---
+
+# Core Principles
+
+-   Write concise, technical responses with accurate TypeScript examples.
+-   Use functional, declarative programming. Avoid classes.
+-   Prefer iteration and modularization over duplication.
+-   Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+-   Use lowercase with dashes for directories (e.g., components/auth-wizard).
+-   Favor named exports for components.
+-   Use the Receive an Object, Return an Object (RORO) pattern.
+
+# TypeScript
+
+-   Use "function" keyword for pure functions. Omit semicolons.
+-   Use TypeScript for all code. Prefer interfaces over types.
+-   Avoid unnecessary curly braces in conditional statements.
+-   For single-line statements in conditionals, omit curly braces.
+-   Use concise, one-line syntax for simple conditional statements (e.g., if (condition) doSomething()).
+
+# Error Handling
+
+-   Use early returns for error conditions.
+-   Use guard clauses to handle preconditions and invalid states early.
+-   Implement proper error logging and user-friendly error messages.

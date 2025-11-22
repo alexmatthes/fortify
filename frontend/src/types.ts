@@ -1,7 +1,7 @@
 export interface Rudiment {
 	id: string;
 	name: string;
-	category: string;
+	category?: string; // Optional field to match database schema
 	description?: string; // Optional field
 	tempoIncrement: number;
 	isStandard: boolean;
@@ -24,4 +24,10 @@ export interface DashboardStats {
 export interface SessionHistory {
 	date: string;
 	count: number;
+}
+
+export interface SessionFormData {
+	rudimentId: string;
+	duration: string;
+	tempo: string;
 }

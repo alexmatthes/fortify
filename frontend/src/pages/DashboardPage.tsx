@@ -1,4 +1,4 @@
-import { ArcElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import { ArcElement, CategoryScale, Chart as ChartJS, ChartOptions, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import React, { useEffect, useState } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css'; // We will override this in CSS
@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import api from '../api';
 import Card from '../components/Card';
 import Metronome from '../components/Metronome';
-import { DashboardStats, Rudiment, Session, SessionHistory } from '../types'; // Add this to your imports
+import { DashboardStats, Rudiment, Session, SessionFormData, SessionHistory } from '../types';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
@@ -21,7 +21,7 @@ function DashboardPage() {
 	const [rudiments, setRudiments] = useState<Rudiment[]>([]);
 	const [chartData, setChartData] = useState<Session[]>([]);
 
-	const [formData, setFormData] = useState({ rudimentId: '', duration: '', tempo: '' });
+	const [formData, setFormData] = useState<SessionFormData>({ rudimentId: '', duration: '', tempo: '' });
 
 	const [history, setHistory] = useState<SessionHistory[]>([]);
 
@@ -141,7 +141,7 @@ function DashboardPage() {
 
 	// --- 2. Define Chart Options (The "Look & Feel") ---
 
-	const modernChartOptions: any = {
+	const modernChartOptions: ChartOptions<'line'> = {
 		responsive: true,
 		maintainAspectRatio: false,
 		plugins: {
@@ -158,17 +158,17 @@ function DashboardPage() {
 		},
 		scales: {
 			y: {
-				grid: { color: '#334155', drawBorder: false },
+				grid: { color: '#334155' },
 				ticks: { color: '#94a3b8', font: { family: 'sans-serif' } },
 			},
 			x: {
 				grid: { display: false },
-				ticks: { color: '#94a3b8', maxTicksLimit: 8 }, // Limit labels so they don't overlap
+				ticks: { color: '#94a3b8', maxTicksLimit: 8 },
 			},
 		},
 	};
 
-	const doughnutOptions: any = {
+	const doughnutOptions: ChartOptions<'doughnut'> = {
 		responsive: true,
 		maintainAspectRatio: false,
 		plugins: {
@@ -189,13 +189,13 @@ function DashboardPage() {
 					<h1 className="text-5xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Dashboard</h1>
 					<p className="text-gray-400 font-mono text-sm">Good afternoon. Ready to grind?</p>
 				</div>
-				<button onClick={() => setShowLogModal(true)} className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-full transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+				<button onClick={() => setShowLogModal(true)} className="bg-white text-black hover:bg-gray-200 font-bold h-10 px-6 rounded-full transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
 					+ Log Session
 				</button>
 			</header>
 
 			{/* BENTO GRID LAYOUT */}
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+			<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
 				{/* Stat 1: Total Time */}
 				<Card>
 					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Total Time</h3>
@@ -227,29 +227,32 @@ function DashboardPage() {
 						<span className="text-xs text-gray-500 font-mono">Last 365 Days</span>
 					</div>
 					<div className="w-full overflow-x-auto pb-2">
-						{/* We wrap it in a div to ensure it handles width gracefully */}
-						<CalendarHeatmap
-							startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-							endDate={new Date()}
-							values={history}
-							classForValue={(value: any) => {
-								if (!value) {
-									return 'color-empty';
-								}
-								// Scale: 1=Short, 2=Medium, 3=Long, 4=Marathon Session
-								return `color-scale-${Math.min(4, Math.ceil(value.count / 15))}`;
-							}}
-							titleForValue={(value: any) => {
-								return value ? `${value.date}: ${value.count} mins` : 'No practice';
-							}}
-							showWeekdayLabels={true}
-							gutterSize={2} // Spacing between squares
-						/>
+						{history.length > 0 ? (
+							<CalendarHeatmap
+								startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+								endDate={new Date()}
+								values={history}
+								classForValue={(value) => {
+									if (!value) {
+										return 'color-empty';
+									}
+									// Scale: 1=Short, 2=Medium, 3=Long, 4=Marathon Session
+									return `color-scale-${Math.min(4, Math.ceil(value.count / 15))}`;
+								}}
+								titleForValue={(value) => {
+									return value ? `${value.date}: ${value.count} mins` : 'No practice';
+								}}
+								showWeekdayLabels={true}
+								gutterSize={2} // Spacing between squares
+							/>
+						) : (
+							<div className="flex h-32 items-center justify-center text-gray-500">No practice history yet. Start logging sessions to see your consistency streak.</div>
+						)}
 					</div>
 				</Card>
 
 				{/* Chart Section (Spans 2 Rows, 3 Cols) */}
-				<Card className="md:col-span-3 md:row-span-2 min-h-[300px]">
+				<Card className="md:col-span-3 md:row-span-2 min-h-96">
 					<div className="flex justify-between items-center mb-6">
 						<h3 className="text-gray-300 font-semibold">Velocity Trajectory</h3>
 						<span className="text-xs text-primary border border-primary/30 px-2 py-1 rounded bg-primary/10">Last 30 Days</span>
@@ -270,7 +273,7 @@ function DashboardPage() {
 			{/* Floating Metronome Button */}
 			<button
 				onClick={() => setShowMetronome(true)}
-				className="fixed bottom-10 right-10 w-16 h-16 bg-black border border-gray-700 text-primary rounded-full shadow-[0_0_30px_rgba(59,130,246,0.4)] flex items-center justify-center hover:scale-110 hover:border-primary transition-all z-50 group"
+				className="fixed bottom-10 right-10 w-16 h-16 bg-black border border-gray-700 text-primary rounded-full shadow-[0_0_30px_rgba(0,229,255,0.4)] flex items-center justify-center hover:scale-110 hover:border-primary transition-all z-50 group"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 group-hover:animate-pulse">
 					<path
@@ -285,7 +288,7 @@ function DashboardPage() {
 			{showMetronome && (
 				<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
 					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-sm shadow-2xl relative">
-						<button onClick={() => setShowMetronome(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+						<button onClick={() => setShowMetronome(false)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded transition-colors">
 							✕
 						</button>
 						<h2 className="text-xl font-bold text-white mb-6 text-center font-mono">METRONOME</h2>
@@ -300,7 +303,7 @@ function DashboardPage() {
 					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-md shadow-2xl animate-fade-in">
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-2xl font-bold text-white">Log Session</h2>
-							<button onClick={() => setShowLogModal(false)} className="text-gray-400 hover:text-white">
+							<button onClick={() => setShowLogModal(false)} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded transition-colors">
 								✕
 							</button>
 						</div>
@@ -309,7 +312,7 @@ function DashboardPage() {
 								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Rudiment</label>
 								<select
 									required
-									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
 									value={formData.rudimentId}
 									onChange={handleRudimentChange}
 								>
@@ -327,7 +330,7 @@ function DashboardPage() {
 									<input
 										type="number"
 										required
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
 										placeholder="15"
 										value={formData.duration}
 										onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
@@ -338,14 +341,14 @@ function DashboardPage() {
 									<input
 										type="number"
 										required
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
 										placeholder="120"
 										value={formData.tempo}
 										onChange={(e) => setFormData({ ...formData, tempo: e.target.value })}
 									/>
 								</div>
 							</div>
-							<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg mt-4 transition-colors shadow-lg shadow-primary/20">
+							<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold h-10 rounded-lg mt-4 transition-colors shadow-lg shadow-primary/20">
 								Save Session
 							</button>
 						</form>

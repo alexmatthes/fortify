@@ -1,0 +1,22 @@
+---
+description: Rules for Node.js, Database, and API logic.
+globs: backend/**/*.{ts,js}
+---
+
+# Backend & Database
+
+-   Code in services/ dir should always throw user-friendly errors that can be caught.
+-   Use Zod for validation.
+-   Implement proper error handling for AI responses and model switching.
+
+# Supabase & GraphQL (If applicable)
+
+-   Use the Supabase client for database interactions.
+-   Implement Row Level Security (RLS) policies.
+-   Use Genql queries for fetching large datasets efficiently.
+-   Optimize GraphQL queries to fetch only necessary data.
+
+# Security
+
+-   Use environment variables for storing API keys.
+-   Implement proper input sanitization before sending to AI models.

@@ -49,6 +49,7 @@ model PracticeSession {
   date      DateTime @default(now())
   duration  Int      // in minutes
   tempo     Int      // in BPM
+  quality   Int      // rating from 1-4
 
   // This links the session back to its User
   user   User     @relation(fields: [userId], references: [id])

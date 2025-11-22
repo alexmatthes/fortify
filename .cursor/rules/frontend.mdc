@@ -1,0 +1,43 @@
+---
+description: Rules for React, Tailwind, and UI components.
+globs: frontend/**/*.{ts,tsx}
+---
+
+# React & Next.js
+
+-   Use functional components and TypeScript interfaces.
+-   Use declarative JSX.
+-   Use function, not const, for components.
+-   Use Shadcn UI, Radix, and Tailwind CSS for components and styling.
+-   Minimize 'use client', 'useEffect', and 'setState'. Favor React Server Components (RSC).
+-   Wrap client components in Suspense with fallback.
+-   Use dynamic loading for non-critical components.
+-   Optimize images: WebP format, size data, lazy loading.
+
+# Styling (Tailwind)
+
+-   Use Tailwind CSS for styling, following the Utility First approach.
+-   Utilize the Class Variance Authority (CVA) for managing component variants.
+-   Implement responsive design using mobile-first approach.
+
+# Accessibility
+
+-   Ensure interfaces are keyboard navigable.
+-   Implement proper ARIA labels and roles for components.
+-   Ensure color contrast ratios meet WCAG standards.
+
+# UI/UX & Design Principles
+
+-   **Visual Hierarchy:** Use spacing (`gap-`, `p-`, `m-`) and typography (`font-bold`, `text-lg`, `text-gray-400`) to clearly distinguish headers, data, and actions. Important elements should be brightest/largest.
+-   **Feedback is Mandatory:** Every interactive element (button, input) MUST have a `:hover` and `:focus` state.
+-   **Loading States:** Never show a blank screen. Use skeleton loaders or spinners (`animate-spin`) for async data.
+-   **Empty States:** Always handle empty data arrays (e.g., "No sessions logged yet") with a helpful prompt, not just a blank `<div>`.
+-   **Touch Targets:** All clickable elements must be at least `h-10` (40px) or have `p-2` padding for mobile tap targets.
+-   **Consistent Spacing:** Use standard Tailwind spacing values (4, 6, 8, 12). Avoid arbitrary pixels (e.g., `w-[37px]`).
+
+# The "No BS" Aesthetic (Brand Enforcement)
+
+-   **Dark Mode First:** Default background is `bg-dark-bg` (#0f172a).
+-   **Accent Color:** Use Cyan (`text-primary` / `#00E5FF`) for primary actions and data highlights.
+-   **Data Density:** Do not hide data behind clicks unnecessarily. Dashboard cards should be information-dense but legible.
+-   **No Clutter:** Avoid decorative elements that serve no function.

@@ -1,115 +1,207 @@
-import { Response } from 'express';
-import { prisma } from '../lib/prisma';
-import { AuthRequest } from '../middleware/auth';
-import { AuthorizationError } from '../types/errors';
+import { Response } from 'express'
+import { PracticeSession } from '@prisma/client'
+import { prisma } from '../lib/prisma'
+import { AuthRequest } from '../middleware/auth'
+import { AuthorizationError } from '../types/errors'
+
+// Input interfaces
+interface LogSessionInput {
+	rudimentId: string
+	duration: number
+	tempo: number
+	quality: number
+	userId: string
+}
+
+interface GetConsistencyDataInput {
+	userId: string
+}
+
+interface GetAllSessionsInput {
+	userId: string
+}
+
+interface GetDashboardStatsInput {
+	userId: string
+}
+
+// Result interfaces
+interface LogSessionResult {
+	session: PracticeSession
+}
+
+interface GetConsistencyDataResult {
+	history: Array<{ date: string; count: number }>
+}
+
+interface GetAllSessionsResult {
+	sessions: PracticeSession[]
+}
+
+interface GetDashboardStatsResult {
+	totalTime: number
+	fastestTempo: number
+	mostPracticed: string
+}
 
 /**
- * Get consistency data (practice history) for heatmap visualization
+ * Business logic: Log a new practice session
  */
-export const getConsistencyData = async (req: AuthRequest, res: Response) => {
-	if (!req.userId) {
-		throw new AuthorizationError('User ID is required.');
-	}
+async function logSessionLogic(input: LogSessionInput): Promise<LogSessionResult> {
+	if (!input.userId) throw new AuthorizationError('User ID is required.')
 
-	// Fetch all sessions for the user (just date and duration)
+	const session = await prisma.practiceSession.create({
+		data: {
+			duration: input.duration,
+			tempo: input.tempo,
+			quality: input.quality,
+			userId: input.userId,
+			rudimentId: input.rudimentId,
+		},
+	})
+
+	return { session }
+}
+
+/**
+ * Business logic: Get consistency data (practice history) for heatmap visualization
+ */
+async function getConsistencyDataLogic(input: GetConsistencyDataInput): Promise<GetConsistencyDataResult> {
+	if (!input.userId) throw new AuthorizationError('User ID is required.')
+
 	const sessions = await prisma.practiceSession.findMany({
-		where: { userId: req.userId },
+		where: { userId: input.userId },
 		select: { date: true, duration: true },
-	});
+	})
 
-	// Aggregate minutes by date (YYYY-MM-DD)
-	const historyMap: Record<string, number> = {};
+	const historyMap: Record<string, number> = {}
 
 	sessions.forEach((session) => {
-		// Split ISO string to get just the date part (e.g., "2025-11-20")
-		const dateKey = session.date.toISOString().split('T')[0];
+		const dateKey = session.date.toISOString().split('T')[0]
 
 		if (!historyMap[dateKey]) {
-			historyMap[dateKey] = 0;
+			historyMap[dateKey] = 0
 		}
-		historyMap[dateKey] += session.duration;
-	});
+		historyMap[dateKey] += session.duration
+	})
 
-	// Convert to array format for the frontend
 	const history = Object.keys(historyMap).map((date) => ({
 		date,
-		count: historyMap[date], // 'count' = total minutes that day
-	}));
+		count: historyMap[date],
+	}))
 
-	res.status(200).json(history);
-};
-
-/**
- * Log a new practice session
- */
-export const logSession = async (req: AuthRequest, res: Response) => {
-	const { rudimentId, duration, tempo } = req.body;
-
-	if (!req.userId) {
-		throw new AuthorizationError('User ID is required.');
-	}
-
-	const newSession = await prisma.practiceSession.create({
-		data: {
-			duration, // Zod has already validated these are numbers!
-			tempo,
-			userId: req.userId,
-			rudimentId,
-		},
-	});
-	
-	res.status(201).json(newSession);
-};
+	return { history }
+}
 
 /**
- * Get all practice sessions for the authenticated user
+ * Business logic: Get all practice sessions for the authenticated user
  */
-export const getAllSessions = async (req: AuthRequest, res: Response) => {
-	if (!req.userId) {
-		throw new AuthorizationError('User ID is required.');
-	}
+async function getAllSessionsLogic(input: GetAllSessionsInput): Promise<GetAllSessionsResult> {
+	if (!input.userId) throw new AuthorizationError('User ID is required.')
 
 	const sessions = await prisma.practiceSession.findMany({
-		where: { userId: req.userId },
+		where: { userId: input.userId },
 		orderBy: { date: 'desc' },
-	});
-	
-	res.status(200).json(sessions);
-};
+	})
+
+	return { sessions }
+}
 
 /**
- * Get dashboard statistics (total time, fastest tempo, most practiced rudiment)
+ * Business logic: Get dashboard statistics (total time, fastest tempo, most practiced rudiment)
  */
-export const getDashboardStats = async (req: AuthRequest, res: Response) => {
-	if (!req.userId) {
-		throw new AuthorizationError('User ID is required.');
-	}
+async function getDashboardStatsLogic(input: GetDashboardStatsInput): Promise<GetDashboardStatsResult> {
+	if (!input.userId) throw new AuthorizationError('User ID is required.')
 
 	const statsAggregated = await prisma.practiceSession.aggregate({
-		where: { userId: req.userId },
+		where: { userId: input.userId },
 		_sum: { duration: true },
 		_max: { tempo: true },
-	});
+	})
 
 	const statsMostPracticed = await prisma.practiceSession.groupBy({
 		by: ['rudimentId'],
-		where: { userId: req.userId },
+		where: { userId: input.userId },
 		_count: { id: true },
 		orderBy: { _count: { id: 'desc' } },
 		take: 1,
-	});
+	})
 
-	let mostPracticedName = 'N/A';
+	let mostPracticedName = 'N/A'
 	if (statsMostPracticed.length > 0) {
 		const rudiment = await prisma.rudiment.findUnique({
 			where: { id: statsMostPracticed[0].rudimentId },
-		});
-		if (rudiment) mostPracticedName = rudiment.name;
+		})
+		if (rudiment) mostPracticedName = rudiment.name
 	}
 
-	res.status(200).json({
+	return {
 		totalTime: statsAggregated._sum.duration || 0,
 		fastestTempo: statsAggregated._max.tempo || 0,
 		mostPracticed: mostPracticedName,
-	});
-};
+	}
+}
+
+/**
+ * Express handler: Log a new practice session
+ */
+export async function logSession(req: AuthRequest, res: Response) {
+	if (!req.userId) throw new AuthorizationError('User ID is required.')
+
+	const input: LogSessionInput = {
+		rudimentId: req.body.rudimentId,
+		duration: req.body.duration,
+		tempo: req.body.tempo,
+		quality: req.body.quality,
+		userId: req.userId,
+	}
+
+	const result = await logSessionLogic(input)
+	res.status(201).json(result.session)
+}
+
+/**
+ * Express handler: Get consistency data (practice history) for heatmap visualization
+ */
+export async function getConsistencyData(req: AuthRequest, res: Response) {
+	if (!req.userId) throw new AuthorizationError('User ID is required.')
+
+	const input: GetConsistencyDataInput = {
+		userId: req.userId,
+	}
+
+	const result = await getConsistencyDataLogic(input)
+	res.status(200).json(result.history)
+}
+
+/**
+ * Express handler: Get all practice sessions for the authenticated user
+ */
+export async function getAllSessions(req: AuthRequest, res: Response) {
+	if (!req.userId) throw new AuthorizationError('User ID is required.')
+
+	const input: GetAllSessionsInput = {
+		userId: req.userId,
+	}
+
+	const result = await getAllSessionsLogic(input)
+	res.status(200).json(result.sessions)
+}
+
+/**
+ * Express handler: Get dashboard statistics (total time, fastest tempo, most practiced rudiment)
+ */
+export async function getDashboardStats(req: AuthRequest, res: Response) {
+	if (!req.userId) throw new AuthorizationError('User ID is required.')
+
+	const input: GetDashboardStatsInput = {
+		userId: req.userId,
+	}
+
+	const result = await getDashboardStatsLogic(input)
+	res.status(200).json({
+		totalTime: result.totalTime,
+		fastestTempo: result.fastestTempo,
+		mostPracticed: result.mostPracticed,
+	})
+}

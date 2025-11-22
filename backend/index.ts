@@ -1,5 +1,7 @@
 import cors from 'cors';
 import express, { Request, Response } from 'express';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -31,6 +33,30 @@ app.use(
 	})
 );
 
+// Security middleware: Helmet for security headers
+app.use(helmet());
+
+// Rate limiting configuration
+const globalLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 100, // Limit each IP to 100 requests per windowMs
+	message: 'Too many requests from this IP, please try again later.',
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Stricter rate limiter for auth routes
+const authLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 5, // Limit each IP to 5 requests per windowMs
+	message: 'Too many authentication attempts, please try again later.',
+	standardHeaders: true,
+	legacyHeaders: false,
+});
+
+// Apply global rate limiter to all requests
+app.use(globalLimiter);
+
 app.use(express.json());
 
 // Health check endpoint
@@ -39,7 +65,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/rudiments', rudimentRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/dashboard', dashboardRoutes);

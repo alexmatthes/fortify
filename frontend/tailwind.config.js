@@ -10,14 +10,14 @@ module.exports = {
 				mono: ['JetBrains Mono', 'monospace'],
 			},
 			colors: {
-				// Go darker and cooler for the background
-				'dark-bg': '#050505',
+				// Slate-900 background for "No BS" Dark Mode aesthetic
+				'dark-bg': '#0f172a',
 				'card-bg': '#0A0A0A',
 				'card-border': '#202020',
-				// A more electric, vibrant primary blue
-				primary: '#3B82F6',
-				'primary-hover': '#2563EB',
-				'primary-glow': 'rgba(59, 130, 246, 0.5)',
+				// Cyan primary color for "No BS" aesthetic
+				primary: '#00E5FF',
+				'primary-hover': '#00BCD4',
+				'primary-glow': 'rgba(0, 229, 255, 0.5)',
 				// Accent for "success" or "active" states
 				accent: '#10B981',
 			},

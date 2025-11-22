@@ -7,13 +7,34 @@ import { asyncHandler } from '../utils/asyncHandler';
 const router = express.Router();
 
 const signupSchema = z.object({
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters")
+    email: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .email("Invalid email address")
+        .max(255, "Email address is too long"),
+    password: z
+        .string()
+        .trim()
+        .min(8, "Password must be at least 8 characters")
+        .max(128, "Password is too long")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+            "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        )
 });
 
 const loginSchema = z.object({
-    email: z.string().email(),
-    password: z.string()
+    email: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .email("Invalid email address")
+        .max(255, "Email address is too long"),
+    password: z
+        .string()
+        .trim()
+        .max(128, "Password is too long")
 });
 
 router.post('/signup', validate(signupSchema), asyncHandler(authController.signup));

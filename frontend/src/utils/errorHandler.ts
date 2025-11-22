@@ -17,21 +17,21 @@ export const getErrorMessage = (error: unknown): string => {
 		if ('isAxiosError' in error && (error as AxiosError).response) {
 			const axiosError = error as AxiosError<ApiErrorResponse>;
 			const responseData = axiosError.response?.data;
-			
+
 			if (responseData?.message) {
 				return responseData.message;
 			}
-			
+
 			// Handle validation errors
 			if (responseData?.errors && responseData.errors.length > 0) {
 				return responseData.errors.map((e) => e.message).join(', ');
 			}
 		}
-		
+
 		// Fallback to error message
 		return error.message;
 	}
-	
+
 	return 'An unexpected error occurred';
 };
 
@@ -55,7 +55,6 @@ export const getUserFriendlyError = (error: unknown): string => {
 	if (isNetworkError(error)) {
 		return 'Unable to connect to the server. Please check your internet connection.';
 	}
-	
+
 	return getErrorMessage(error);
 };
-
