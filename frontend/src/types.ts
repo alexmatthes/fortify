@@ -30,4 +30,5 @@ export interface SessionFormData {
 	rudimentId: string;
 	duration: string;
 	tempo: string;
+	quality: string;
 }

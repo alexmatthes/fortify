@@ -21,7 +21,12 @@ function DashboardPage() {
 	const [rudiments, setRudiments] = useState<Rudiment[]>([]);
 	const [chartData, setChartData] = useState<Session[]>([]);
 
-	const [formData, setFormData] = useState<SessionFormData>({ rudimentId: '', duration: '', tempo: '' });
+	const [formData, setFormData] = useState<SessionFormData>({
+		rudimentId: '',
+		duration: '',
+		tempo: '',
+		quality: '3', // Add this line
+	});
 
 	const [history, setHistory] = useState<SessionHistory[]>([]);
 
@@ -73,7 +78,9 @@ function DashboardPage() {
 			await api.post('/sessions', formData);
 			toast.success('Practice session logged!');
 			setShowLogModal(false);
-			setFormData({ rudimentId: '', duration: '', tempo: '' });
+
+			// Reset form with default quality
+			setFormData({ rudimentId: '', duration: '', tempo: '', quality: '3' });
 
 			// Refresh data
 			const statsRes = await api.get<DashboardStats>('/dashboard/stats');
