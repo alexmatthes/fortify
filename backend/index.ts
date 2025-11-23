@@ -1,13 +1,14 @@
 import cors from 'cors';
 import express, { Request, Response } from 'express';
-import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
 
 // Import Routes
 import authRoutes from './routes/authRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
+import routineRoutes from './routes/routineRoute';
 import rudimentRoutes from './routes/rudimentRoutes';
 import sessionRoutes from './routes/sessionRoutes';
 
@@ -72,6 +73,8 @@ app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
+
+app.use('/api/routines', routineRoutes);
 
 // Start server
 const server = app.listen(config.port, () => {

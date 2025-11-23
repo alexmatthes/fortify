@@ -25,22 +25,31 @@ model User {
   // and MANY PracticeSessions.
   rudiments Rudiment[]
   sessions  PracticeSession[]
+  routines Routine[]
 }
 
 // This model will become the "Rudiment" table (for screen3)
 model Rudiment {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  category    String?
-  tempoIncrement Int   @default(5)
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  category       String?
+  tempoIncrement Int      @default(2)
+  isStandard     Boolean  @default(false)
+  
+  difficulty     String   @default("Beginner")
+  
+  // Progression Logic
+  parentId       String?
+  parent         Rudiment?  @relation("Progression", fields: [parentId], references: [id])
+  children       Rudiment[] @relation("Progression")
 
-  isStandard  Boolean  @default(false)
-
-  user   User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String?
-
-  sessions PracticeSession[]
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
+  
+  sessions       PracticeSession[]
+  
+  routineItems   RoutineItem[] 
 }
 
 // This model will become the "PracticeSession" table (for screen2)
@@ -58,4 +67,28 @@ model PracticeSession {
   // This links the session to a single Rudiment
   rudiment   Rudiment @relation(fields: [rudimentId], references: [id])
   rudimentId String
+}
+
+model Routine {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  
+  items       RoutineItem[]
+}
+
+model RoutineItem {
+  id          String   @id @default(cuid())
+  order       Int      // 0, 1, 2... (Position in the playlist)
+  duration    Int      // Target duration in minutes
+  
+  routineId   String
+  routine     Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  
+  rudimentId  String
+  rudiment    Rudiment @relation(fields: [rudimentId], references: [id])
 }

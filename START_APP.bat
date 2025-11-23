@@ -1,2 +1,2 @@
 @echo off
-powershell -ExecutionPolicy Bypass -File "%~dp0dev-refresh.ps1"
+powershell -ExecutionPolicy Bypass -File "%~dp0START_SAFE.ps1"

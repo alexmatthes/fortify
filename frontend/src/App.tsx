@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import LandingPage from './pages/LandingPage';
 import LibraryPage from './pages/LibraryPage';
 import LoginPage from './pages/LoginPage';
+import RoutineBuilderPage from './pages/RoutineBuilderPage';
 import SettingsPage from './pages/SettingsPage';
 import SignupPage from './pages/SignupPage';
 
@@ -90,6 +91,14 @@ function App() {
 						<ProtectedRoute>
 							<Navbar />
 							<SettingsPage />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/routines/new"
+					element={
+						<ProtectedRoute>
+							<RoutineBuilderPage />
 						</ProtectedRoute>
 					}
 				/>

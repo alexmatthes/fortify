@@ -48,3 +48,21 @@ export interface BlogPost {
 	body: any; // The raw Portable Text content
 	author?: { name: string }; // Optional author
 }
+
+export interface RoutineItem {
+	id: string; // Local ID for the UI (we'll remove it before sending to DB)
+	rudimentId: string;
+	rudimentName: string;
+	duration: number; // Minutes
+	order: number;
+}
+
+export interface CreateRoutinePayload {
+	name: string;
+	description?: string;
+	items: {
+		rudimentId: string;
+		duration: number;
+		order: number;
+	}[];
+}
