@@ -1,4 +1,5 @@
 import { ArcElement, CategoryScale, Chart as ChartJS, ChartOptions, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import posthog from 'posthog-js';
 import React, { useEffect, useState } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css'; // We will override this in CSS
@@ -100,6 +101,15 @@ function DashboardPage() {
 		e.preventDefault();
 		try {
 			await api.post('/sessions', formData);
+
+			// Capture event with PostHog
+			posthog.capture('session_logged', {
+				rudiment_id: formData.rudimentId,
+				tempo: Number(formData.tempo),
+				duration: Number(formData.duration),
+				quality: Number(formData.quality),
+			});
+
 			toast.success('Practice session logged!');
 			setShowLogModal(false);
 
