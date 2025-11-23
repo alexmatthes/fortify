@@ -79,20 +79,25 @@ const LandingPage: React.FC = () => {
 							</Link>
 						</div>
 						<div className="grid md:grid-cols-3 gap-6">
-							{latestPosts.map((post) => (
-								<Link key={post.slug.current} to={`/blog/${post.slug.current}`} className="group block bg-card-bg border border-gray-800 rounded-xl overflow-hidden hover:border-gray-600 transition-all">
-									{post.mainImage && (
-										<div className="h-40 overflow-hidden">
-											<img src={post.mainImage.asset.url} alt={post.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+							{latestPosts.map((post) => {
+								// SAFETY CHECK: If the post is missing a slug, skip it to prevent a crash
+								if (!post.slug || !post.slug.current) return null;
+
+								return (
+									<Link key={post.slug.current} to={`/blog/${post.slug.current}`} className="group block bg-card-bg border border-gray-800 rounded-xl overflow-hidden hover:border-gray-600 transition-all">
+										{post.mainImage && (
+											<div className="h-40 overflow-hidden">
+												<img src={post.mainImage.asset.url} alt={post.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+											</div>
+										)}
+										<div className="p-5">
+											<p className="text-xs text-gray-500 mb-2">{new Date(post.publishedAt).toLocaleDateString()}</p>
+											<h3 className="text-lg font-bold mb-2 leading-tight group-hover:text-primary transition-colors">{post.title}</h3>
+											<p className="text-sm text-gray-400 line-clamp-3">{post.excerpt}</p>
 										</div>
-									)}
-									<div className="p-5">
-										<p className="text-xs text-gray-500 mb-2">{new Date(post.publishedAt).toLocaleDateString()}</p>
-										<h3 className="text-lg font-bold mb-2 leading-tight group-hover:text-primary transition-colors">{post.title}</h3>
-										<p className="text-sm text-gray-400 line-clamp-3">{post.excerpt}</p>
-									</div>
-								</Link>
-							))}
+									</Link>
+								);
+							})}
 						</div>
 					</section>
 				)}
