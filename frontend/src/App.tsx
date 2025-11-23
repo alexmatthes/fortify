@@ -4,6 +4,8 @@ import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'; // Added useLocation
 
 // Pages
+import BlogIndexPage from './pages/BlogIndexPage';
+import BlogPostPage from './pages/BlogPostPage';
 import DashboardPage from './pages/DashboardPage';
 import LandingPage from './pages/LandingPage';
 import LibraryPage from './pages/LibraryPage';
@@ -91,6 +93,9 @@ function App() {
 						</ProtectedRoute>
 					}
 				/>
+
+				<Route path="/blog" element={<BlogIndexPage />} />
+				<Route path="/blog/:slug" element={<BlogPostPage />} />
 			</Routes>
 		</BrowserRouter>
 	);
