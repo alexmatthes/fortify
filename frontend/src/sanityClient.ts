@@ -1,8 +1,8 @@
-import { createClient } from '@sanity/client';
+import { createClient, type SanityClient } from '@sanity/client';
 
-export const client = createClient({
-	projectId: 'nu9cbkjh', // <--- MAKE SURE THIS IS YOUR REAL ID
+export const client: SanityClient = createClient({
+	projectId: 'nu9cbkjh', // <--- RE-PASTE YOUR ID HERE
 	dataset: 'production',
 	useCdn: true,
-	apiVersion: '2025-11-23',
+	apiVersion: '2023-05-03',
 });
