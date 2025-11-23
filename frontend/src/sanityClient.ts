@@ -10,5 +10,5 @@ export const client = createClient({
 	projectId: 'nu9cbkjh',
 	dataset: 'production',
 	useCdn: true,
-	apiVersion: '2023-05-03',
+	apiVersion: '2025-11-23',
 }) as unknown as FixedSanityClient;
