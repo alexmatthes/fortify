@@ -71,7 +71,7 @@ function LibraryPage() {
 
 			{/* Filters */}
 			<div className="flex gap-2 mb-6">
-				{['All', 'Rolls', 'Diddles', 'Flams', 'Drags'].map((filter) => (
+				{['All', 'Roll', 'Diddle', 'Flam', 'Drag'].map((filter) => (
 					<button key={filter} className="px-4 py-1.5 rounded-full bg-card-bg border border-gray-700 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
 						{filter}
 					</button>
@@ -120,7 +120,7 @@ function LibraryPage() {
 										<td className="p-4">
 											<span
 												className={`px-3 py-1 rounded-full text-xs font-medium border ${
-													rudiment.category === 'Rolls'
+													rudiment.category === 'Roll'
 														? 'bg-blue-900/30 text-blue-200 border-blue-800'
 														: rudiment.category === 'Diddles'
 														? 'bg-green-900/30 text-green-200 border-green-800'
@@ -187,11 +187,11 @@ function LibraryPage() {
 									onChange={(e) => setNewRudiment({ ...newRudiment, category: e.target.value })}
 								>
 									<option value="">Select a category...</option>
-									<option value="Rolls">Rolls</option>
-									<option value="Diddles">Diddles</option>
-									<option value="Flams">Flams</option>
-									<option value="Drags">Drags</option>
-									<option value="Hybrids">Hybrids</option>
+									<option value="Roll">Roll</option>
+									<option value="Diddle">Diddle</option>
+									<option value="Flam">Flam</option>
+									<option value="Drag">Drag</option>
+									<option value="Hybrid">Hybrid</option>
 								</select>
 							</div>
 
