@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
+import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../types/errors';
 
@@ -7,12 +7,7 @@ import { AppError } from '../types/errors';
  * Centralized error handling middleware
  * Standardizes error responses and handles different error types
  */
-export const errorHandler = (
-	err: Error | AppError,
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+export const errorHandler = (err: Error | AppError, req: Request, res: Response, next: NextFunction) => {
 	// If response already sent, delegate to default Express error handler
 	if (res.headersSent) {
 		return next(err);
@@ -45,6 +40,11 @@ export const errorHandler = (
 				message: 'A record with this information already exists.',
 			});
 		}
+		if (err.code === 'P2003') {
+			return res.status(400).json({
+				message: 'Invalid reference. The associated record (e.g. Rudiment) may not exist.',
+			});
+		}
 		// Handle record not found
 		if (err.code === 'P2025') {
 			return res.status(404).json({
@@ -75,6 +75,3 @@ export const errorHandler = (
 		...(process.env.NODE_ENV === 'development' && { error: err.message }),
 	});
 };
-
-
-

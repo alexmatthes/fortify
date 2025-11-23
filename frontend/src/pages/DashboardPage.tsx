@@ -11,6 +11,15 @@ import { DashboardStats, Rudiment, Session, SessionFormData, SessionHistory } fr
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
+interface VelocityPoint {
+	date: string;
+	tempo: number;
+}
+interface HeatmapData {
+	date: string;
+	count: number;
+}
+
 function DashboardPage() {
 	const [showLogModal, setShowLogModal] = useState(false);
 	const [showMetronome, setShowMetronome] = useState(false);
@@ -30,22 +39,39 @@ function DashboardPage() {
 
 	const [history, setHistory] = useState<SessionHistory[]>([]);
 
+	const [velocityData, setVelocityData] = useState<VelocityPoint[]>([]);
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const [statsRes, rudimentsRes, sessionsRes, historyRes] = await Promise.all([
+				const [statsRes, rudimentsRes, velocityRes, historyRes] = await Promise.all([
 					api.get<DashboardStats>('/dashboard/stats'),
 					api.get<Rudiment[]>('/rudiments'),
-					api.get<Session[]>('/sessions'),
-					api.get<SessionHistory[]>('/sessions/history'),
+					api.get<VelocityPoint[]>('/sessions/velocity'), // Call new endpoint
+					api.get<{ date: string; duration: number }[]>('/sessions/history'), // Get raw sessions
 				]);
+
 				setStats(statsRes.data);
 				setRudiments(rudimentsRes.data);
-				setChartData(sessionsRes.data);
+				setVelocityData(velocityRes.data);
+
+				// FIX TIMEZONE BUG: Aggregate locally using local date strings
+				const historyMap: Record<string, number> = {};
+				historyRes.data.forEach((session) => {
+					// This uses the browser's local timezone to determine "today"
+					const localDate = new Date(session.date).toLocaleDateString('en-CA'); // YYYY-MM-DD
+					historyMap[localDate] = (historyMap[localDate] || 0) + session.duration;
+				});
+
+				const aggregatedHistory = Object.entries(historyMap).map(([date, count]) => ({
+					date,
+					count,
+				}));
+				setHistory(aggregatedHistory);
+
 				setLoading(false);
-				setHistory(historyRes.data);
 			} catch (error) {
-				console.error('Error fetching dashboard data', error);
+				console.error(error);
 				setLoading(false);
 			}
 		};
@@ -100,14 +126,12 @@ function DashboardPage() {
 
 	// Prepare Line Chart Data (Progress over time)
 	// We reverse the array so the oldest session is on the left
-	const sortedSessions = [...chartData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
 	const lineChartData = {
-		labels: sortedSessions.map((s) => new Date(s.date).toLocaleDateString()),
+		labels: velocityData.map((s) => new Date(s.date).toLocaleDateString()),
 		datasets: [
 			{
 				label: 'Tempo (BPM)',
-				data: sortedSessions.map((s) => s.tempo),
+				data: velocityData.map((s) => s.tempo),
 				borderColor: '#00E5FF', // Cyan (Primary)
 				backgroundColor: 'rgba(0, 229, 255, 0.1)', // Faint glow
 				tension: 0.4, // Smooth curves

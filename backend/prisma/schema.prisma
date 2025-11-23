@@ -33,11 +33,11 @@ model Rudiment {
   name        String
   description String?
   category    String?
-  tempoIncrement Int   @default(2)
+  tempoIncrement Int   @default(5)
 
   isStandard  Boolean  @default(false)
 
-  user   User?    @relation(fields: [userId], references: [id])
+  user   User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String?
 
   sessions PracticeSession[]

@@ -14,6 +14,7 @@ import SignupPage from './pages/SignupPage';
 // Components
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 
 import './App.css';
 
@@ -73,6 +74,22 @@ function App() {
 							<Navbar />
 							<SettingsPage />
 						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/login"
+					element={
+						<PublicRoute>
+							<LoginPage />
+						</PublicRoute>
+					}
+				/>
+				<Route
+					path="/signup"
+					element={
+						<PublicRoute>
+							<SignupPage />
+						</PublicRoute>
 					}
 				/>
 			</Routes>

@@ -16,6 +16,7 @@ const sessionSchema = z.object({
 });
 
 router.get('/history', auth, asyncHandler(sessionController.getConsistencyData));
+router.get('/velocity', auth, asyncHandler(sessionController.getVelocityData));
 router.post('/', auth, validate(sessionSchema), asyncHandler(sessionController.logSession));
 router.get('/', auth, asyncHandler(sessionController.getAllSessions));
 
