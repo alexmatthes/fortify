@@ -389,17 +389,31 @@ function DashboardPage() {
 							</div>
 
 							<div>
-								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Quality</label>
-								<select
-									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
-									value={formData.quality}
-									onChange={(e) => setFormData({ ...formData, quality: e.target.value })}
-								>
-									<option value="1">1 - Sloppy</option>
-									<option value="2">2 - Okay</option>
-									<option value="3">3 - Good</option>
-									<option value="4">4 - Flawless</option>
-								</select>
+								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Vibe Check</label>
+								<div className="grid grid-cols-4 gap-2">
+									{[
+										{ val: '1', label: 'Sloppy', activeClass: 'bg-red-500/20 border-red-500 text-red-400 ring-1 ring-red-500' },
+										{ val: '2', label: 'Muddy', activeClass: 'bg-orange-500/20 border-orange-500 text-orange-400 ring-1 ring-orange-500' },
+										{ val: '3', label: 'Good', activeClass: 'bg-yellow-500/20 border-yellow-500 text-yellow-400 ring-1 ring-yellow-500' },
+										{ val: '4', label: 'Solid', activeClass: 'bg-green-500/20 border-green-500 text-green-400 ring-1 ring-green-500' },
+									].map((option) => (
+										<button
+											key={option.val}
+											type="button" // Crucial: prevents form submission when clicked
+											onClick={() => setFormData({ ...formData, quality: option.val })}
+											className={`
+                    h-12 rounded-lg border text-sm font-bold transition-all duration-200
+                    ${
+						formData.quality === option.val
+							? option.activeClass // Active State
+							: 'border-gray-700 bg-dark-bg text-gray-500 hover:border-gray-500 hover:text-gray-300' // Inactive State
+					}
+                `}
+										>
+											{option.label}
+										</button>
+									))}
+								</div>
 							</div>
 
 							<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold h-10 rounded-lg mt-4 transition-colors shadow-lg shadow-primary/20">
