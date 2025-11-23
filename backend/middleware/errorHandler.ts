@@ -34,24 +34,22 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
 
 	// Handle Prisma errors
 	if (err instanceof Prisma.PrismaClientKnownRequestError) {
-		// Handle unique constraint violations
 		if (err.code === 'P2002') {
 			return res.status(400).json({
 				message: 'A record with this information already exists.',
 			});
 		}
+		// FIX: Handle Foreign Key Constraint Failed
 		if (err.code === 'P2003') {
 			return res.status(400).json({
 				message: 'Invalid reference. The associated record (e.g. Rudiment) may not exist.',
 			});
 		}
-		// Handle record not found
 		if (err.code === 'P2025') {
 			return res.status(404).json({
 				message: 'Resource not found.',
 			});
 		}
-		// Generic Prisma error
 		return res.status(400).json({
 			message: 'Database operation failed.',
 		});

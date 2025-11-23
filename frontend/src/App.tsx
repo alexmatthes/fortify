@@ -43,10 +43,25 @@ function App() {
 			/>
 
 			<Routes>
-				{/* Public Routes */}
+				{/* Wrap Public Routes */}
 				<Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
-				<Route path="/login" element={<LoginPage />} />
-				<Route path="/signup" element={<SignupPage />} />
+
+				<Route
+					path="/login"
+					element={
+						<PublicRoute>
+							<LoginPage />
+						</PublicRoute>
+					}
+				/>
+				<Route
+					path="/signup"
+					element={
+						<PublicRoute>
+							<SignupPage />
+						</PublicRoute>
+					}
+				/>
 
 				{/* Protected Routes */}
 				<Route
@@ -74,22 +89,6 @@ function App() {
 							<Navbar />
 							<SettingsPage />
 						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/login"
-					element={
-						<PublicRoute>
-							<LoginPage />
-						</PublicRoute>
-					}
-				/>
-				<Route
-					path="/signup"
-					element={
-						<PublicRoute>
-							<SignupPage />
-						</PublicRoute>
 					}
 				/>
 			</Routes>

@@ -15,10 +15,6 @@ interface VelocityPoint {
 	date: string;
 	tempo: number;
 }
-interface HeatmapData {
-	date: string;
-	count: number;
-}
 
 function DashboardPage() {
 	const [showLogModal, setShowLogModal] = useState(false);
@@ -47,19 +43,19 @@ function DashboardPage() {
 				const [statsRes, rudimentsRes, velocityRes, historyRes] = await Promise.all([
 					api.get<DashboardStats>('/dashboard/stats'),
 					api.get<Rudiment[]>('/rudiments'),
-					api.get<VelocityPoint[]>('/sessions/velocity'), // Call new endpoint
-					api.get<{ date: string; duration: number }[]>('/sessions/history'), // Get raw sessions
+					api.get<VelocityPoint[]>('/sessions/velocity'), // New lightweight endpoint
+					api.get<{ date: string; duration: number }[]>('/sessions/history'), // Raw sessions
 				]);
 
 				setStats(statsRes.data);
 				setRudiments(rudimentsRes.data);
 				setVelocityData(velocityRes.data);
 
-				// FIX TIMEZONE BUG: Aggregate locally using local date strings
+				// FIX: Aggregate history locally to respect user timezone
 				const historyMap: Record<string, number> = {};
 				historyRes.data.forEach((session) => {
-					// This uses the browser's local timezone to determine "today"
-					const localDate = new Date(session.date).toLocaleDateString('en-CA'); // YYYY-MM-DD
+					// Use "en-CA" to get YYYY-MM-DD format in local time
+					const localDate = new Date(session.date).toLocaleDateString('en-CA');
 					historyMap[localDate] = (historyMap[localDate] || 0) + session.duration;
 				});
 
@@ -71,7 +67,7 @@ function DashboardPage() {
 
 				setLoading(false);
 			} catch (error) {
-				console.error(error);
+				console.error('Error fetching dashboard data', error);
 				setLoading(false);
 			}
 		};
@@ -132,9 +128,9 @@ function DashboardPage() {
 			{
 				label: 'Tempo (BPM)',
 				data: velocityData.map((s) => s.tempo),
-				borderColor: '#00E5FF', // Cyan (Primary)
-				backgroundColor: 'rgba(0, 229, 255, 0.1)', // Faint glow
-				tension: 0.4, // Smooth curves
+				borderColor: '#00E5FF',
+				backgroundColor: 'rgba(0, 229, 255, 0.1)',
+				tension: 0.4,
 				fill: true,
 				pointBackgroundColor: '#00E5FF',
 				pointBorderColor: '#fff',

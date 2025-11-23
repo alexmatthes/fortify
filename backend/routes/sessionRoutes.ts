@@ -9,14 +9,13 @@ const router = express.Router();
 
 const sessionSchema = z.object({
 	rudimentId: z.string().trim().cuid('Invalid Rudiment ID'),
-	// z.preprocess handles the "string to number" conversion from JSON
-	duration: z.preprocess((val) => Number(val), z.number().positive('Duration must be positive').max(1440, 'Duration cannot exceed 1440 minutes (24 hours)')),
+	duration: z.preprocess((val) => Number(val), z.number().positive('Duration must be positive').max(1440, 'Duration cannot exceed 1440 minutes')),
 	tempo: z.preprocess((val) => Number(val), z.number().min(30).max(300, 'Tempo out of range')),
 	quality: z.preprocess((val) => Number(val), z.number().int().min(1).max(4, 'Quality rating must be between 1 and 4')),
 });
 
 router.get('/history', auth, asyncHandler(sessionController.getConsistencyData));
-router.get('/velocity', auth, asyncHandler(sessionController.getVelocityData));
+router.get('/velocity', auth, asyncHandler(sessionController.getVelocityData)); // NEW ROUTE
 router.post('/', auth, validate(sessionSchema), asyncHandler(sessionController.logSession));
 router.get('/', auth, asyncHandler(sessionController.getAllSessions));
 

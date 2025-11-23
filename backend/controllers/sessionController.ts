@@ -31,11 +31,12 @@ interface LogSessionResult {
 }
 
 interface GetConsistencyDataResult {
-	history: Array<{ date: string; count: number }>;
+	history: Array<{ date: Date; duration: number }>; // Changed to return raw session data
 }
 
 interface GetAllSessionsResult {
 	sessions: PracticeSession[];
+	pagination: { page: number; limit: number; total: number; totalPages: number };
 }
 
 interface GetDashboardStatsResult {
@@ -65,6 +66,7 @@ async function logSessionLogic(input: LogSessionInput): Promise<LogSessionResult
 
 /**
  * Business logic: Get consistency data (practice history) for heatmap visualization
+ * FIX: Returns raw data so frontend can handle local timezones
  */
 async function getConsistencyDataLogic(input: GetConsistencyDataInput): Promise<GetConsistencyDataResult> {
 	if (!input.userId) throw new AuthorizationError('User ID is required.');
@@ -74,41 +76,37 @@ async function getConsistencyDataLogic(input: GetConsistencyDataInput): Promise<
 		select: { date: true, duration: true },
 	});
 
-	const historyMap: Record<string, number> = {};
-
-	sessions.forEach((session) => {
-		const dateKey = session.date.toISOString().split('T')[0];
-
-		if (!historyMap[dateKey]) {
-			historyMap[dateKey] = 0;
-		}
-		historyMap[dateKey] += session.duration;
-	});
-
-	const history = Object.keys(historyMap).map((date) => ({
-		date,
-		count: historyMap[date],
-	}));
-
-	return { history };
+	// We return the raw list now. Aggregation happens on the frontend.
+	return { history: sessions };
 }
 
 /**
  * Business logic: Get all practice sessions for the authenticated user
+ * FIX: Added pagination logic
  */
-async function getAllSessionsLogic(input: GetAllSessionsInput): Promise<GetAllSessionsResult> {
+async function getAllSessionsLogic(input: GetAllSessionsInput, page: number = 1, limit: number = 20): Promise<GetAllSessionsResult> {
 	if (!input.userId) throw new AuthorizationError('User ID is required.');
+
+	const skip = (page - 1) * limit;
 
 	const sessions = await prisma.practiceSession.findMany({
 		where: { userId: input.userId },
 		orderBy: { date: 'desc' },
+		take: limit,
+		skip: skip,
+		include: { rudiment: true },
 	});
 
-	return { sessions };
+	const total = await prisma.practiceSession.count({ where: { userId: input.userId } });
+
+	return {
+		sessions,
+		pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+	};
 }
 
 /**
- * Business logic: Get dashboard statistics (total time, fastest tempo, most practiced rudiment)
+ * Business logic: Get dashboard statistics
  */
 async function getDashboardStatsLogic(input: GetDashboardStatsInput): Promise<GetDashboardStatsResult> {
 	if (!input.userId) throw new AuthorizationError('User ID is required.');
@@ -161,48 +159,38 @@ export async function logSession(req: AuthRequest, res: Response) {
 }
 
 /**
- * Express handler: Get consistency data (practice history) for heatmap visualization
+ * Express handler: Get consistency data
  */
 export const getConsistencyData = async (req: AuthRequest, res: Response) => {
 	if (!req.userId) throw new AuthorizationError('User ID is required.');
 
-	const sessions = await prisma.practiceSession.findMany({
-		where: { userId: req.userId },
-		select: { date: true, duration: true }, // Only fetch needed fields
-	});
+	const input: GetConsistencyDataInput = {
+		userId: req.userId,
+	};
 
-	// Return raw list. Aggregation moves to Frontend.
-	res.status(200).json(sessions);
+	const result = await getConsistencyDataLogic(input);
+	res.status(200).json(result.history);
 };
 
 /**
- * Express handler: Get all practice sessions for the authenticated user
+ * Express handler: Get all practice sessions (Paginated)
  */
 export const getAllSessions = async (req: AuthRequest, res: Response) => {
 	if (!req.userId) throw new AuthorizationError('User ID is required.');
 
 	const page = parseInt(req.query.page as string) || 1;
 	const limit = parseInt(req.query.limit as string) || 20;
-	const skip = (page - 1) * limit;
 
-	const sessions = await prisma.practiceSession.findMany({
-		where: { userId: req.userId },
-		orderBy: { date: 'desc' },
-		take: limit,
-		skip: skip,
-		include: { rudiment: true }, // Include rudiment name for the UI
-	});
+	const input: GetAllSessionsInput = {
+		userId: req.userId,
+	};
 
-	const total = await prisma.practiceSession.count({ where: { userId: req.userId } });
-
-	res.status(200).json({
-		data: sessions,
-		pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-	});
+	const result = await getAllSessionsLogic(input, page, limit);
+	res.status(200).json(result); // Returns { data: sessions, pagination: ... }
 };
 
 /**
- * Lightweight endpoint for the Line Chart.
+ * NEW Express Handler: Get Velocity Data (Lightweight)
  */
 export const getVelocityData = async (req: AuthRequest, res: Response) => {
 	if (!req.userId) throw new AuthorizationError('User ID is required.');
@@ -217,7 +205,7 @@ export const getVelocityData = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Express handler: Get dashboard statistics (total time, fastest tempo, most practiced rudiment)
+ * Express handler: Get dashboard statistics
  */
 export async function getDashboardStats(req: AuthRequest, res: Response) {
 	if (!req.userId) throw new AuthorizationError('User ID is required.');
