@@ -288,17 +288,21 @@ async function main() {
 			},
 		});
 
-		// 2. Create if missing, OR Update if exists
 		if (!existing) {
+			// 2. Create if it doesn't exist
 			await prisma.rudiment.create({
 				data: r,
 			});
 			console.log(`Created: ${r.name}`);
 		} else {
-			// This ensures your new categories/descriptions apply to existing items
+			// 3. UPDATE if it does exist (This is the part you were missing!)
 			await prisma.rudiment.update({
 				where: { id: existing.id },
-				data: r,
+				data: {
+					category: r.category,
+					description: r.description,
+					tempoIncrement: r.tempoIncrement,
+				},
 			});
 			console.log(`Updated: ${r.name}`);
 		}
