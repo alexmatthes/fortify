@@ -1,8 +1,14 @@
-import { createClient, type SanityClient } from '@sanity/client';
+import { createClient } from '@sanity/client';
 
-export const client: SanityClient = createClient({
-	projectId: 'nu9cbkjh', // <--- RE-PASTE YOUR ID HERE
+// Define a "fixed" interface that forces the correct signature for fetch
+interface FixedSanityClient {
+	fetch<T = any>(query: string, params?: Record<string, any>): Promise<T>;
+}
+
+// Cast the created client to our fixed interface to resolve the TS2554 error
+export const client = createClient({
+	projectId: 'nu9cbkjh',
 	dataset: 'production',
 	useCdn: true,
 	apiVersion: '2023-05-03',
-});
+}) as unknown as FixedSanityClient;
