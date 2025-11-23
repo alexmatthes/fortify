@@ -40,18 +40,20 @@ function DashboardPage() {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const [statsRes, rudimentsRes, velocityRes, historyRes] = await Promise.all([
+				const [statsRes, rudimentsRes, velocityRes, historyRes, sessionRes] = await Promise.all([
 					api.get<DashboardStats>('/dashboard/stats'),
 					api.get<Rudiment[]>('/rudiments'),
-					api.get<VelocityPoint[]>('/sessions/velocity'), // New lightweight endpoint
-					api.get<{ date: string; duration: number }[]>('/sessions/history'), // Raw sessions
+					api.get<VelocityPoint[]>('/sessions/velocity'),
+					api.get<{ date: string; duration: number }[]>('/sessions/history'),
+					api.get<any>('/sessions?limit=100'), // Fetch sessions for the Doughnut chart
 				]);
 
 				setStats(statsRes.data);
 				setRudiments(rudimentsRes.data);
 				setVelocityData(velocityRes.data);
+				setChartData(sessionRes.data.sessions);
 
-				// FIX: Aggregate history locally to respect user timezone
+				// Aggregate history locally to respect user timezone
 				const historyMap: Record<string, number> = {};
 				historyRes.data.forEach((session) => {
 					// Use "en-CA" to get YYYY-MM-DD format in local time
@@ -106,9 +108,9 @@ function DashboardPage() {
 
 			// Refresh data
 			const statsRes = await api.get<DashboardStats>('/dashboard/stats');
-			const sessionRes = await api.get<Session[]>('/sessions');
+			const sessionRes = await api.get<any>('/sessions');
 			setStats(statsRes.data);
-			setChartData(sessionRes.data);
+			setChartData(sessionRes.data.sessions);
 		} catch (error) {
 			toast.error('Failed to log session.');
 		}
