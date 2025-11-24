@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
-import Metronome from '../components/Metronome';
+import HeadlessMetronome from '../components/HeadlessMetronome';
 import { Routine } from '../types';
 
 const SessionPage = () => {
@@ -160,12 +160,7 @@ const SessionPage = () => {
 			</main>
 
 			{/* Metronome (Hidden Audio Engine) */}
-			<Metronome
-				bpm={isRest ? 0 : currentItem.targetTempo}
-				isPlaying={isPlaying && !isRest}
-				mute={isRest}
-				headless={true} // <--- ADD THIS LINE
-			/>
+			<HeadlessMetronome bpm={isRest ? 0 : currentItem.targetTempo} isPlaying={isPlaying && !isRest} mute={isRest} />
 		</div>
 	);
 };
