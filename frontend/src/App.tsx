@@ -1,7 +1,7 @@
 import posthog from 'posthog-js';
-import React, { useEffect } from 'react'; // Added useEffect
+import React, { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'; // Added useLocation
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 // Pages
 import BlogIndexPage from './pages/BlogIndexPage';
@@ -11,6 +11,7 @@ import LandingPage from './pages/LandingPage';
 import LibraryPage from './pages/LibraryPage';
 import LoginPage from './pages/LoginPage';
 import RoutineBuilderPage from './pages/RoutineBuilderPage';
+import SessionPage from './pages/SessionPage'; // <--- ADD THIS IMPORT
 import SettingsPage from './pages/SettingsPage';
 import SignupPage from './pages/SignupPage';
 
@@ -99,6 +100,14 @@ function App() {
 					element={
 						<ProtectedRoute>
 							<RoutineBuilderPage />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/session/:routineId"
+					element={
+						<ProtectedRoute>
+							<SessionPage />
 						</ProtectedRoute>
 					}
 				/>

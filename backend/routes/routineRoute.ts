@@ -25,6 +25,7 @@ const createRoutineSchema = z.object({
 
 router.post('/', auth, validate(createRoutineSchema), routineController.createRoutine);
 router.get('/', auth, routineController.getRoutines);
+router.get('/:id', auth, routineController.getRoutineById);
 router.delete('/:id', auth, routineController.deleteRoutine);
 
 export default router;

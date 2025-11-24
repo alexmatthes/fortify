@@ -45,15 +45,16 @@ export interface BlogPost {
 	};
 	publishedAt: string;
 	excerpt: string;
-	body: any; // The raw Portable Text content
-	author?: { name: string }; // Optional author
+	body: any;
+	author?: { name: string };
 }
 
+// Used for the Drag-and-Drop Builder
 export interface RoutineItem {
-	id: string; // Local ID for the UI (we'll remove it before sending to DB)
+	id: string;
 	rudimentId: string;
 	rudimentName: string;
-	duration: number; // Minutes
+	duration: number;
 	order: number;
 }
 
@@ -64,5 +65,22 @@ export interface CreateRoutinePayload {
 		rudimentId: string;
 		duration: number;
 		order: number;
+	}[];
+}
+
+// --- ADD THIS NEW INTERFACE ---
+// Used when fetching a full routine from the API
+export interface Routine {
+	id: string;
+	name: string;
+	description?: string;
+	items: {
+		id: string;
+		order: number;
+		duration: number;
+		rudiment: Rudiment; // Nested full rudiment object
+		targetTempo: number;
+		tempoMode: 'MANUAL' | 'SMART';
+		restDuration: number;
 	}[];
 }

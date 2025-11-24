@@ -2,13 +2,14 @@ import { ArcElement, CategoryScale, Chart as ChartJS, ChartOptions, Legend, Line
 import posthog from 'posthog-js';
 import React, { useEffect, useState } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
-import 'react-calendar-heatmap/dist/styles.css'; // We will override this in CSS
+import 'react-calendar-heatmap/dist/styles.css';
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import Card from '../components/Card';
 import Metronome from '../components/Metronome';
-import { DashboardStats, Rudiment, Session, SessionFormData, SessionHistory } from '../types';
+import { DashboardStats, Routine, Rudiment, Session, SessionFormData, SessionHistory } from '../types';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
@@ -18,55 +19,50 @@ interface VelocityPoint {
 }
 
 function DashboardPage() {
+	const navigate = useNavigate();
 	const [showLogModal, setShowLogModal] = useState(false);
 	const [showMetronome, setShowMetronome] = useState(false);
 	const [loading, setLoading] = useState(true);
 
-	// 1. Typed Data States
+	// 1. Data States
 	const [stats, setStats] = useState<DashboardStats>({ totalTime: 0, fastestTempo: 0, mostPracticed: 'N/A' });
 	const [rudiments, setRudiments] = useState<Rudiment[]>([]);
 	const [chartData, setChartData] = useState<Session[]>([]);
+	const [routines, setRoutines] = useState<Routine[]>([]);
+	const [history, setHistory] = useState<SessionHistory[]>([]);
+	const [velocityData, setVelocityData] = useState<VelocityPoint[]>([]);
 
 	const [formData, setFormData] = useState<SessionFormData>({
 		rudimentId: '',
 		duration: '',
 		tempo: '',
-		quality: '3', // Add this line
+		quality: '3',
 	});
-
-	const [history, setHistory] = useState<SessionHistory[]>([]);
-
-	const [velocityData, setVelocityData] = useState<VelocityPoint[]>([]);
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const [statsRes, rudimentsRes, velocityRes, historyRes, sessionRes] = await Promise.all([
+				const [statsRes, rudimentsRes, velocityRes, historyRes, sessionRes, routinesRes] = await Promise.all([
 					api.get<DashboardStats>('/dashboard/stats'),
 					api.get<Rudiment[]>('/rudiments'),
 					api.get<VelocityPoint[]>('/sessions/velocity'),
 					api.get<{ date: string; duration: number }[]>('/sessions/history'),
-					api.get<any>('/sessions?limit=100'), // Fetch sessions for the Doughnut chart
+					api.get<any>('/sessions?limit=100'),
+					api.get<Routine[]>('/routines'),
 				]);
 
 				setStats(statsRes.data);
 				setRudiments(rudimentsRes.data);
 				setVelocityData(velocityRes.data);
 				setChartData(sessionRes.data.sessions);
+				setRoutines(routinesRes.data);
 
-				// Aggregate history locally to respect user timezone
 				const historyMap: Record<string, number> = {};
 				historyRes.data.forEach((session) => {
-					// Use "en-CA" to get YYYY-MM-DD format in local time
 					const localDate = new Date(session.date).toLocaleDateString('en-CA');
 					historyMap[localDate] = (historyMap[localDate] || 0) + session.duration;
 				});
-
-				const aggregatedHistory = Object.entries(historyMap).map(([date, count]) => ({
-					date,
-					count,
-				}));
-				setHistory(aggregatedHistory);
+				setHistory(Object.entries(historyMap).map(([date, count]) => ({ date, count })));
 
 				setLoading(false);
 			} catch (error) {
@@ -77,20 +73,15 @@ function DashboardPage() {
 		fetchData();
 	}, []);
 
-	// 2. Typed "Smart Tempo" Handler
+	// 2. Actions
 	const handleRudimentChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const selectedId = e.target.value;
 		setFormData((prev) => ({ ...prev, rudimentId: selectedId }));
-
 		if (!selectedId) return;
-
 		try {
 			const response = await api.get<{ suggested_tempo: number }>(`/rudiments/${selectedId}/suggested-tempo`);
 			if (response.data.suggested_tempo) {
-				setFormData((prev) => ({
-					...prev,
-					tempo: String(response.data.suggested_tempo), // Inputs expect strings
-				}));
+				setFormData((prev) => ({ ...prev, tempo: String(response.data.suggested_tempo) }));
 			}
 		} catch (error) {
 			console.error('Could not fetch suggested tempo');
@@ -101,39 +92,32 @@ function DashboardPage() {
 		e.preventDefault();
 		try {
 			await api.post('/sessions', formData);
-
-			// Capture event with PostHog
-			posthog.capture('session_logged', {
-				rudiment_id: formData.rudimentId,
-				tempo: Number(formData.tempo),
-				duration: Number(formData.duration),
-				quality: Number(formData.quality),
-			});
-
+			posthog.capture('session_logged', { ...formData });
 			toast.success('Practice session logged!');
 			setShowLogModal(false);
-
-			// Reset form with default quality
 			setFormData({ rudimentId: '', duration: '', tempo: '', quality: '3' });
 
-			// Refresh data
+			// Refresh Stats
 			const statsRes = await api.get<DashboardStats>('/dashboard/stats');
-			const sessionRes = await api.get<any>('/sessions');
 			setStats(statsRes.data);
-			setChartData(sessionRes.data.sessions);
 		} catch (error) {
 			toast.error('Failed to log session.');
 		}
 	};
 
-	// ... Chart Config and JSX remain mostly the same ...
-	// Just ensure your <select> uses the new handler:
-	// <select onChange={handleRudimentChange} ... >
+	const handleDeleteRoutine = async (e: React.MouseEvent, id: string) => {
+		e.stopPropagation();
+		if (!window.confirm('Delete this routine?')) return;
+		try {
+			await api.delete(`/routines/${id}`);
+			setRoutines((prev) => prev.filter((r) => r.id !== id));
+			toast.success('Routine deleted');
+		} catch (e) {
+			toast.error('Failed to delete');
+		}
+	};
 
-	// --- 1. Calculate Data for Charts ---
-
-	// Prepare Line Chart Data (Progress over time)
-	// We reverse the array so the oldest session is on the left
+	// 3. Chart Data Prep
 	const lineChartData = {
 		labels: velocityData.map((s) => new Date(s.date).toLocaleDateString()),
 		datasets: [
@@ -151,10 +135,8 @@ function DashboardPage() {
 		],
 	};
 
-	// Prepare Doughnut Chart Data (Sessions per Rudiment)
 	const sessionCounts: Record<string, number> = {};
 	chartData.forEach((session) => {
-		// Find the name of the rudiment for this session
 		const rName = rudiments.find((r) => r.id === session.rudimentId)?.name || 'Unknown';
 		sessionCounts[rName] = (sessionCounts[rName] || 0) + 1;
 	});
@@ -164,27 +146,19 @@ function DashboardPage() {
 		datasets: [
 			{
 				data: Object.values(sessionCounts),
-				backgroundColor: [
-					'#00E5FF', // Cyan
-					'#7C3AED', // Violet
-					'#FF2975', // Pink
-					'#FF9900', // Orange
-					'#10B981', // Emerald
-					'#3B82F6', // Blue
-				],
+				backgroundColor: ['#00E5FF', '#7C3AED', '#FF2975', '#FF9900', '#10B981', '#3B82F6'],
 				borderWidth: 0,
 				hoverOffset: 4,
 			},
 		],
 	};
 
-	// --- 2. Define Chart Options (The "Look & Feel") ---
-
+	// 4. Chart Options
 	const modernChartOptions: ChartOptions<'line'> = {
 		responsive: true,
 		maintainAspectRatio: false,
 		plugins: {
-			legend: { display: false }, // Hide legend for cleaner look
+			legend: { display: false },
 			tooltip: {
 				backgroundColor: '#1C2834',
 				titleColor: '#fff',
@@ -196,17 +170,12 @@ function DashboardPage() {
 			},
 		},
 		scales: {
-			y: {
-				grid: { color: '#334155' },
-				ticks: { color: '#94a3b8', font: { family: 'sans-serif' } },
-			},
-			x: {
-				grid: { display: false },
-				ticks: { color: '#94a3b8', maxTicksLimit: 8 },
-			},
+			y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+			x: { grid: { display: false }, ticks: { display: false } },
 		},
 	};
 
+	// FIX: Dedicated options for Doughnut to prevent Type Errors
 	const doughnutOptions: ChartOptions<'doughnut'> = {
 		responsive: true,
 		maintainAspectRatio: false,
@@ -216,26 +185,30 @@ function DashboardPage() {
 				labels: { color: '#cbd5e1', font: { size: 12 } },
 			},
 		},
-		cutout: '70%', // Makes the donut thinner
+		cutout: '70%',
 	};
 
-	if (loading) return <div className="p-8 text-white">Loading Dashboard...</div>;
+	if (loading) return <div className="p-8 text-white text-center">Loading Dashboard...</div>;
 
 	return (
-		<div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto">
-			<header className="mb-12 flex justify-between items-end">
+		<div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto pb-32">
+			<header className="mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
 				<div>
 					<h1 className="text-5xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Dashboard</h1>
 					<p className="text-gray-400 font-mono text-sm">Good afternoon. Ready to grind?</p>
 				</div>
-				<button onClick={() => setShowLogModal(true)} className="bg-white text-black hover:bg-gray-200 font-bold h-10 px-6 rounded-full transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-					+ Log Session
-				</button>
+				<div className="flex gap-3">
+					<button onClick={() => setShowLogModal(true)} className="bg-white text-black hover:bg-gray-200 font-bold h-10 px-6 rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+						Log Session
+					</button>
+					<button onClick={() => setShowMetronome(true)} className="bg-gray-800 text-white hover:bg-gray-700 font-bold h-10 px-6 rounded-full transition-all border border-gray-700">
+						Metronome
+					</button>
+				</div>
 			</header>
 
-			{/* BENTO GRID LAYOUT */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-				{/* Stat 1: Total Time */}
+				{/* Stats Cards */}
 				<Card>
 					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Total Time</h3>
 					<div className="text-4xl font-mono font-bold text-white">
@@ -244,118 +217,117 @@ function DashboardPage() {
 						<span className="text-gray-600">m</span>
 					</div>
 				</Card>
-
-				{/* Stat 2: Top Speed */}
 				<Card>
 					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Max Speed</h3>
 					<div className="text-4xl font-mono font-bold text-accent">
 						{stats.fastestTempo} <span className="text-sm text-gray-600 align-top">BPM</span>
 					</div>
 				</Card>
-
-				{/* Stat 3: Most Practiced (Spans 2 cols) */}
 				<Card className="md:col-span-2">
 					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Focus Rudiment</h3>
 					<div className="text-3xl font-bold text-white truncate bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">{stats.mostPracticed}</div>
 				</Card>
 
-				{/* Consistency Heatmap Card */}
-				<Card className="md:col-span-4">
+				{/* Routines Grid */}
+				<div className="md:col-span-4 mt-8">
+					<div className="flex items-center justify-between mb-6">
+						<h2 className="text-2xl font-black text-white uppercase tracking-wider">Your Routines</h2>
+						<button onClick={() => navigate('/routines/new')} className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
+							+ Build New
+						</button>
+					</div>
+
+					{routines.length === 0 ? (
+						<div className="border-2 border-dashed border-gray-800 rounded-2xl p-12 text-center bg-card-bg">
+							<p className="text-gray-500 mb-4">No routines found.</p>
+							<button onClick={() => navigate('/routines/new')} className="text-white font-bold underline">
+								Build your first routine
+							</button>
+						</div>
+					) : (
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							{routines.map((routine) => {
+								const totalMins = routine.items.reduce((acc, i) => acc + i.duration, 0);
+								return (
+									<div key={routine.id} className="bg-card-bg border border-gray-800 rounded-xl p-6 hover:border-primary/50 transition-all group flex flex-col">
+										<div className="flex-1">
+											<h3 className="text-xl font-bold text-white mb-2">{routine.name}</h3>
+											<div className="flex items-center gap-2 text-xs text-gray-500 font-mono mb-6">
+												⏱︎ {totalMins} mins • {routine.items.length} Exercises
+											</div>
+										</div>
+										<div className="flex gap-3 mt-4">
+											<button
+												onClick={() => navigate(`/session/${routine.id}`)}
+												className="flex-1 bg-white/5 hover:bg-primary hover:text-black text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all"
+											>
+												▶︎ Start
+											</button>
+											<button onClick={(e) => handleDeleteRoutine(e, routine.id)} className="p-2.5 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
+												🗑
+											</button>
+										</div>
+									</div>
+								);
+							})}
+						</div>
+					)}
+				</div>
+
+				{/* Consistency Heatmap */}
+				<Card className="md:col-span-4 mt-8">
 					<div className="flex justify-between items-end mb-4">
 						<h3 className="text-gray-300 font-semibold">Consistency Streak</h3>
 						<span className="text-xs text-gray-500 font-mono">Last 365 Days</span>
 					</div>
 					<div className="w-full overflow-x-auto pb-2">
-						{history.length > 0 ? (
-							<CalendarHeatmap
-								startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-								endDate={new Date()}
-								values={history}
-								classForValue={(value) => {
-									if (!value) {
-										return 'color-empty';
-									}
-									// Scale: 1=Short, 2=Medium, 3=Long, 4=Marathon Session
-									return `color-scale-${Math.min(4, Math.ceil(value.count / 15))}`;
-								}}
-								titleForValue={(value) => {
-									return value ? `${value.date}: ${value.count} mins` : 'No practice';
-								}}
-								showWeekdayLabels={true}
-								gutterSize={2} // Spacing between squares
-							/>
-						) : (
-							<div className="flex h-32 items-center justify-center text-gray-500">No practice history yet. Start logging sessions to see your consistency streak.</div>
-						)}
+						<CalendarHeatmap
+							startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+							endDate={new Date()}
+							values={history}
+							classForValue={(value) => (value ? `color-scale-${Math.min(4, Math.ceil(value.count / 15))}` : 'color-empty')}
+							showWeekdayLabels={true}
+						/>
 					</div>
 				</Card>
 
-				{/* Chart Section (Spans 2 Rows, 3 Cols) */}
+				{/* Charts */}
 				<Card className="md:col-span-3 md:row-span-2 min-h-96">
 					<div className="flex justify-between items-center mb-6">
 						<h3 className="text-gray-300 font-semibold">Velocity Trajectory</h3>
-						<span className="text-xs text-primary border border-primary/30 px-2 py-1 rounded bg-primary/10">Last 30 Days</span>
+						<span className="text-xs text-gray-500">Last 30 Sessions</span>
 					</div>
-					<div className="h-80 w-full">{chartData.length > 0 ? <Line data={lineChartData} options={modernChartOptions} /> : <div className="flex h-full items-center justify-center text-gray-500">No practice history yet.</div>}</div>
+					<div className="h-80 w-full">
+						<Line data={lineChartData} options={modernChartOptions} />
+					</div>
 				</Card>
 
-				{/* Doughnut Chart */}
 				<Card className="md:col-span-1 md:row-span-2 flex flex-col justify-center">
-					<div className="h-48">{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex items-center justify-center text-gray-500 h-full">No sessions</div>}</div>
-					<div className="text-center mt-4 text-sm text-gray-500 font-mono">Distribution</div>
-					<div className="h-64 relative">
-						{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex h-full items-center justify-center text-gray-500">No distribution data.</div>}
-					</div>
+					{/* FIXED: Removed duplicate chart render here */}
+					<div className="h-64 relative">{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex h-full items-center justify-center text-gray-500">No data</div>}</div>
+					<div className="text-center mt-4 text-sm text-gray-500">Distribution</div>
 				</Card>
 			</div>
 
-			{/* Floating Metronome Button */}
-			<button
-				onClick={() => setShowMetronome(true)}
-				className="fixed bottom-10 right-10 w-16 h-16 bg-black border border-gray-700 text-primary rounded-full shadow-[0_0_30px_rgba(0,229,255,0.4)] flex items-center justify-center hover:scale-110 hover:border-primary transition-all z-50 group"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 group-hover:animate-pulse">
-					<path
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"
-					/>
-				</svg>
-			</button>
-
-			{/* Metronome Modal */}
-			{showMetronome && (
-				<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-sm shadow-2xl relative">
-						<button onClick={() => setShowMetronome(false)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded transition-colors">
-							✕
-						</button>
-						<h2 className="text-xl font-bold text-white mb-6 text-center font-mono">METRONOME</h2>
-						<Metronome />
-					</div>
-				</div>
-			)}
+			{/* Interactive Metronome (Self-Contained Modal) */}
+			{showMetronome && <Metronome onClose={() => setShowMetronome(false)} />}
 
 			{/* Log Session Modal */}
 			{showLogModal && (
-				<div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
-					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-md shadow-2xl animate-fade-in">
+				<div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-md shadow-2xl">
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-2xl font-bold text-white">Log Session</h2>
-							<button onClick={() => setShowLogModal(false)} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded transition-colors">
+							<button onClick={() => setShowLogModal(false)} className="text-gray-400 hover:text-white">
 								✕
 							</button>
 						</div>
 						<form onSubmit={handleSubmit} className="space-y-4">
+							{/* Form Fields... */}
 							<div>
 								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Rudiment</label>
-								<select
-									required
-									className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
-									value={formData.rudimentId}
-									onChange={handleRudimentChange}
-								>
-									<option value="">Select a rudiment...</option>
+								<select required className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:border-primary outline-none" value={formData.rudimentId} onChange={handleRudimentChange}>
+									<option value="">Select...</option>
 									{rudiments.map((r) => (
 										<option key={r.id} value={r.id}>
 											{r.name}
@@ -365,12 +337,10 @@ function DashboardPage() {
 							</div>
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Duration (min)</label>
+									<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Duration</label>
 									<input
 										type="number"
-										required
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
-										placeholder="15"
+										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:border-primary outline-none"
 										value={formData.duration}
 										onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
 									/>
@@ -379,54 +349,39 @@ function DashboardPage() {
 									<label className="block text-gray-400 text-xs uppercase font-bold mb-2">BPM</label>
 									<input
 										type="number"
-										required
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:outline-none focus:border-primary transition-colors"
-										placeholder="120"
+										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:border-primary outline-none"
 										value={formData.tempo}
 										onChange={(e) => setFormData({ ...formData, tempo: e.target.value })}
 									/>
 								</div>
 							</div>
-
 							<div>
-								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Vibe Check</label>
+								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Vibe</label>
 								<div className="grid grid-cols-4 gap-2">
 									{[
-										{ val: '1', label: 'Sloppy', activeClass: 'bg-red-500/20 border-red-500 text-red-400 ring-1 ring-red-500' },
-										{ val: '2', label: 'Muddy', activeClass: 'bg-orange-500/20 border-orange-500 text-orange-400 ring-1 ring-orange-500' },
-										{ val: '3', label: 'Good', activeClass: 'bg-yellow-500/20 border-yellow-500 text-yellow-400 ring-1 ring-yellow-500' },
-										{ val: '4', label: 'Solid', activeClass: 'bg-green-500/20 border-green-500 text-green-400 ring-1 ring-green-500' },
-									].map((option) => (
+										{ val: '1', label: 'Sloppy' },
+										{ val: '2', label: 'Muddy' },
+										{ val: '3', label: 'Good' },
+										{ val: '4', label: 'Solid' },
+									].map((opt) => (
 										<button
-											key={option.val}
-											type="button" // Crucial: prevents form submission when clicked
-											onClick={() => setFormData({ ...formData, quality: option.val })}
-											className={`
-                    h-12 rounded-lg border text-sm font-bold transition-all duration-200
-                    ${
-						formData.quality === option.val
-							? option.activeClass // Active State
-							: 'border-gray-700 bg-dark-bg text-gray-500 hover:border-gray-500 hover:text-gray-300' // Inactive State
-					}
-                `}
+											key={opt.val}
+											type="button"
+											onClick={() => setFormData({ ...formData, quality: opt.val })}
+											className={`h-10 rounded border text-xs font-bold ${formData.quality === opt.val ? 'bg-primary/20 border-primary text-primary' : 'border-gray-700 text-gray-500 hover:text-white'}`}
 										>
-											{option.label}
+											{opt.label}
 										</button>
 									))}
 								</div>
 							</div>
-
-							<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold h-10 rounded-lg mt-4 transition-colors shadow-lg shadow-primary/20">
-								Save Session
+							<button type="submit" className="w-full bg-primary text-black font-bold h-10 rounded-lg mt-2 hover:bg-cyan-300 transition-colors">
+								Save Log
 							</button>
 						</form>
 					</div>
 				</div>
 			)}
-
-			<footer className="text-center py-8 text-gray-600 text-sm">
-				<p>&copy; {new Date().getFullYear()} Fortify. Built by a drummer, for drummers.</p>
-			</footer>
 		</div>
 	);
 }
