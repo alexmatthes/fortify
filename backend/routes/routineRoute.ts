@@ -14,6 +14,10 @@ const createRoutineSchema = z.object({
 			z.object({
 				rudimentId: z.string(),
 				duration: z.number().positive(),
+				// NEW FIELDS: We must allow these through validation
+				tempoMode: z.enum(['MANUAL', 'SMART']).optional().default('MANUAL'),
+				targetTempo: z.number().int().positive().optional(),
+				restDuration: z.number().int().min(0).optional().default(0),
 			})
 		)
 		.min(1, 'Routine must have at least one item'),

@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "RoutineItem" ADD COLUMN     "restDuration" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "targetTempo" INTEGER NOT NULL DEFAULT 60,
+ADD COLUMN     "tempoMode" TEXT NOT NULL DEFAULT 'MANUAL';

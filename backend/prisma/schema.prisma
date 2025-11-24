@@ -82,13 +82,18 @@ model Routine {
 }
 
 model RoutineItem {
-  id          String   @id @default(cuid())
-  order       Int      // 0, 1, 2... (Position in the playlist)
-  duration    Int      // Target duration in minutes
+  id           String   @id @default(cuid())
+  order        Int
+  duration     Int      // In minutes
   
-  routineId   String
-  routine     Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  // NEW FIELDS
+  tempoMode    String   @default("MANUAL") // "MANUAL" or "SMART"
+  targetTempo  Int      @default(60)
+  restDuration Int      @default(0) // Seconds of rest AFTER this item
   
-  rudimentId  String
-  rudiment    Rudiment @relation(fields: [rudimentId], references: [id])
+  routineId    String
+  routine      Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  
+  rudimentId   String
+  rudiment     Rudiment @relation(fields: [rudimentId], references: [id])
 }

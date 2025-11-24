@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { AuthRequest } from '../middleware/auth'; // Ensure you import AuthRequest
 
-export const createRoutine = async (req: Request, res: Response) => {
+export const createRoutine = async (req: AuthRequest, res: Response) => {
 	try {
-		const { name, description, items } = req.body; // items = [{ rudimentId, duration, order }]
+		const { name, description, items } = req.body;
 
 		const routine = await prisma.routine.create({
 			data: {
@@ -14,11 +15,15 @@ export const createRoutine = async (req: Request, res: Response) => {
 					create: items.map((item: any, index: number) => ({
 						rudimentId: item.rudimentId,
 						duration: parseInt(item.duration),
-						order: index, // Automatically set order based on array position
+						order: index,
+						// New fields from your schema update
+						tempoMode: item.tempoMode || 'MANUAL',
+						targetTempo: parseInt(item.targetTempo) || 60,
+						restDuration: parseInt(item.restDuration) || 0,
 					})),
 				},
 			},
-			include: { items: true }, // Return the items we just created
+			include: { items: true },
 		});
 
 		res.status(201).json(routine);
@@ -27,13 +32,15 @@ export const createRoutine = async (req: Request, res: Response) => {
 	}
 };
 
-export const getRoutines = async (req: Request, res: Response) => {
+// ... keep getRoutines and deleteRoutine as they are
+export const getRoutines = async (req: AuthRequest, res: Response) => {
+	// ... (existing code)
 	try {
 		const routines = await prisma.routine.findMany({
 			where: { userId: req.userId },
 			include: {
 				items: {
-					include: { rudiment: true }, // Get the rudiment names too
+					include: { rudiment: true },
 					orderBy: { order: 'asc' },
 				},
 			},
@@ -45,10 +52,10 @@ export const getRoutines = async (req: Request, res: Response) => {
 	}
 };
 
-export const deleteRoutine = async (req: Request, res: Response) => {
+export const deleteRoutine = async (req: AuthRequest, res: Response) => {
+	// ... (existing code)
 	try {
 		const { id } = req.params;
-		// Ensure the user owns the routine before deleting
 		const routine = await prisma.routine.findUnique({ where: { id } });
 
 		if (!routine || routine.userId !== req.userId) {
