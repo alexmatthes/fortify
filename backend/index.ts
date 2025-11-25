@@ -8,11 +8,13 @@ import { errorHandler } from './middleware/errorHandler';
 // Import Routes
 import authRoutes from './routes/authRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
-import routineRoutes from './routes/routineRoute';
+import routineRoutes from './routes/routineRoutes';
 import rudimentRoutes from './routes/rudimentRoutes';
 import sessionRoutes from './routes/sessionRoutes';
 
 const app = express();
+
+app.set('trust proxy', 1);
 
 // CORS configuration
 app.use(
@@ -70,10 +72,6 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/rudiments', rudimentRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-
-// Error handling middleware (must be last)
-app.use(errorHandler);
-
 app.use('/api/routines', routineRoutes);
 
 // Start server
@@ -98,3 +96,6 @@ process.on('SIGINT', () => {
 		process.exit(0);
 	});
 });
+
+// Error handling middleware (must be last)
+app.use(errorHandler);

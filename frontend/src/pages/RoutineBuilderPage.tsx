@@ -4,10 +4,10 @@ import { ArrowLeft, Plus, Save, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
-import { IntensitySparkline } from '../components/IntensitySparkline';
-import { SortableRoutineItem } from '../components/SortableRoutineItem';
-import { Rudiment } from '../types';
+import { IntensitySparkline } from '../components/common/IntensitySparkline';
+import { SortableRoutineItem } from '../components/features/SortableRoutineItem';
+import api from '../services/api';
+import { Rudiment } from '../types/types';
 
 // Local interface for the builder state
 export interface BuilderItem {

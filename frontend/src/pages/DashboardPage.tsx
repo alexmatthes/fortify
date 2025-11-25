@@ -7,10 +7,10 @@ import 'react-calendar-heatmap/dist/styles.css';
 import { Doughnut, Line } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
-import Card from '../components/Card';
-import Metronome from '../components/Metronome';
-import { DashboardStats, Routine, Rudiment, Session, SessionFormData, SessionHistory } from '../types';
+import Card from '../components/common/Card';
+import Metronome from '../components/features/Metronome';
+import api from '../services/api';
+import { DashboardStats, Routine, Rudiment, Session, SessionFormData, SessionHistory } from '../types/types';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 

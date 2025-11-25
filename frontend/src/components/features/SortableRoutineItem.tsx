@@ -2,7 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Bot, Clock, GripVertical, Trash2, TrendingUp } from 'lucide-react';
 import React from 'react';
-import { BuilderItem } from '../pages/RoutineBuilderPage';
+import { BuilderItem } from '../../pages/RoutineBuilderPage';
 
 interface Props {
 	item: BuilderItem;

@@ -2,8 +2,8 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, us
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { z } from 'zod';
-import api from '../api';
-import { Rudiment } from '../types';
+import api from '../../services/api';
+import { Rudiment } from '../../types/types';
 
 const routineNameSchema = z.string().min(1, 'Routine name is required').max(50, 'Name too long');
 

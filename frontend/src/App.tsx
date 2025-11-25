@@ -16,9 +16,9 @@ import SettingsPage from './pages/SettingsPage';
 import SignupPage from './pages/SignupPage';
 
 // Components
-import Navbar from './components/Navbar';
-import ProtectedRoute from './components/ProtectedRoute';
-import PublicRoute from './components/PublicRoute';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import PublicRoute from './components/common/PublicRoute';
+import Navbar from './layouts/Navbar';
 
 import './App.css';
 

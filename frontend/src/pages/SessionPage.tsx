@@ -2,9 +2,9 @@ import { ArrowLeft, CheckCircle2, Pause, Play, SkipForward } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../api';
-import HeadlessMetronome from '../components/HeadlessMetronome';
-import { Routine } from '../types';
+import HeadlessMetronome from '../components/features/HeadlessMetronome';
+import api from '../services/api';
+import { Routine } from '../types/types';
 
 const SessionPage = () => {
 	const { routineId } = useParams();

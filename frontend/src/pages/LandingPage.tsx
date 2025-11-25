@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { client } from '../sanityClient';
-import { BlogPost } from '../types';
+import { client } from '../lib/sanityClient';
+import { BlogPost } from '../types/types';
 
 const LandingPage: React.FC = () => {
 	const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);

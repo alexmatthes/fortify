@@ -1,9 +1,9 @@
 import { PortableText } from '@portabletext/react';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { client } from '../sanityClient';
-import { BlogPost } from '../types';
+import Navbar from '../layouts/Navbar';
+import { client } from '../lib/sanityClient';
+import { BlogPost } from '../types/types';
 
 const BlogPostPage: React.FC = () => {
 	const { slug } = useParams();
