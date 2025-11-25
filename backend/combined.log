@@ -48,3 +48,8 @@
 {"level":"info","message":"SIGINT signal received: closing HTTP server","timestamp":"2025-11-25T08:45:29.650Z"}
 {"level":"info","message":"Server is running on http://localhost:8000","timestamp":"2025-11-25T08:46:21.566Z"}
 {"level":"info","message":"Environment: development","timestamp":"2025-11-25T08:46:21.568Z"}
+{"level":"info","message":"Server is running on http://localhost:8000","timestamp":"2025-11-25T08:56:43.365Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-11-25T08:56:43.366Z"}
+{"level":"info","message":"Server is running on http://localhost:8000","timestamp":"2025-11-25T08:59:05.023Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-11-25T08:59:05.024Z"}
+{"level":"info","message":"SIGINT signal received: closing HTTP server","timestamp":"2025-11-25T08:59:12.821Z"}

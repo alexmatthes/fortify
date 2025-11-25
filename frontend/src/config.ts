@@ -27,3 +27,4 @@ export const config: Config = {
 	nodeEnv: process.env.NODE_ENV || 'development',
 	posthogKey: process.env.REACT_APP_POSTHOG_KEY,
 };
+

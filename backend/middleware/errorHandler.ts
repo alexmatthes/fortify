@@ -77,3 +77,4 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
 		...(process.env.NODE_ENV === 'development' && { error: err.message }),
 	});
 };
+
