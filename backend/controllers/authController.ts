@@ -1,45 +1,24 @@
-import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { prisma } from '../lib/prisma';
-import { config } from '../config';
-import { AppError, ValidationError } from '../types/errors';
+import { AuthService } from '../services/authService';
 
-/**
- * Sign up a new user
- */
 export const signup = async (req: Request, res: Response) => {
+	// 1. Extract data
 	const { email, password } = req.body;
-	
-	const existingUser = await prisma.user.findUnique({ where: { email } });
-	if (existingUser) {
-		throw new ValidationError('Email already in use.');
-	}
 
-	const hashedPassword = await bcrypt.hash(password, 10);
-	const newUser = await prisma.user.create({
-		data: { email, password: hashedPassword },
-	});
+	// 2. Call Service
+	const user = await AuthService.signup({ email, password });
 
-	res.status(201).json({ id: newUser.id, email: newUser.email });
+	// 3. Send Response
+	res.status(201).json(user);
 };
 
-/**
- * Log in an existing user
- */
 export const login = async (req: Request, res: Response) => {
+	// 1. Extract data
 	const { email, password } = req.body;
-	
-	const user = await prisma.user.findUnique({ where: { email } });
-	if (!user) {
-		throw new ValidationError('Invalid email or password.');
-	}
 
-	const isPasswordCorrect = await bcrypt.compare(password, user.password);
-	if (!isPasswordCorrect) {
-		throw new ValidationError('Invalid email or password.');
-	}
+	// 2. Call Service
+	const result = await AuthService.login({ email, password });
 
-	const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '7d' });
-	res.status(200).json({ token, userId: user.id, email: user.email });
+	// 3. Send Response
+	res.status(200).json(result);
 };
