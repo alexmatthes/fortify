@@ -1,12 +1,30 @@
-import { PrismaClient } from '@prisma/client';
-import express, { NextFunction, Request, Response } from 'express'; // Import types
+import express, { NextFunction, Request, Response } from 'express';
 import request from 'supertest';
 import sessionRouter from '../../routes/sessionRoutes';
+
+//Import the singleton instance directly
+import { prisma } from '../../lib/prisma';
+
+//Mock the lib/prisma module instead of @prisma/client constructor
+jest.mock('../../lib/prisma', () => ({
+	prisma: {
+		practiceSession: {
+			create: jest.fn(),
+			findMany: jest.fn(),
+			aggregate: jest.fn(),
+			groupBy: jest.fn(),
+			count: jest.fn(),
+		},
+		rudiment: {
+			findUnique: jest.fn(),
+		},
+		$disconnect: jest.fn(),
+	},
+}));
 
 // Mock Auth Middleware
 jest.mock('../../middleware/auth', () => {
 	return (req: Request, res: Response, next: NextFunction) => {
-		// FIX: Remove "as any". Your global type definition handles this!
 		req.userId = 'test-user-id';
 		next();
 	};
@@ -17,7 +35,6 @@ app.use(express.json());
 app.use('/api/sessions', sessionRouter);
 
 describe('POST /api/sessions', () => {
-	// ... rest of tests remain the same
 	it('should create a new session with valid data', async () => {
 		const mockSession = {
 			id: 'clq3b6b1e000008l4f1y0y1y1',
@@ -29,8 +46,8 @@ describe('POST /api/sessions', () => {
 			date: new Date(),
 		};
 
-		const mockPrismaInstance = new PrismaClient();
-		(mockPrismaInstance.practiceSession.create as jest.Mock).mockResolvedValue(mockSession);
+		//Configure the mock directly on the imported object
+		(prisma.practiceSession.create as jest.Mock).mockResolvedValue(mockSession);
 
 		const res = await request(app).post('/api/sessions').send({
 			rudimentId: 'clq3b6b1e000008l4f1y0y1y1',
@@ -41,7 +58,7 @@ describe('POST /api/sessions', () => {
 
 		expect(res.status).toBe(201);
 		expect(res.body).toEqual(JSON.parse(JSON.stringify(mockSession)));
-		expect(mockPrismaInstance.practiceSession.create).toHaveBeenCalledWith({
+		expect(prisma.practiceSession.create).toHaveBeenCalledWith({
 			data: {
 				rudimentId: 'clq3b6b1e000008l4f1y0y1y1',
 				duration: 10,
