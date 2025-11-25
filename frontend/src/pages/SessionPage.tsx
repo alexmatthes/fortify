@@ -42,7 +42,7 @@ const SessionPage = () => {
 					};
 					const wakeLock = await navigatorWithWakeLock.wakeLock.request('screen');
 					wakeLockRef.current = wakeLock;
-					
+
 					// Handle wake lock release
 					wakeLock.addEventListener('release', () => {
 						wakeLockRef.current = null;
@@ -67,44 +67,7 @@ const SessionPage = () => {
 		};
 	}, [isPlaying, phase]);
 
-	// Keyboard shortcuts
-	useEffect(() => {
-		const handleKeyPress = (e: KeyboardEvent) => {
-			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-				return; // Don't interfere with form inputs
-			}
-			if (e.code === 'Space' && !isPlaying && phase !== 'FINISHED') {
-				e.preventDefault();
-				setIsPlaying(true);
-			} else if (e.code === 'Space' && isPlaying) {
-				e.preventDefault();
-				setIsPlaying(false);
-			} else if (e.code === 'ArrowRight' && phase !== 'FINISHED') {
-				e.preventDefault();
-				advanceNext();
-			}
-		};
-
-		window.addEventListener('keydown', handleKeyPress);
-		return () => window.removeEventListener('keydown', handleKeyPress);
-	}, [isPlaying, phase, advanceNext]);
-
-	// Fetch Data
-	useEffect(() => {
-		api.get(`/routines/${routineId}`)
-			.then((res) => {
-				setRoutine(res.data);
-				if (res.data.items.length > 0) {
-					setTimeRemaining(res.data.items[0].duration * 60);
-				}
-				setLoading(false);
-			})
-		.catch((error) => {
-			toast.error(getErrorMessage(error));
-			navigate('/dashboard');
-		});
-	}, [routineId, navigate]);
-
+	// Callback functions (defined before useEffects that depend on them)
 	const saveSessions = useCallback(async () => {
 		setSaveStatus('SAVING');
 		const items = completedItemsRef.current;
@@ -142,7 +105,6 @@ const SessionPage = () => {
 		}
 	}, []);
 
-	// 1. Wrap advanceNext in useCallback
 	const advanceNext = useCallback(() => {
 		if (!routine) return;
 		if (currentIndex < routine.items.length - 1) {
@@ -156,6 +118,44 @@ const SessionPage = () => {
 			saveSessions();
 		}
 	}, [routine, currentIndex, saveSessions]);
+
+	// Keyboard shortcuts
+	useEffect(() => {
+		const handleKeyPress = (e: KeyboardEvent) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+				return; // Don't interfere with form inputs
+			}
+			if (e.code === 'Space' && !isPlaying && phase !== 'FINISHED') {
+				e.preventDefault();
+				setIsPlaying(true);
+			} else if (e.code === 'Space' && isPlaying) {
+				e.preventDefault();
+				setIsPlaying(false);
+			} else if (e.code === 'ArrowRight' && phase !== 'FINISHED') {
+				e.preventDefault();
+				advanceNext();
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyPress);
+		return () => window.removeEventListener('keydown', handleKeyPress);
+	}, [isPlaying, phase, advanceNext]);
+
+	// Fetch Data
+	useEffect(() => {
+		api.get(`/routines/${routineId}`)
+			.then((res) => {
+				setRoutine(res.data);
+				if (res.data.items.length > 0) {
+					setTimeRemaining(res.data.items[0].duration * 60);
+				}
+				setLoading(false);
+			})
+			.catch((error) => {
+				toast.error(getErrorMessage(error));
+				navigate('/dashboard');
+			});
+	}, [routineId, navigate]);
 
 	// 2. Wrap handlePhaseComplete in useCallback
 	const handlePhaseComplete = useCallback(() => {
@@ -263,7 +263,11 @@ const SessionPage = () => {
 
 			{/* Main Content */}
 			<main id="main-content" className="flex-1 flex flex-col items-center justify-center z-20 pb-20" aria-live="polite" aria-atomic="true">
-				<div className={`mb-8 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${isRest ? 'border-green-500/30 bg-green-500/10 text-green-400' : 'border-primary/30 bg-primary/10 text-primary'}`} role="status" aria-label={isRest ? 'Rest period' : 'Active practice'}>
+				<div
+					className={`mb-8 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${isRest ? 'border-green-500/30 bg-green-500/10 text-green-400' : 'border-primary/30 bg-primary/10 text-primary'}`}
+					role="status"
+					aria-label={isRest ? 'Rest period' : 'Active practice'}
+				>
 					{isRest ? 'Rest & Recover' : 'Focus Mode'}
 				</div>
 
@@ -292,8 +296,8 @@ const SessionPage = () => {
 						{isPlaying ? <Pause size={32} fill="currentColor" aria-hidden="true" /> : <Play size={32} fill="currentColor" className="ml-1" aria-hidden="true" />}
 					</button>
 
-					<button 
-						onClick={advanceNext} 
+					<button
+						onClick={advanceNext}
 						aria-label="Skip to next exercise"
 						className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
 					>

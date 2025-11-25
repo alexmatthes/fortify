@@ -10,6 +10,8 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import PublicRoute from './components/common/PublicRoute';
 import Navbar from './layouts/Navbar';
 
+import './App.css';
+
 // Lazy load pages for code splitting
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const BlogIndexPage = React.lazy(() => import('./pages/BlogIndexPage'));
@@ -25,8 +27,6 @@ const SessionPage = React.lazy(() => import('./pages/SessionPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const SignupPage = React.lazy(() => import('./pages/SignupPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
-
-import './App.css';
 
 // Helper Component to track page changes
 function PostHogPageTracker() {
