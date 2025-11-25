@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import api from '../api';
+import api from '../services/api';
 import { Rudiment } from '../types/types';
 
 function LibraryPage() {

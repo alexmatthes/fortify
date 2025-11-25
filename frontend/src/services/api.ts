@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
-import { config } from './config';
-import { getUserFriendlyError } from './utils/errorHandler';
+import { config } from '../config';
+import { getUserFriendlyError } from '../utils/errorHandler';
 
 /**
  * Centralized Axios instance for all API requests

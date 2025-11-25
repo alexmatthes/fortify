@@ -17,7 +17,7 @@ function getApiUrl(): string {
 	if (process.env.REACT_APP_API_URL) {
 		return process.env.REACT_APP_API_URL;
 	}
-	
+
 	// Fallback to localhost for development
 	return 'http://localhost:8000/api';
 }
@@ -27,6 +27,3 @@ export const config: Config = {
 	nodeEnv: process.env.NODE_ENV || 'development',
 	posthogKey: process.env.REACT_APP_POSTHOG_KEY,
 };
-
-
-
