@@ -1,5 +1,5 @@
 import { ArrowLeft, CheckCircle2, Pause, Play, SkipForward } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
@@ -18,6 +18,10 @@ const SessionPage = () => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [timeRemaining, setTimeRemaining] = useState(0);
 
+	const [saveStatus, setSaveStatus] = useState<'IDLE' | 'SAVING' | 'SUCCESS' | 'ERROR'>('IDLE');
+	const [sessionSummary, setSessionSummary] = useState<string[]>([]);
+	const completedItemsRef = useRef<Routine['items'][0][]>([]);
+
 	// Fetch Data
 	useEffect(() => {
 		api.get(`/routines/${routineId}`)
@@ -34,6 +38,43 @@ const SessionPage = () => {
 			});
 	}, [routineId, navigate]);
 
+	const saveSessions = useCallback(async () => {
+		setSaveStatus('SAVING');
+		const items = completedItemsRef.current;
+		const summaries: string[] = [];
+
+		if (items.length === 0) {
+			setSaveStatus('SUCCESS');
+			return;
+		}
+
+		try {
+			await Promise.all(
+				items.map((item) => {
+					return api
+						.post('/sessions', {
+							rudimentId: item.rudiment.id,
+							duration: item.duration, // minutes
+							tempo: item.targetTempo,
+							quality: 4, // Default to 4 ("Great") since we don't have a rating UI yet
+						})
+						.then(() => {
+							summaries.push(`Logged ${item.duration}m of ${item.rudiment.name} at ${item.targetTempo} BPM`);
+						})
+						.catch((err) => {
+							console.error('Failed to log session:', err);
+							summaries.push(`Failed to log ${item.rudiment.name}`);
+						});
+				})
+			);
+			setSessionSummary(summaries);
+			setSaveStatus('SUCCESS');
+		} catch (error) {
+			console.error('Critical error saving sessions:', error);
+			setSaveStatus('ERROR');
+		}
+	}, []);
+
 	// 1. Wrap advanceNext in useCallback
 	const advanceNext = useCallback(() => {
 		if (!routine) return;
@@ -45,8 +86,9 @@ const SessionPage = () => {
 		} else {
 			setPhase('FINISHED');
 			setIsPlaying(false);
+			saveSessions();
 		}
-	}, [routine, currentIndex]);
+	}, [routine, currentIndex, saveSessions]);
 
 	// 2. Wrap handlePhaseComplete in useCallback
 	const handlePhaseComplete = useCallback(() => {
@@ -54,6 +96,9 @@ const SessionPage = () => {
 		const currentItem = routine.items[currentIndex];
 
 		if (phase === 'WORK') {
+			// Mark item as completed
+			completedItemsRef.current.push(currentItem);
+
 			if (currentItem.restDuration > 0) {
 				setPhase('REST');
 				setTimeRemaining(currentItem.restDuration);
@@ -90,12 +135,33 @@ const SessionPage = () => {
 	if (phase === 'FINISHED') {
 		return (
 			<div className="h-screen bg-[#0B1219] flex flex-col items-center justify-center text-white p-6 text-center">
-				<CheckCircle2 size={64} className="text-primary mb-6" />
-				<h1 className="text-4xl font-black mb-2">SESSION COMPLETE</h1>
-				<p className="text-gray-400 mb-8">Great work! Your consistency score is up.</p>
-				<button onClick={() => navigate('/dashboard')} className="bg-primary hover:bg-cyan-300 text-black font-bold py-3 px-8 rounded-lg">
-					Back to Dashboard
-				</button>
+				{saveStatus === 'SAVING' ? (
+					<>
+						<div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mb-6"></div>
+						<h1 className="text-3xl font-bold mb-2">Saving Progress...</h1>
+					</>
+				) : (
+					<>
+						<CheckCircle2 size={64} className="text-primary mb-6" />
+						<h1 className="text-4xl font-black mb-2">SESSION COMPLETE</h1>
+						<div className="text-gray-400 mb-8 max-w-md">
+							<p className="mb-4">Great work! Your consistency score is up.</p>
+							{sessionSummary.length > 0 && (
+								<div className="bg-gray-800 rounded p-4 text-left text-sm space-y-2">
+									{sessionSummary.map((s, i) => (
+										<div key={i} className="flex items-center gap-2">
+											<div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+											{s}
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+						<button onClick={() => navigate('/dashboard')} className="bg-primary hover:bg-cyan-300 text-black font-bold py-3 px-8 rounded-lg">
+							Back to Dashboard
+						</button>
+					</>
+				)}
 			</div>
 		);
 	}

@@ -64,7 +64,9 @@ const HeadlessMetronome: React.FC<HeadlessMetronomeProps> = ({ bpm, isPlaying, m
 
 		return () => {
 			worker.current?.terminate();
-			audioContext.current?.close();
+			if (audioContext.current && audioContext.current.state !== 'closed') {
+				audioContext.current.close().catch(() => {});
+			}
 		};
 	}, [scheduler]);
 
