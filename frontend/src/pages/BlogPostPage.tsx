@@ -1,4 +1,4 @@
-import { PortableText } from '@portabletext/react';
+import { PortableText, PortableTextComponents } from '@portabletext/react';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async'; // <--- ADD THIS
 import { useParams } from 'react-router-dom';
@@ -14,6 +14,31 @@ interface BlogPostWithSEO extends Omit<BlogPost, 'mainImage'> {
 		alt?: string;
 	};
 }
+
+const portableTextComponents: PortableTextComponents = {
+	block: {
+		h1: ({ children }) => <h1 className="text-4xl font-semibold mt-12 mb-6 text-white">{children}</h1>,
+		h2: ({ children }) => <h2 className="text-3xl font-semibold mt-10 mb-4 text-white">{children}</h2>,
+		h3: ({ children }) => <h3 className="text-2xl font-semibold mt-8 mb-3 text-white">{children}</h3>,
+		normal: ({ children }) => <p className="text-gray-200 leading-relaxed mb-6">{children}</p>,
+		blockquote: ({ children }) => (
+			<blockquote className="border-l-4 border-primary pl-4 italic text-gray-300 my-8">{children}</blockquote>
+		),
+	},
+	list: {
+		bullet: ({ children }) => <ul className="list-disc pl-6 space-y-2 text-gray-200 mb-6">{children}</ul>,
+		number: ({ children }) => <ol className="list-decimal pl-6 space-y-2 text-gray-200 mb-6">{children}</ol>,
+	},
+	marks: {
+		link: ({ children, value }) => (
+			<a href={value?.href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary-hover">
+				{children}
+			</a>
+		),
+		strong: ({ children }) => <strong className="text-white">{children}</strong>,
+		em: ({ children }) => <em className="text-gray-100">{children}</em>,
+	},
+};
 
 const BlogPostPage: React.FC = () => {
 	const { slug } = useParams();
@@ -82,8 +107,8 @@ const BlogPostPage: React.FC = () => {
 					/>
 				)}
 
-				<div className="prose prose-invert prose-lg max-w-none">
-					<PortableText value={post.body} />
+				<div className="max-w-none space-y-6">
+					<PortableText value={post.body} components={portableTextComponents} />
 				</div>
 			</article>
 		</div>
