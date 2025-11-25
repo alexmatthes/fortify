@@ -5,12 +5,10 @@ import { NextFunction, Request, Response } from 'express';
  * Passes errors to Express error handling middleware
  */
 export const asyncHandler = (
-	fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
+	// Change Promise<any> to Promise<void>
+	fn: (req: Request, res: Response, next: NextFunction) => Promise<void>
 ) => {
 	return (req: Request, res: Response, next: NextFunction) => {
 		Promise.resolve(fn(req, res, next)).catch(next);
 	};
 };
-
-
-

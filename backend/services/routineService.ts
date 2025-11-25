@@ -1,10 +1,19 @@
 import { prisma } from '../lib/prisma';
 import { AuthorizationError, NotFoundError } from '../types/errors';
 
+// Define the expected shape of an item
+interface RoutineItemInput {
+	rudimentId: string;
+	duration: string | number;
+	tempoMode?: string;
+	targetTempo?: string | number;
+	restDuration?: string | number;
+}
+
 interface CreateRoutineInput {
 	name: string;
 	description?: string;
-	items: any[];
+	items: RoutineItemInput[]; // Use the interface here
 	userId: string;
 }
 
@@ -16,13 +25,14 @@ export const RoutineService = {
 				description,
 				userId,
 				items: {
-					create: items.map((item: any, index: number) => ({
+					// Now 'item' is typed, so no implicit any warning
+					create: items.map((item, index) => ({
 						rudimentId: item.rudimentId,
-						duration: parseInt(item.duration),
+						duration: Number(item.duration),
 						order: index,
 						tempoMode: item.tempoMode || 'MANUAL',
-						targetTempo: parseInt(item.targetTempo) || 60,
-						restDuration: parseInt(item.restDuration) || 0,
+						targetTempo: Number(item.targetTempo) || 60,
+						restDuration: Number(item.restDuration) || 0,
 					})),
 				},
 			},

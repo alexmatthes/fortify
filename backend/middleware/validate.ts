@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { AnyZodObject } from 'zod';
+import { AnyZodObject, ZodError } from 'zod'; // Import ZodError
 
 export const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: NextFunction) => {
 	try {
@@ -9,8 +9,12 @@ export const validate = (schema: AnyZodObject) => (req: Request, res: Response, 
 			params: req.params,
 		});
 		next();
-	} catch (error: any) {
-		return res.status(400).json(error.errors);
+	} catch (error) {
+		// Check if it's actually a ZodError
+		if (error instanceof ZodError) {
+			return res.status(400).json(error.errors);
+		}
+		return res.status(500).json({ message: 'Internal Server Error' });
 	}
 };
 
