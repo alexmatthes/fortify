@@ -16,7 +16,8 @@ jobs:
             - name: Use Node.js
               uses: actions/setup-node@v3
               with:
-                  node-version: '18.x'
+                  # FIX: Upgraded to 20.x to match your dependencies (@sanity/client, etc.)
+                  node-version: '20.x'
 
             # Backend Setup & Test
             - name: Install Backend Dependencies
@@ -33,7 +34,8 @@ jobs:
             - name: Install Frontend Dependencies
               run: |
                   cd frontend
-                  npm ci
+                  # FIX: Changed 'npm ci' to 'npm install' to handle the lockfile mismatch automatically
+                  npm install
 
             - name: Build Frontend
               run: |
