@@ -130,6 +130,142 @@ Create a `.env` file in the `frontend` directory (optional):
 
 **Note:** The backend will fail to start if `JWT_SECRET` is not set. This is a security feature to prevent using default secrets in production.
 
+## 🧪 Testing
+
+### Backend Tests
+
+The backend includes a comprehensive test suite using Jest. To run tests:
+
+```bash
+cd backend
+npm test
+```
+
+Tests are located in `backend/services/__tests__/` and `backend/tests/`. The test suite includes:
+- Authentication service tests
+- Routine service tests
+- Rudiment service tests
+- Session route integration tests
+
+### Frontend Type Checking
+
+To verify TypeScript types in the frontend:
+
+```bash
+cd frontend
+npm run type-check
+```
+
+## 🏗️ Architecture Overview
+
+### Project Structure
+
+```
+fortify/
+├── backend/          # Express.js API server
+│   ├── controllers/  # Request handlers
+│   ├── services/     # Business logic
+│   ├── middleware/   # Auth, validation, error handling
+│   ├── routes/       # API route definitions
+│   ├── prisma/       # Database schema and migrations
+│   └── types/        # TypeScript type definitions
+│
+└── frontend/         # React application
+    ├── components/   # Reusable UI components
+    ├── pages/        # Route-level page components
+    ├── hooks/        # Custom React hooks
+    ├── services/     # API client and utilities
+    └── types/        # TypeScript type definitions
+```
+
+### Key Architectural Decisions
+
+1. **Web Worker for Metronome Timing**
+   - The metronome uses a dedicated Web Worker (`metronome.worker.ts`) to handle precise timing intervals
+   - This prevents timing drift caused by React's main thread rendering work
+   - Ensures sample-accurate audio scheduling essential for musical training
+
+2. **Prisma ORM**
+   - Type-safe database access with automatic TypeScript type generation
+   - Migrations managed through Prisma's migration system
+   - Seeded with standard drumming rudiments on first setup
+
+3. **JWT Authentication**
+   - Stateless authentication using JSON Web Tokens
+   - Tokens stored in localStorage on the frontend
+   - Protected routes validate tokens via middleware
+
+4. **Error Handling**
+   - Centralized error handler in `backend/middleware/errorHandler.ts`
+   - Consistent error response format across all API endpoints
+   - Frontend error utility (`frontend/src/utils/errorHandler.ts`) for user-friendly messages
+
+5. **Type Safety**
+   - Full TypeScript coverage on both frontend and backend
+   - Shared type definitions where appropriate
+   - Runtime validation using Zod schemas
+
+### Data Flow
+
+1. **User Authentication**
+   - User logs in → Frontend sends credentials → Backend validates → Returns JWT → Frontend stores token
+
+2. **Practice Session Logging**
+   - User completes session → Frontend sends session data → Backend validates → Stores in database → Returns success
+
+3. **Routine Building**
+   - User creates routine → Frontend sends routine data → Backend validates and stores → Returns routine with nested data
+
+4. **Dashboard Data**
+   - Frontend requests stats → Backend queries database → Aggregates data → Returns formatted statistics
+
+## 🔧 Development Workflow
+
+1. **Start Development Servers**
+   ```bash
+   # From root directory
+   npm run dev
+   ```
+   This runs both backend and frontend concurrently.
+
+2. **Database Migrations**
+   ```bash
+   cd backend
+   npx prisma migrate dev --name your_migration_name
+   ```
+
+3. **View Database**
+   ```bash
+   cd backend
+   npx prisma studio
+   ```
+
+4. **Build for Production**
+   ```bash
+   npm run build
+   ```
+
+## 🐛 Troubleshooting
+
+### Backend won't start
+- Ensure `JWT_SECRET` is set in `backend/.env`
+- Check that PostgreSQL is running and `DATABASE_URL` is correct
+- Verify port 8000 is not in use
+
+### Frontend can't connect to backend
+- Check `REACT_APP_API_URL` in `frontend/.env` matches backend URL
+- Ensure backend is running on the expected port
+- Check CORS configuration in backend
+
+### Database connection errors
+- Verify PostgreSQL is running: `pg_isready` or check service status
+- Confirm `DATABASE_URL` format is correct
+- Run migrations: `npx prisma migrate dev`
+
+### Type errors
+- Run `npm run type-check` in frontend to see all TypeScript errors
+- Ensure all dependencies are installed: `npm install` in both directories
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.

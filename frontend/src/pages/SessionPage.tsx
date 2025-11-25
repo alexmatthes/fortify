@@ -2,9 +2,11 @@ import { ArrowLeft, CheckCircle2, Pause, Play, SkipForward } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import HeadlessMetronome from '../components/features/HeadlessMetronome';
 import api from '../services/api';
 import { Routine } from '../types/types';
+import { getErrorMessage } from '../utils/errorHandler';
 
 const SessionPage = () => {
 	const { routineId } = useParams();
@@ -21,6 +23,71 @@ const SessionPage = () => {
 	const [saveStatus, setSaveStatus] = useState<'IDLE' | 'SAVING' | 'SUCCESS' | 'ERROR'>('IDLE');
 	const [sessionSummary, setSessionSummary] = useState<string[]>([]);
 	const completedItemsRef = useRef<Routine['items'][0][]>([]);
+	const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+	// Wake Lock API to prevent screen sleep during practice
+	useEffect(() => {
+		if (!('wakeLock' in navigator)) {
+			return; // Wake Lock not supported
+		}
+
+		const requestWakeLock = async () => {
+			try {
+				if (isPlaying && phase !== 'FINISHED') {
+					// Type assertion for Wake Lock API
+					const navigatorWithWakeLock = navigator as Navigator & {
+						wakeLock: {
+							request(type: 'screen'): Promise<WakeLockSentinel>;
+						};
+					};
+					const wakeLock = await navigatorWithWakeLock.wakeLock.request('screen');
+					wakeLockRef.current = wakeLock;
+					
+					// Handle wake lock release
+					wakeLock.addEventListener('release', () => {
+						wakeLockRef.current = null;
+					});
+				} else if (wakeLockRef.current) {
+					await wakeLockRef.current.release();
+					wakeLockRef.current = null;
+				}
+			} catch (err) {
+				// Wake Lock request failed (user denied, tab hidden, etc.)
+				console.warn('Wake Lock request failed:', err);
+			}
+		};
+
+		requestWakeLock();
+
+		// Release wake lock on unmount
+		return () => {
+			if (wakeLockRef.current) {
+				wakeLockRef.current.release().catch(() => {});
+			}
+		};
+	}, [isPlaying, phase]);
+
+	// Keyboard shortcuts
+	useEffect(() => {
+		const handleKeyPress = (e: KeyboardEvent) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+				return; // Don't interfere with form inputs
+			}
+			if (e.code === 'Space' && !isPlaying && phase !== 'FINISHED') {
+				e.preventDefault();
+				setIsPlaying(true);
+			} else if (e.code === 'Space' && isPlaying) {
+				e.preventDefault();
+				setIsPlaying(false);
+			} else if (e.code === 'ArrowRight' && phase !== 'FINISHED') {
+				e.preventDefault();
+				advanceNext();
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyPress);
+		return () => window.removeEventListener('keydown', handleKeyPress);
+	}, [isPlaying, phase, advanceNext]);
 
 	// Fetch Data
 	useEffect(() => {
@@ -32,10 +99,10 @@ const SessionPage = () => {
 				}
 				setLoading(false);
 			})
-			.catch(() => {
-				toast.error('Could not load routine');
-				navigate('/dashboard');
-			});
+		.catch((error) => {
+			toast.error(getErrorMessage(error));
+			navigate('/dashboard');
+		});
 	}, [routineId, navigate]);
 
 	const saveSessions = useCallback(async () => {
@@ -130,7 +197,9 @@ const SessionPage = () => {
 		return `${m}:${s.toString().padStart(2, '0')}`;
 	};
 
-	if (loading || !routine) return <div className="h-screen bg-[#0B1219] flex items-center justify-center text-white">Loading...</div>;
+	if (loading || !routine) {
+		return <LoadingSpinner fullPage message="Loading routine..." />;
+	}
 
 	if (phase === 'FINISHED') {
 		return (
@@ -193,12 +262,14 @@ const SessionPage = () => {
 			</header>
 
 			{/* Main Content */}
-			<main className="flex-1 flex flex-col items-center justify-center z-20 pb-20">
-				<div className={`mb-8 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${isRest ? 'border-green-500/30 bg-green-500/10 text-green-400' : 'border-primary/30 bg-primary/10 text-primary'}`}>
+			<main id="main-content" className="flex-1 flex flex-col items-center justify-center z-20 pb-20" aria-live="polite" aria-atomic="true">
+				<div className={`mb-8 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${isRest ? 'border-green-500/30 bg-green-500/10 text-green-400' : 'border-primary/30 bg-primary/10 text-primary'}`} role="status" aria-label={isRest ? 'Rest period' : 'Active practice'}>
 					{isRest ? 'Rest & Recover' : 'Focus Mode'}
 				</div>
 
-				<div className="text-[120px] font-black leading-none font-mono mb-6 tabular-nums tracking-tighter">{formatTime(timeRemaining)}</div>
+				<div className="text-[120px] font-black leading-none font-mono mb-6 tabular-nums tracking-tighter" aria-live="polite" aria-label={`Time remaining: ${formatTime(timeRemaining)}`}>
+					{formatTime(timeRemaining)}
+				</div>
 
 				<div className="text-center space-y-2 mb-12">
 					<h1 className="text-3xl md:text-5xl font-bold text-white">{isRest ? `Up Next: ${routine.items[currentIndex + 1]?.rudiment.name || 'Finish'}` : currentItem.rudiment.name}</h1>
@@ -212,15 +283,21 @@ const SessionPage = () => {
 				<div className="flex items-center gap-6">
 					<button
 						onClick={() => setIsPlaying(!isPlaying)}
-						className={`w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)] ${
+						aria-label={isPlaying ? 'Pause session' : 'Start session'}
+						aria-pressed={isPlaying}
+						className={`w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg ${
 							isPlaying ? 'bg-gray-800 text-white border border-gray-700' : 'bg-primary text-black hover:scale-105 shadow-[0_0_30px_-5px_rgba(0,229,255,0.4)]'
 						}`}
 					>
-						{isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+						{isPlaying ? <Pause size={32} fill="currentColor" aria-hidden="true" /> : <Play size={32} fill="currentColor" className="ml-1" aria-hidden="true" />}
 					</button>
 
-					<button onClick={advanceNext} className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-all">
-						<SkipForward size={24} />
+					<button 
+						onClick={advanceNext} 
+						aria-label="Skip to next exercise"
+						className="w-14 h-14 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
+					>
+						<SkipForward size={24} aria-hidden="true" />
 					</button>
 				</div>
 			</main>

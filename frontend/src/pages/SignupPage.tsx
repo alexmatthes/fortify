@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
+import Button from '../components/common/Button';
 import api from '../services/api';
+import { getErrorMessage } from '../utils/errorHandler';
 
 const SignupPage: React.FC = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 	const [error, setError] = useState<string | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
 	const validatePassword = () => {
@@ -32,12 +35,15 @@ const SignupPage: React.FC = () => {
 			return;
 		}
 		setError(null);
+		setIsLoading(true);
 		try {
 			await api.post('/auth/signup', { email, password });
 			toast.success('Account created! Please log in.');
 			navigate('/login');
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || 'Signup failed.');
+		} catch (error) {
+			toast.error(getErrorMessage(error));
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -77,12 +83,9 @@ const SignupPage: React.FC = () => {
 						/>
 					</div>
 					{error && <p className="text-red-500 text-sm">{error}</p>}
-					<button
-						type="submit"
-						className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg transition-colors"
-					>
+					<Button type="submit" isLoading={isLoading} className="w-full">
 						Create Account
-					</button>
+					</Button>
 				</form>
 				<p className="mt-6 text-center text-gray-400">
 					Already have an account?{' '}

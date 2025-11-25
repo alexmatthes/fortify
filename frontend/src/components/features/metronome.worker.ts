@@ -20,6 +20,8 @@
  * 'tick' messages back to the main thread at the specified interval.
  */
 
+// Web Worker context - self is typed as DedicatedWorkerGlobalScope in worker context
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ctx: Worker = self as any;
 
 let timerID: number | null = null;

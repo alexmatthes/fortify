@@ -6,7 +6,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', isLoading = false, className = '', ...props }) => {
-	const baseStyles = 'font-bold py-2 px-4 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2';
+	// Ensure minimum 44x44px touch target for mobile accessibility
+	const baseStyles = 'font-bold py-2 px-4 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2 min-h-[44px] min-w-[44px]';
 
 	const variants = {
 		primary: 'bg-primary hover:bg-primary-hover text-white shadow-primary/20',

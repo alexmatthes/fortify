@@ -9,9 +9,11 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/common/Card';
 import { Footer } from '../components/common/Footer';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import Metronome from '../components/features/Metronome';
 import api from '../services/api';
 import { DashboardStats, Routine, Rudiment, Session, SessionFormData, SessionHistory } from '../types/types';
+import { getErrorMessage } from '../utils/errorHandler';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
@@ -48,7 +50,7 @@ function DashboardPage() {
 					api.get<Rudiment[]>('/rudiments'),
 					api.get<VelocityPoint[]>('/sessions/velocity'),
 					api.get<{ date: string; duration: number }[]>('/sessions/history'),
-					api.get<any>('/sessions?limit=100'),
+					api.get<{ sessions: Session[] }>('/sessions?limit=100'),
 					api.get<Routine[]>('/routines'),
 				]);
 
@@ -67,7 +69,7 @@ function DashboardPage() {
 
 				setLoading(false);
 			} catch (error) {
-				console.error('Error fetching dashboard data', error);
+				toast.error(getErrorMessage(error));
 				setLoading(false);
 			}
 		};
@@ -85,7 +87,8 @@ function DashboardPage() {
 				setFormData((prev) => ({ ...prev, tempo: String(response.data.suggested_tempo) }));
 			}
 		} catch (error) {
-			console.error('Could not fetch suggested tempo');
+			// Silently fail - user can still enter tempo manually
+			console.warn('Could not fetch suggested tempo:', getErrorMessage(error));
 		}
 	};
 
@@ -100,7 +103,7 @@ function DashboardPage() {
 			const statsRes = await api.get<DashboardStats>('/dashboard/stats');
 			setStats(statsRes.data);
 		} catch (error) {
-			toast.error('Failed to log session.');
+			toast.error(getErrorMessage(error));
 		}
 	};
 
@@ -111,25 +114,34 @@ function DashboardPage() {
 			await api.delete(`/routines/${id}`);
 			setRoutines((prev) => prev.filter((r) => r.id !== id));
 			toast.success('Routine deleted');
-		} catch (e) {
-			toast.error('Failed to delete');
+		} catch (error) {
+			toast.error(getErrorMessage(error));
 		}
 	};
 
 	// --- Chart Prep ---
+	// Optimize chart data: sample large datasets to improve performance
+	const optimizeChartData = (data: VelocityPoint[], maxPoints: number = 100) => {
+		if (data.length <= maxPoints) return data;
+		// Sample evenly across the dataset
+		const step = Math.ceil(data.length / maxPoints);
+		return data.filter((_, index) => index % step === 0);
+	};
+
+	const optimizedVelocityData = optimizeChartData(velocityData);
 	const lineChartData = {
-		labels: velocityData.map((s) => new Date(s.date).toLocaleDateString()),
+		labels: optimizedVelocityData.map((s) => new Date(s.date).toLocaleDateString()),
 		datasets: [
 			{
 				label: 'Tempo (BPM)',
-				data: velocityData.map((s) => s.tempo),
+				data: optimizedVelocityData.map((s) => s.tempo),
 				borderColor: '#00E5FF',
 				backgroundColor: 'rgba(0, 229, 255, 0.1)',
 				tension: 0.4,
 				fill: true,
 				pointBackgroundColor: '#00E5FF',
 				pointBorderColor: '#fff',
-				pointRadius: 4,
+				pointRadius: optimizedVelocityData.length > 50 ? 2 : 4, // Smaller points for large datasets
 			},
 		],
 	};
@@ -155,7 +167,11 @@ function DashboardPage() {
 	const modernChartOptions: ChartOptions<'line'> = {
 		responsive: true,
 		maintainAspectRatio: false,
-		plugins: { legend: { display: false } },
+		plugins: { 
+			legend: { display: false },
+			// Disable animations for large datasets to improve performance
+			...(optimizedVelocityData.length > 50 && { animation: false })
+		},
 		scales: {
 			y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
 			x: { grid: { display: false }, ticks: { display: false } },
@@ -169,7 +185,9 @@ function DashboardPage() {
 		cutout: '70%',
 	};
 
-	if (loading) return <div className="p-8 text-white text-center">Loading Dashboard...</div>;
+	if (loading) {
+		return <LoadingSpinner fullPage message="Loading Dashboard..." />;
+	}
 
 	return (
 		<div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto pb-32 relative">
@@ -178,7 +196,7 @@ function DashboardPage() {
 					<h1 className="text-5xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Dashboard</h1>
 					<p className="text-gray-400 font-mono text-sm">Good afternoon. Ready to grind?</p>
 				</div>
-				<button onClick={() => setShowLogModal(true)} className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+				<button onClick={() => setShowLogModal(true)} aria-label="Log a new practice session" className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg">
 					+ Log Session
 				</button>
 			</header>
@@ -234,12 +252,17 @@ function DashboardPage() {
 										<div className="flex gap-3 mt-4">
 											<button
 												onClick={() => navigate(`/session/${routine.id}`)}
-												className="flex-1 bg-white/5 hover:bg-primary hover:text-black text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all"
+												aria-label={`Start routine: ${routine.name}`}
+												className="flex-1 bg-white/5 hover:bg-primary hover:text-black text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-card-bg"
 											>
-												<Play size={16} fill="currentColor" /> Start
+												<Play size={16} fill="currentColor" aria-hidden="true" /> Start
 											</button>
-											<button onClick={(e) => handleDeleteRoutine(e, routine.id)} className="p-2.5 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
-												<Trash2 size={18} />
+											<button 
+												onClick={(e) => handleDeleteRoutine(e, routine.id)} 
+												aria-label={`Delete routine: ${routine.name}`}
+												className="p-2.5 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-card-bg"
+											>
+												<Trash2 size={18} aria-hidden="true" />
 											</button>
 										</div>
 									</div>
@@ -279,9 +302,10 @@ function DashboardPage() {
 			{/* THE ORIGINAL FLOATING METRONOME BUTTON */}
 			<button
 				onClick={() => setShowMetronome(true)}
-				className="fixed bottom-10 right-10 w-16 h-16 bg-black border border-gray-700 text-primary rounded-full shadow-[0_0_30px_rgba(59,130,246,0.4)] flex items-center justify-center hover:scale-110 hover:border-primary transition-all z-50 group"
+				aria-label="Open metronome"
+				className="fixed bottom-10 right-10 w-16 h-16 bg-black border border-gray-700 text-primary rounded-full shadow-[0_0_30px_rgba(59,130,246,0.4)] flex items-center justify-center hover:scale-110 hover:border-primary transition-all z-50 group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 group-hover:animate-pulse">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 group-hover:animate-pulse" aria-hidden="true">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -294,8 +318,8 @@ function DashboardPage() {
 			{showMetronome && (
 				<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
 					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-sm shadow-2xl relative">
-						<button onClick={() => setShowMetronome(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-							✕
+						<button onClick={() => setShowMetronome(false)} aria-label="Close metronome" className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
+							<span aria-hidden="true">✕</span>
 						</button>
 						<h2 className="text-xl font-bold text-white mb-6 text-center font-mono">METRONOME</h2>
 						<Metronome />
@@ -309,8 +333,8 @@ function DashboardPage() {
 					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-md shadow-2xl">
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-2xl font-bold text-white">Log Session</h2>
-							<button onClick={() => setShowLogModal(false)} className="text-gray-400 hover:text-white">
-								✕
+							<button onClick={() => setShowLogModal(false)} aria-label="Close log session modal" className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
+								<span aria-hidden="true">✕</span>
 							</button>
 						</div>
 						<form onSubmit={handleSubmit} className="space-y-4">

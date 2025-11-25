@@ -4,11 +4,13 @@ import { ArrowLeft, Plus, Save, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import Button from '../components/common/Button';
 import { Footer } from '../components/common/Footer';
 import { IntensitySparkline } from '../components/common/IntensitySparkline';
 import { SortableRoutineItem } from '../components/features/SortableRoutineItem';
 import api from '../services/api';
 import { Rudiment } from '../types/types';
+import { getErrorMessage } from '../utils/errorHandler';
 
 // Local interface for the builder state
 export interface BuilderItem {
@@ -30,12 +32,13 @@ const RoutineBuilderPage = () => {
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState('');
+	const [isSaving, setIsSaving] = useState(false);
 
 	// Fetch Library
 	useEffect(() => {
 		api.get<Rudiment[]>('/rudiments')
 			.then((res) => setLibrary(res.data))
-			.catch(() => toast.error('Failed to load library'));
+			.catch((error) => toast.error(getErrorMessage(error)));
 	}, []);
 
 	// Drag Sensors
@@ -71,7 +74,7 @@ const RoutineBuilderPage = () => {
 		toast.success('Added!');
 	};
 
-	const updateItem = (id: string, field: keyof BuilderItem, value: any) => {
+	const updateItem = (id: string, field: keyof BuilderItem, value: string | number) => {
 		setItems((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)));
 	};
 
@@ -99,6 +102,7 @@ const RoutineBuilderPage = () => {
 		if (!routineName.trim()) return toast.error('Please name your routine');
 		if (items.length === 0) return toast.error('Add at least one exercise');
 
+		setIsSaving(true);
 		try {
 			await api.post('/routines', {
 				name: routineName,
@@ -107,7 +111,9 @@ const RoutineBuilderPage = () => {
 			toast.success('Routine Created!');
 			navigate('/dashboard');
 		} catch (error) {
-			toast.error('Failed to save routine');
+			toast.error(getErrorMessage(error));
+		} finally {
+			setIsSaving(false);
 		}
 	};
 
@@ -147,10 +153,10 @@ const RoutineBuilderPage = () => {
 						</div>
 					</div>
 					<div className="flex gap-3">
-						<button onClick={handleSave} className="bg-primary hover:bg-cyan-300 text-black font-black text-sm px-5 py-2.5 rounded-lg shadow-[0_0_20px_-5px_rgba(0,229,255,0.4)] transition-all flex items-center gap-2">
+						<Button onClick={handleSave} isLoading={isSaving} variant="primary" className="text-black font-black text-sm px-5 py-2.5 rounded-lg shadow-[0_0_20px_-5px_rgba(0,229,255,0.4)] flex items-center gap-2">
 							<Save size={18} />
 							SAVE ROUTINE
-						</button>
+						</Button>
 					</div>
 				</div>
 

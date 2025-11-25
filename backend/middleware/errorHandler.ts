@@ -5,8 +5,14 @@ import logger from '../utils/logger';
 
 // Helper function to check for Prisma's known request errors
 // This is a type guard which will inform TypeScript about the error's shape
-function isPrismaKnownError(error: object): error is { code: string; meta?: object; name: string; message: string } {
-	return 'code' in error && typeof (error as any).code === 'string' && (error as any).code.startsWith('P');
+function isPrismaKnownError(error: unknown): error is { code: string; meta?: object; name: string; message: string } {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof error.code === 'string' && // TypeScript knows 'code' exists now
+		error.code.startsWith('P')
+	);
 }
 
 export const errorHandler = (err: Error | AppError, req: Request, res: Response, next: NextFunction) => {
@@ -77,7 +83,3 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
 		...(process.env.NODE_ENV === 'development' && { error: err.message }),
 	});
 };
-
-
-
-

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Footer } from '../components/common/Footer';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import api from '../services/api';
 import { Rudiment } from '../types/types';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function LibraryPage() {
 	// 1. Strictly typed state
@@ -21,7 +23,7 @@ function LibraryPage() {
 				setRudiments(response.data);
 				setIsLoading(false);
 			} catch (error) {
-				toast.error('Failed to fetch rudiments.');
+				toast.error(getErrorMessage(error));
 				setIsLoading(false);
 			}
 		};
@@ -41,7 +43,7 @@ function LibraryPage() {
 			setIsModalOpen(false);
 			toast.success('Rudiment added!');
 		} catch (error) {
-			toast.error('Failed to add rudiment.');
+			toast.error(getErrorMessage(error));
 		}
 	};
 
@@ -53,7 +55,7 @@ function LibraryPage() {
 			setRudiments(rudiments.filter((r) => r.id !== id));
 			toast.success('Rudiment deleted.');
 		} catch (error) {
-			toast.error('Could not delete rudiment. You might not own it.');
+			toast.error(getErrorMessage(error));
 		}
 	};
 
@@ -100,7 +102,7 @@ function LibraryPage() {
 			{/* Table */}
 			<div className="bg-card-bg rounded-xl border border-gray-800 overflow-hidden shadow-xl">
 				{isLoading ? (
-					<div className="p-8 text-center text-gray-400">Loading your rudiments...</div>
+					<LoadingSpinner message="Loading your rudiments..." className="p-8" />
 				) : (
 					<table className="w-full text-left border-collapse">
 						<thead>

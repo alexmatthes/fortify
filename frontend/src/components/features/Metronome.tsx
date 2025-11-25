@@ -62,7 +62,7 @@ const Metronome: React.FC = () => {
 		};
 
 		if (!audioContext.current) {
-			const AudioCtor = window.AudioContext || (window as any).webkitAudioContext;
+			const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 			if (AudioCtor) {
 				audioContext.current = new AudioCtor();
 			}

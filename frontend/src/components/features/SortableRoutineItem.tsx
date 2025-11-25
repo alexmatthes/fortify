@@ -6,7 +6,7 @@ import { BuilderItem } from '../../pages/RoutineBuilderPage';
 
 interface Props {
 	item: BuilderItem;
-	onUpdate: (id: string, field: keyof BuilderItem, value: any) => void;
+	onUpdate: (id: string, field: keyof BuilderItem, value: string | number) => void;
 	onRemove: (id: string) => void;
 }
 
