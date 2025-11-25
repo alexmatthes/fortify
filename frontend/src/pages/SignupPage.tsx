@@ -6,10 +6,32 @@ import api from '../services/api';
 const SignupPage: React.FC = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [confirmPassword, setConfirmPassword] = useState('');
+	const [error, setError] = useState<string | null>(null);
 	const navigate = useNavigate();
+
+	const validatePassword = () => {
+		if (password !== confirmPassword) {
+			return "Passwords don't match.";
+		}
+		if (password.length < 8) {
+			return 'Password must be at least 8 characters.';
+		}
+		if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+			return 'Password must contain at least one uppercase letter, one lowercase letter, and one number.';
+		}
+		return null;
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		const passwordError = validatePassword();
+		if (passwordError) {
+			setError(passwordError);
+			toast.error(passwordError);
+			return;
+		}
+		setError(null);
 		try {
 			await api.post('/auth/signup', { email, password });
 			toast.success('Account created! Please log in.');
@@ -26,13 +48,39 @@ const SignupPage: React.FC = () => {
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div>
 						<label className="block text-sm text-gray-400 mb-1">Email</label>
-						<input type="email" required className="w-full bg-dark-bg border border-gray-600 rounded px-4 py-2 focus:border-primary outline-none" value={email} onChange={(e) => setEmail(e.target.value)} />
+						<input
+							type="email"
+							required
+							className="w-full bg-dark-bg border border-gray-600 rounded px-4 py-2 focus:border-primary outline-none"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+						/>
 					</div>
 					<div>
 						<label className="block text-sm text-gray-400 mb-1">Password</label>
-						<input type="password" required className="w-full bg-dark-bg border border-gray-600 rounded px-4 py-2 focus:border-primary outline-none" value={password} onChange={(e) => setPassword(e.target.value)} />
+						<input
+							type="password"
+							required
+							className="w-full bg-dark-bg border border-gray-600 rounded px-4 py-2 focus:border-primary outline-none"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+						/>
 					</div>
-					<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg transition-colors">
+					<div>
+						<label className="block text-sm text-gray-400 mb-1">Confirm Password</label>
+						<input
+							type="password"
+							required
+							className="w-full bg-dark-bg border border-gray-600 rounded px-4 py-2 focus:border-primary outline-none"
+							value={confirmPassword}
+							onChange={(e) => setConfirmPassword(e.target.value)}
+						/>
+					</div>
+					{error && <p className="text-red-500 text-sm">{error}</p>}
+					<button
+						type="submit"
+						className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg transition-colors"
+					>
 						Create Account
 					</button>
 				</form>
