@@ -8,10 +8,12 @@ import { asyncHandler } from '../utils/asyncHandler';
 const router = express.Router();
 
 const sessionSchema = z.object({
-	rudimentId: z.string().trim().cuid('Invalid Rudiment ID'),
-	duration: z.preprocess((val) => Number(val), z.number().positive('Duration must be positive').max(1440, 'Duration cannot exceed 1440 minutes')),
-	tempo: z.preprocess((val) => Number(val), z.number().min(30).max(300, 'Tempo out of range')),
-	quality: z.preprocess((val) => Number(val), z.number().int().min(1).max(4, 'Quality rating must be between 1 and 4')),
+	body: z.object({
+		rudimentId: z.string().trim().cuid('Invalid Rudiment ID'),
+		duration: z.preprocess((val) => Number(val), z.number().positive().max(1440)),
+		tempo: z.preprocess((val) => Number(val), z.number().min(30).max(300)),
+		quality: z.preprocess((val) => Number(val), z.number().int().min(1).max(4)),
+	}),
 });
 
 router.get('/history', auth, asyncHandler(sessionController.getConsistencyData));
