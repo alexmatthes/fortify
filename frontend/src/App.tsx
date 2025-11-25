@@ -1,5 +1,6 @@
 import posthog from 'posthog-js';
 import React, { useEffect } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -37,85 +38,87 @@ function App() {
 	const isAuthenticated = !!localStorage.getItem('token');
 
 	return (
-		<BrowserRouter>
-			<PostHogPageTracker />
-			<Toaster
-				position="top-center"
-				toastOptions={{
-					style: { background: '#1C2834', color: '#fff' },
-				}}
-			/>
-
-			<Routes>
-				{/* Wrap Public Routes */}
-				<Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
-
-				<Route
-					path="/login"
-					element={
-						<PublicRoute>
-							<LoginPage />
-						</PublicRoute>
-					}
-				/>
-				<Route
-					path="/signup"
-					element={
-						<PublicRoute>
-							<SignupPage />
-						</PublicRoute>
-					}
+		<HelmetProvider>
+			<BrowserRouter>
+				<PostHogPageTracker />
+				<Toaster
+					position="top-center"
+					toastOptions={{
+						style: { background: '#1C2834', color: '#fff' },
+					}}
 				/>
 
-				{/* Protected Routes */}
-				<Route
-					path="/dashboard"
-					element={
-						<ProtectedRoute>
-							<Navbar />
-							<DashboardPage />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/rudiments"
-					element={
-						<ProtectedRoute>
-							<Navbar />
-							<LibraryPage />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/settings"
-					element={
-						<ProtectedRoute>
-							<Navbar />
-							<SettingsPage />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/routines/new"
-					element={
-						<ProtectedRoute>
-							<RoutineBuilderPage />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/session/:routineId"
-					element={
-						<ProtectedRoute>
-							<SessionPage />
-						</ProtectedRoute>
-					}
-				/>
+				<Routes>
+					{/* Wrap Public Routes */}
+					<Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
 
-				<Route path="/blog" element={<BlogIndexPage />} />
-				<Route path="/blog/:slug" element={<BlogPostPage />} />
-			</Routes>
-		</BrowserRouter>
+					<Route
+						path="/login"
+						element={
+							<PublicRoute>
+								<LoginPage />
+							</PublicRoute>
+						}
+					/>
+					<Route
+						path="/signup"
+						element={
+							<PublicRoute>
+								<SignupPage />
+							</PublicRoute>
+						}
+					/>
+
+					{/* Protected Routes */}
+					<Route
+						path="/dashboard"
+						element={
+							<ProtectedRoute>
+								<Navbar />
+								<DashboardPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/rudiments"
+						element={
+							<ProtectedRoute>
+								<Navbar />
+								<LibraryPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/settings"
+						element={
+							<ProtectedRoute>
+								<Navbar />
+								<SettingsPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/routines/new"
+						element={
+							<ProtectedRoute>
+								<RoutineBuilderPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/session/:routineId"
+						element={
+							<ProtectedRoute>
+								<SessionPage />
+							</ProtectedRoute>
+						}
+					/>
+
+					<Route path="/blog" element={<BlogIndexPage />} />
+					<Route path="/blog/:slug" element={<BlogPostPage />} />
+				</Routes>
+			</BrowserRouter>
+		</HelmetProvider>
 	);
 }
 

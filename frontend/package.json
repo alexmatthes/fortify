@@ -21,6 +21,7 @@
 		"react-calendar-heatmap": "^1.10.0",
 		"react-chartjs-2": "^5.3.1",
 		"react-dom": "^19.2.0",
+		"react-helmet-async": "^2.0.5",
 		"react-hot-toast": "^2.6.0",
 		"react-router-dom": "^7.9.5",
 		"react-scripts": "5.0.1",
@@ -37,7 +38,8 @@
 		"build": "react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
-		"type-check": "tsc --noEmit"
+		"type-check": "tsc --noEmit",
+		"prebuild": "node scripts/generate-sitemap.js"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -58,6 +60,7 @@
 		]
 	},
 	"devDependencies": {
+		"@tailwindcss/typography": "^0.5.19",
 		"@types/react": "^19.2.6",
 		"@types/react-calendar-heatmap": "^1.9.0",
 		"@types/react-dom": "^19.2.3",
