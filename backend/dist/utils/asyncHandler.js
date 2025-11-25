@@ -5,7 +5,9 @@ exports.asyncHandler = void 0;
  * Wrapper for async route handlers to catch errors
  * Passes errors to Express error handling middleware
  */
-const asyncHandler = (fn) => {
+const asyncHandler = (
+// Change Promise<any> to Promise<void>
+fn) => {
     return (req, res, next) => {
         Promise.resolve(fn(req, res, next)).catch(next);
     };

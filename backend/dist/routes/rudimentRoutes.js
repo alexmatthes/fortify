@@ -44,10 +44,10 @@ const validate_1 = __importDefault(require("../middleware/validate"));
 const asyncHandler_1 = require("../utils/asyncHandler");
 const router = express_1.default.Router();
 const rudimentSchema = zod_1.z.object({
-    name: zod_1.z.string().min(1, 'Name is required'),
-    category: zod_1.z.string().min(1, 'Category is required'),
-    description: zod_1.z.string().optional(),
-    tempoIncrement: zod_1.z.number().optional().default(5),
+    name: zod_1.z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
+    category: zod_1.z.string().trim().min(1, 'Category is required').max(50, 'Category is too long'),
+    description: zod_1.z.string().trim().max(500, 'Description is too long').optional(),
+    tempoIncrement: zod_1.z.number().int().min(1).max(20, 'Tempo increment must be between 1 and 20').optional().default(5),
 });
 router.post('/', auth_1.default, (0, validate_1.default)(rudimentSchema), (0, asyncHandler_1.asyncHandler)(rudimentController.createRudiment));
 router.get('/', auth_1.default, (0, asyncHandler_1.asyncHandler)(rudimentController.getAllRudiments));

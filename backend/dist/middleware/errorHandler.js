@@ -1,15 +1,18 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.errorHandler = void 0;
-const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
 const errors_1 = require("../types/errors");
-/**
- * Centralized error handling middleware
- * Standardizes error responses and handles different error types
- */
+const logger_1 = __importDefault(require("../utils/logger"));
+// Helper function to check for Prisma's known request errors
+// This is a type guard which will inform TypeScript about the error's shape
+function isPrismaKnownError(error) {
+    return 'code' in error && typeof error.code === 'string' && error.code.startsWith('P');
+}
 const errorHandler = (err, req, res, next) => {
-    // If response already sent, delegate to default Express error handler
     if (res.headersSent) {
         return next(err);
     }
@@ -30,21 +33,25 @@ const errorHandler = (err, req, res, next) => {
             })),
         });
     }
-    // Handle Prisma errors
-    if (err instanceof client_1.Prisma.PrismaClientKnownRequestError) {
-        // Handle unique constraint violations
+    // Handle Prisma errors using the type guard
+    if (isPrismaKnownError(err)) {
         if (err.code === 'P2002') {
             return res.status(400).json({
                 message: 'A record with this information already exists.',
             });
         }
-        // Handle record not found
+        if (err.code === 'P2003') {
+            return res.status(400).json({
+                message: 'Invalid reference. The associated record (e.g. Rudiment) may not exist.',
+            });
+        }
         if (err.code === 'P2025') {
             return res.status(404).json({
                 message: 'Resource not found.',
             });
         }
-        // Generic Prisma error
+        // Log the actual database error for debugging
+        logger_1.default.error('Database Error', { code: err.code, meta: err.meta });
         return res.status(400).json({
             message: 'Database operation failed.',
         });
@@ -55,11 +62,13 @@ const errorHandler = (err, req, res, next) => {
             message: 'Invalid or expired token.',
         });
     }
-    // Log unexpected errors in development
-    if (process.env.NODE_ENV === 'development') {
-        console.error('Unexpected error:', err);
-    }
-    // Generic error response (don't leak error details in production)
+    // Log unexpected errors properly
+    logger_1.default.error('Unexpected error', {
+        error: err.message,
+        stack: err.stack,
+        path: req.path,
+        method: req.method,
+    });
     return res.status(500).json({
         message: 'An unexpected error occurred.',
         ...(process.env.NODE_ENV === 'development' && { error: err.message }),

@@ -1,8 +1,13 @@
-import { Prisma } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../types/errors';
 import logger from '../utils/logger';
+
+// Helper function to check for Prisma's known request errors
+// This is a type guard which will inform TypeScript about the error's shape
+function isPrismaKnownError(error: object): error is { code: string; meta?: object; name: string; message: string } {
+	return 'code' in error && typeof (error as any).code === 'string' && (error as any).code.startsWith('P');
+}
 
 export const errorHandler = (err: Error | AppError, req: Request, res: Response, next: NextFunction) => {
 	if (res.headersSent) {
@@ -28,8 +33,8 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
 		});
 	}
 
-	// Handle Prisma errors
-	if (err instanceof Prisma.PrismaClientKnownRequestError) {
+	// Handle Prisma errors using the type guard
+	if (isPrismaKnownError(err)) {
 		if (err.code === 'P2002') {
 			return res.status(400).json({
 				message: 'A record with this information already exists.',

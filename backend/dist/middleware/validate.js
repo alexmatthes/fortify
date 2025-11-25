@@ -1,24 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const zod_1 = require("zod");
-const validate = (schema) => async (req, res, next) => {
+exports.validate = void 0;
+const zod_1 = require("zod"); // Import ZodError
+const validate = (schema) => (req, res, next) => {
     try {
-        // FIX: Assign the parsed/transformed data back to req.body
-        req.body = await schema.parseAsync(req.body);
+        schema.parse({
+            body: req.body,
+            query: req.query,
+            params: req.params,
+        });
         next();
     }
     catch (error) {
+        // Check if it's actually a ZodError
         if (error instanceof zod_1.ZodError) {
-            res.status(400).json({
-                message: 'Validation failed',
-                errors: error.errors.map((e) => ({
-                    field: e.path.join('.'),
-                    message: e.message,
-                })),
-            });
-            return;
+            return res.status(400).json(error.errors);
         }
-        next(error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
-exports.default = validate;
+exports.validate = validate;
+exports.default = exports.validate;
