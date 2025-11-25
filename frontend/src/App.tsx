@@ -5,16 +5,20 @@ import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 // Pages
+import AboutPage from './pages/AboutPage';
 import BlogIndexPage from './pages/BlogIndexPage';
 import BlogPostPage from './pages/BlogPostPage';
+import ContactPage from './pages/ContactPage';
 import DashboardPage from './pages/DashboardPage';
 import LandingPage from './pages/LandingPage';
 import LibraryPage from './pages/LibraryPage';
 import LoginPage from './pages/LoginPage';
+import PrivacyPage from './pages/PrivacyPage';
 import RoutineBuilderPage from './pages/RoutineBuilderPage';
 import SessionPage from './pages/SessionPage'; // <--- ADD THIS IMPORT
 import SettingsPage from './pages/SettingsPage';
 import SignupPage from './pages/SignupPage';
+import TermsPage from './pages/TermsPage';
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -116,6 +120,10 @@ function App() {
 
 					<Route path="/blog" element={<BlogIndexPage />} />
 					<Route path="/blog/:slug" element={<BlogPostPage />} />
+					<Route path="/contact" element={<ContactPage />} />
+					<Route path="/privacy" element={<PrivacyPage />} />
+					<Route path="/terms" element={<TermsPage />} />
+					<Route path="/about" element={<AboutPage />} />
 				</Routes>
 			</BrowserRouter>
 		</HelmetProvider>

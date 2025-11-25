@@ -1,4 +1,5 @@
 import React from 'react';
+import { Footer } from '../components/common/Footer';
 
 const SettingsPage: React.FC = () => {
 	return (
@@ -28,6 +29,7 @@ const SettingsPage: React.FC = () => {
 					</div>
 				</section>
 			</div>
+			<Footer />
 		</div>
 	);
 };

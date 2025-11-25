@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Save, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { Footer } from '../components/common/Footer';
 import { IntensitySparkline } from '../components/common/IntensitySparkline';
 import { SortableRoutineItem } from '../components/features/SortableRoutineItem';
 import api from '../services/api';
@@ -225,6 +226,7 @@ const RoutineBuilderPage = () => {
 					</div>
 				</div>
 			)}
+			<Footer />
 		</div>
 	);
 };

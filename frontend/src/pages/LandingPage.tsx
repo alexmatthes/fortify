@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Footer } from '../components/common/Footer';
 import { client } from '../lib/sanityClient';
 import { BlogPost } from '../types/types';
 
@@ -104,26 +105,7 @@ const LandingPage: React.FC = () => {
 			</main>
 
 			{/* Footer */}
-			<footer className="bg-card-bg border-t border-gray-800 py-12">
-				<div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-					<div className="text-center md:text-left">
-						<span className="text-xl font-bold block mb-1">Fortify</span>
-						<p className="text-gray-500 text-sm">&copy; {new Date().getFullYear()} Fortify Drums.</p>
-					</div>
-
-					<div className="flex gap-8 text-sm text-gray-400">
-						<Link to="/blog" className="hover:text-white transition-colors">
-							Blog
-						</Link>
-						<Link to="/login" className="hover:text-white transition-colors">
-							Login
-						</Link>
-						<Link to="/signup" className="hover:text-white transition-colors">
-							Sign Up
-						</Link>
-					</div>
-				</div>
-			</footer>
+			<Footer />
 		</div>
 	);
 };

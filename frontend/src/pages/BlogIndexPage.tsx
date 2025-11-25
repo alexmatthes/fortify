@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Footer } from '../components/common/Footer';
 import Navbar from '../layouts/Navbar';
 import { client } from '../lib/sanityClient';
 import { BlogPost } from '../types/types';
@@ -51,6 +52,7 @@ const BlogIndexPage: React.FC = () => {
 					})}
 				</div>
 			</main>
+			<Footer />
 		</div>
 	);
 };

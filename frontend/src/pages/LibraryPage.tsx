@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Footer } from '../components/common/Footer';
 import api from '../services/api';
 import { Rudiment } from '../types/types';
 
@@ -216,9 +217,7 @@ function LibraryPage() {
 				</div>
 			)}
 
-			<footer className="text-center py-8 text-gray-600 text-sm">
-				<p>&copy; {new Date().getFullYear()} Fortify. Built by a drummer, for drummers.</p>
-			</footer>
+			<Footer />
 		</div>
 	);
 }

@@ -2,6 +2,7 @@ import { PortableText, PortableTextComponents } from '@portabletext/react';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async'; // <--- ADD THIS
 import { useParams } from 'react-router-dom';
+import { Footer } from '../components/common/Footer';
 import Navbar from '../layouts/Navbar';
 import { client } from '../lib/sanityClient';
 import { BlogPost } from '../types/types';
@@ -21,9 +22,7 @@ const portableTextComponents: PortableTextComponents = {
 		h2: ({ children }) => <h2 className="text-3xl font-semibold mt-10 mb-4 text-white">{children}</h2>,
 		h3: ({ children }) => <h3 className="text-2xl font-semibold mt-8 mb-3 text-white">{children}</h3>,
 		normal: ({ children }) => <p className="text-gray-200 leading-relaxed mb-6">{children}</p>,
-		blockquote: ({ children }) => (
-			<blockquote className="border-l-4 border-primary pl-4 italic text-gray-300 my-8">{children}</blockquote>
-		),
+		blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-4 italic text-gray-300 my-8">{children}</blockquote>,
 	},
 	list: {
 		bullet: ({ children }) => <ul className="list-disc pl-6 space-y-2 text-gray-200 mb-6">{children}</ul>,
@@ -111,6 +110,7 @@ const BlogPostPage: React.FC = () => {
 					<PortableText value={post.body} components={portableTextComponents} />
 				</div>
 			</article>
+			<Footer />
 		</div>
 	);
 };
