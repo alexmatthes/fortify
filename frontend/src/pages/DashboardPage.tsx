@@ -167,10 +167,10 @@ function DashboardPage() {
 	const modernChartOptions: ChartOptions<'line'> = {
 		responsive: true,
 		maintainAspectRatio: false,
-		plugins: { 
+		plugins: {
 			legend: { display: false },
 			// Disable animations for large datasets to improve performance
-			...(optimizedVelocityData.length > 50 && { animation: false })
+			...(optimizedVelocityData.length > 50 && { animation: false }),
 		},
 		scales: {
 			y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
@@ -196,7 +196,11 @@ function DashboardPage() {
 					<h1 className="text-5xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Dashboard</h1>
 					<p className="text-gray-400 font-mono text-sm">Good afternoon. Ready to grind?</p>
 				</div>
-				<button onClick={() => setShowLogModal(true)} aria-label="Log a new practice session" className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg">
+				<button
+					onClick={() => setShowLogModal(true)}
+					aria-label="Log a new practice session"
+					className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
+				>
 					+ Log Session
 				</button>
 			</header>
@@ -257,8 +261,8 @@ function DashboardPage() {
 											>
 												<Play size={16} fill="currentColor" aria-hidden="true" /> Start
 											</button>
-											<button 
-												onClick={(e) => handleDeleteRoutine(e, routine.id)} 
+											<button
+												onClick={(e) => handleDeleteRoutine(e, routine.id)}
 												aria-label={`Delete routine: ${routine.name}`}
 												className="p-2.5 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-card-bg"
 											>
@@ -367,6 +371,55 @@ function DashboardPage() {
 										value={formData.tempo}
 										onChange={(e) => setFormData({ ...formData, tempo: e.target.value })}
 									/>
+								</div>
+							</div>
+							<div>
+								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Quality</label>
+								<div className="grid grid-cols-4 gap-3">
+									<button
+										type="button"
+										onClick={() => setFormData({ ...formData, quality: '1' })}
+										className={`aspect-square rounded-xl font-bold text-base transition-all flex items-center justify-center ${
+											formData.quality === '1'
+												? 'bg-red-600 text-white border-2 border-red-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] scale-105'
+												: 'bg-red-600/20 text-red-400 border border-red-600/40 hover:bg-red-600/30 hover:border-red-500/60'
+										}`}
+									>
+										Sloppy
+									</button>
+									<button
+										type="button"
+										onClick={() => setFormData({ ...formData, quality: '2' })}
+										className={`aspect-square rounded-xl font-bold text-base transition-all flex items-center justify-center ${
+											formData.quality === '2'
+												? 'bg-orange-600 text-white border-2 border-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.5)] scale-105'
+												: 'bg-orange-600/20 text-orange-400 border border-orange-600/40 hover:bg-orange-600/30 hover:border-orange-500/60'
+										}`}
+									>
+										Okay
+									</button>
+									<button
+										type="button"
+										onClick={() => setFormData({ ...formData, quality: '3' })}
+										className={`aspect-square rounded-xl font-bold text-base transition-all flex items-center justify-center ${
+											formData.quality === '3'
+												? 'bg-blue-600 text-white border-2 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.5)] scale-105'
+												: 'bg-blue-600/20 text-blue-400 border border-blue-600/40 hover:bg-blue-600/30 hover:border-blue-500/60'
+										}`}
+									>
+										Good
+									</button>
+									<button
+										type="button"
+										onClick={() => setFormData({ ...formData, quality: '4' })}
+										className={`aspect-square rounded-xl font-bold text-base transition-all flex items-center justify-center ${
+											formData.quality === '4'
+												? 'bg-green-600 text-white border-2 border-green-400 shadow-[0_0_15px_rgba(22,163,74,0.5)] scale-105'
+												: 'bg-green-600/20 text-green-400 border border-green-600/40 hover:bg-green-600/30 hover:border-green-500/60'
+										}`}
+									>
+										Flawless
+									</button>
 								</div>
 							</div>
 							<button type="submit" className="w-full bg-primary text-black font-bold h-10 rounded-lg mt-2 hover:bg-cyan-300 transition-colors">

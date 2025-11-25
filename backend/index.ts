@@ -11,6 +11,7 @@ import logger from './utils/logger';
 
 // Import Routes
 import authRoutes from './routes/authRoutes';
+import contactRoutes from './routes/contactRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import routineRoutes from './routes/routineRoutes';
 import rudimentRoutes from './routes/rudimentRoutes';
@@ -62,6 +63,14 @@ const authLimiter = rateLimit({
 	legacyHeaders: false,
 });
 
+const contactLimiter = rateLimit({
+	windowMs: 60 * 60 * 1000, // 1 hour
+	max: 5, // 5 submissions per hour
+	message: 'Too many contact form submissions, please try again later.',
+	standardHeaders: true,
+	legacyHeaders: false,
+});
+
 app.use(globalLimiter);
 app.use(express.json());
 
@@ -70,6 +79,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/contact', contactLimiter, contactRoutes);
 app.use('/api/rudiments', rudimentRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/dashboard', dashboardRoutes);

@@ -1,9 +1,8 @@
 import { PortableText, PortableTextComponents } from '@portabletext/react';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async'; // <--- ADD THIS
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Footer } from '../components/common/Footer';
-import Navbar from '../layouts/Navbar';
 import { client } from '../lib/sanityClient';
 import { BlogPost } from '../types/types';
 
@@ -93,7 +92,19 @@ const BlogPostPage: React.FC = () => {
 			</Helmet>
 			{/* --- SEO INJECTION END --- */}
 
-			<Navbar />
+			{/* Header */}
+			<header className="flex justify-between items-center px-8 py-6 border-b border-gray-800">
+				<div className="text-2xl font-bold tracking-wide">Fortify</div>
+				<div className="flex gap-4">
+					<Link to="/login" className="text-gray-400 hover:text-white font-medium transition-colors pt-2">
+						Login
+					</Link>
+					<Link to="/signup" className="bg-primary hover:bg-primary-hover text-white font-bold py-2 px-4 rounded-lg transition-colors">
+						Get Started
+					</Link>
+				</div>
+			</header>
+
 			<article className="max-w-3xl mx-auto px-6 py-12">
 				<p className="text-primary text-sm mb-4 text-center">{new Date(post.publishedAt).toLocaleDateString()}</p>
 				<h1 className="text-4xl md:text-5xl font-bold mb-8 text-center leading-tight">{post.title}</h1>

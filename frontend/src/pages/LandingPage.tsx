@@ -30,9 +30,6 @@ const LandingPage: React.FC = () => {
 			<header className="flex justify-between items-center px-8 py-6 border-b border-gray-800">
 				<div className="text-2xl font-bold tracking-wide">Fortify</div>
 				<div className="flex gap-4">
-					<Link to="/blog" className="text-gray-400 hover:text-white font-medium transition-colors pt-2 hidden md:block">
-						Blog
-					</Link>
 					<Link to="/login" className="text-gray-400 hover:text-white font-medium transition-colors pt-2">
 						Login
 					</Link>
