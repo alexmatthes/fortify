@@ -1,6 +1,6 @@
 import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ArrowLeft, Plus, Save, Search } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Search, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -127,22 +127,22 @@ const RoutineBuilderPage = () => {
 	return (
 		<div className="min-h-screen bg-dark-bg text-white font-sans flex flex-col h-screen overflow-hidden">
 			{/* Header */}
-			<header className="bg-card-bg border-b border-gray-800 z-40 px-6 py-4 shadow-xl shrink-0">
+			<header className="bg-card-bg/80 backdrop-blur-xl border-b border-gray-800/50 z-40 px-6 py-5 shadow-xl shadow-black/20 shrink-0">
 				<div className="flex justify-between items-start mb-6">
 					<div className="flex-1 mr-8">
-						<div className="flex items-center gap-3 mb-2">
-							<button onClick={() => navigate(-1)} className="text-gray-500 hover:text-white transition-colors">
+						<div className="flex items-center gap-3 mb-3">
+							<button onClick={() => navigate(-1)} className="text-gray-500 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 p-2 rounded-lg hover:bg-gray-800/30">
 								<ArrowLeft size={20} />
 							</button>
 							<input
 								type="text"
 								placeholder="Routine Name..."
-								className="bg-transparent text-2xl font-black text-white placeholder-gray-700 border-none focus:ring-0 p-0 w-full"
+								className="bg-transparent text-2xl font-black text-white placeholder-gray-600 border-none focus:ring-0 p-0 w-full focus:outline-none"
 								value={routineName}
 								onChange={(e) => setRoutineName(e.target.value)}
 							/>
 						</div>
-						<div className="flex items-center gap-4 text-sm text-gray-500 font-mono pl-8">
+						<div className="flex items-center gap-4 text-sm text-gray-500 font-mono pl-11">
 							<span>
 								EST. TIME: <span className="text-white font-bold">{totalDurationDisplay}</span>
 							</span>
@@ -153,7 +153,7 @@ const RoutineBuilderPage = () => {
 						</div>
 					</div>
 					<div className="flex gap-3">
-						<Button onClick={handleSave} isLoading={isSaving} variant="primary" className="text-black font-black text-sm px-5 py-2.5 rounded-lg shadow-[0_0_20px_-5px_rgba(0,229,255,0.4)] flex items-center gap-2">
+						<Button onClick={handleSave} isLoading={isSaving} variant="primary" className="text-black font-black text-sm px-6 py-3 rounded-xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 flex items-center gap-2">
 							<Save size={18} />
 							SAVE ROUTINE
 						</Button>
@@ -182,9 +182,9 @@ const RoutineBuilderPage = () => {
 						{/* Add Button (Canvas) */}
 						<button
 							onClick={() => setIsAddModalOpen(true)}
-							className="w-full border-2 border-dashed border-gray-800 rounded-xl h-24 flex flex-col items-center justify-center text-gray-600 gap-2 hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all mt-4 group"
+							className="w-full border-2 border-dashed border-gray-800/50 rounded-2xl h-28 flex flex-col items-center justify-center text-gray-500 gap-3 hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all duration-300 mt-6 group backdrop-blur-sm"
 						>
-							<div className="bg-gray-800 text-gray-400 rounded-full p-2 group-hover:bg-primary group-hover:text-black transition-colors">
+							<div className="bg-gray-800/50 text-gray-400 rounded-full p-3 group-hover:bg-primary group-hover:text-black transition-all duration-300 group-hover:scale-110">
 								<Plus size={24} />
 							</div>
 							<span className="font-bold text-sm">Add Exercise</span>
@@ -195,35 +195,35 @@ const RoutineBuilderPage = () => {
 
 			{/* Add Modal */}
 			{isAddModalOpen && (
-				<div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex justify-center items-end sm:items-center sm:p-4 animate-fade-in">
-					<div className="bg-[#111827] w-full max-w-md sm:rounded-2xl border-t sm:border border-gray-800 h-[85vh] flex flex-col shadow-2xl ring-1 ring-white/10">
-						<div className="p-4 border-b border-gray-800 flex items-center gap-3">
-							<Search size={20} className="text-gray-500" />
+				<div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex justify-center items-end sm:items-center sm:p-4 animate-fade-in">
+					<div className="bg-card-bg/95 backdrop-blur-xl w-full max-w-md sm:rounded-2xl border-t sm:border border-gray-800/50 h-[85vh] flex flex-col shadow-2xl shadow-black/50">
+						<div className="p-5 border-b border-gray-800/50 flex items-center gap-3 bg-gray-900/20">
+							<Search size={20} className="text-gray-400" />
 							<input
 								type="text"
 								placeholder="Search library..."
-								className="bg-transparent border-none focus:ring-0 text-white w-full p-0 text-lg placeholder-gray-600"
+								className="bg-transparent border-none focus:ring-0 text-white w-full p-0 text-lg placeholder-gray-500 focus:outline-none"
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
 								autoFocus
 							/>
-							<button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-white p-2 bg-gray-800 rounded-full">
-								✕
+							<button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-white p-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95">
+								<X size={20} />
 							</button>
 						</div>
-						<div className="overflow-y-auto flex-1 p-2">
+						<div className="overflow-y-auto flex-1 p-3">
 							{filteredRudiments.map((r) => (
 								<button
 									key={r.id}
 									onClick={() => addItem(r)}
-									className="w-full text-left p-4 hover:bg-gray-800 rounded-xl flex justify-between items-center groupQD transition-colors border border-transparent hover:border-gray-700 mb-1"
+									className="w-full text-left p-4 hover:bg-gray-800/50 rounded-xl flex justify-between items-center group transition-all duration-200 border border-transparent hover:border-gray-700/50 mb-2 backdrop-blur-sm"
 								>
 									<div>
 										<span className="font-bold text-gray-200 block">{r.name}</span>
 										<span className="text-xs text-gray-500 uppercase tracking-wider font-bold">{r.category}</span>
 									</div>
-									<div className="w-8 h-8 rounded-full border border-gray-700 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-black transition-all">
-										<Plus size={16} />
+									<div className="w-9 h-9 rounded-full border border-gray-700/50 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-black transition-all duration-200 group-hover:scale-110">
+										<Plus size={18} />
 									</div>
 								</button>
 							))}

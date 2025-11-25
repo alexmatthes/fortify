@@ -5,24 +5,24 @@ const SettingsPage: React.FC = () => {
 	return (
 		<div className="min-h-screen bg-dark-bg p-8 text-white">
 			<div className="max-w-2xl mx-auto">
-				<h1 className="text-3xl font-bold mb-8">Settings</h1>
+				<h1 className="text-3xl md:text-4xl font-extrabold mb-10 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Settings</h1>
 
-				<section className="bg-card-bg p-6 rounded-xl border border-gray-800 mb-6">
-					<h2 className="text-xl font-semibold mb-4">Profile</h2>
-					<div className="space-y-4">
+				<section className="mb-8">
+					<h2 className="text-xl font-heading font-bold mb-6 bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">Profile</h2>
+					<div className="space-y-5">
 						<div>
-							<label className="block text-sm text-gray-400 mb-1">Email</label>
-							<input disabled type="text" value="user@example.com" className="w-full bg-dark-bg border border-gray-700 rounded px-3 py-2 text-gray-500 cursor-not-allowed" />
+							<label className="block text-sm font-semibold text-gray-300 mb-2">Email</label>
+							<input disabled type="text" value="user@example.com" className="w-full bg-surface/60 backdrop-blur-sm border border-card-border rounded-lg px-4 h-[50px] text-gray-500 cursor-not-allowed" />
 						</div>
-						<button className="text-primary text-sm hover:underline">Change Password</button>
+						<button className="text-primary hover:text-cyan-300 font-semibold text-sm transition-colors duration-200 hover:scale-105">Change Password</button>
 					</div>
 				</section>
 
-				<section className="bg-card-bg p-6 rounded-xl border border-gray-800">
-					<h2 className="text-xl font-semibold mb-4">Preferences</h2>
-					<div className="flex items-center justify-between py-2">
-						<span className="text-gray-300">Metronome Sound</span>
-						<select className="bg-dark-bg border border-gray-700 rounded px-3 py-1 text-sm outline-none">
+				<section>
+					<h2 className="text-xl font-heading font-bold mb-6 bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">Preferences</h2>
+					<div className="flex items-center justify-between py-4 border-b border-card-border last:border-0">
+						<span className="text-gray-300 font-medium">Metronome Sound</span>
+						<select className="bg-surface/60 backdrop-blur-sm border border-card-border rounded-lg px-4 h-[50px] text-sm text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200">
 							<option>Digital Click</option>
 							<option>Woodblock</option>
 						</select>

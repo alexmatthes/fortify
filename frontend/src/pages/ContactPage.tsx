@@ -61,52 +61,52 @@ const ContactPage: React.FC = () => {
 	return (
 		<div className="min-h-screen bg-dark-bg text-white flex flex-col font-sans">
 			{/* Header */}
-			<header className="flex justify-between items-center px-8 py-6 border-b border-gray-800">
-				<div className="text-2xl font-bold tracking-wide">Fortify</div>
+			<header className="flex justify-between items-center px-8 py-6 border-b border-gray-800/50 backdrop-blur-sm bg-dark-bg/80 sticky top-0 z-40">
+				<div className="text-2xl font-bold tracking-wide bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Fortify</div>
 				<div className="flex gap-4">
-					<Link to="/login" className="text-gray-400 hover:text-white font-medium transition-colors pt-2">
+					<Link to="/login" className="text-gray-400 hover:text-white font-medium transition-all duration-200 pt-2 hover:scale-105">
 						Login
 					</Link>
-					<Link to="/signup" className="bg-primary hover:bg-primary-hover text-white font-bold py-2 px-4 rounded-lg transition-colors">
+					<Link to="/signup" className="bg-primary hover:bg-primary-hover text-dark-bg font-bold py-2.5 px-6 rounded-xl transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 active:scale-95">
 						Get Started
 					</Link>
 				</div>
 			</header>
 
-			<main className="max-w-4xl mx-auto px-6 py-12 flex-grow">
-				<div className="mb-12">
-					<h1 className="text-5xl font-bold mb-6 text-center">Contact Us</h1>
+			<main className="max-w-4xl mx-auto px-6 py-16 flex-grow">
+				<div className="mb-14">
+					<h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-center bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">Contact Us</h1>
 					<p className="text-xl text-gray-400 text-center max-w-2xl mx-auto leading-relaxed">Have a question, suggestion, or found a bug? We'd love to hear from you.</p>
 				</div>
 
 				<div className="grid md:grid-cols-2 gap-12">
 					{/* Contact Information */}
 					<div>
-						<h2 className="text-2xl font-bold mb-6 text-primary">Get in Touch</h2>
+						<h2 className="text-2xl font-bold mb-8 bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">Get in Touch</h2>
 						<div className="space-y-6">
-							<div>
-								<h3 className="text-lg font-semibold mb-2">General Inquiries</h3>
-								<p className="text-gray-400">For general questions, feature requests, or feedback, please use the contact form.</p>
+							<div className="bg-card-bg/40 backdrop-blur-sm border border-gray-800/30 rounded-xl p-5 hover:border-primary/30 transition-all duration-300">
+								<h3 className="text-lg font-semibold mb-2 text-white">General Inquiries</h3>
+								<p className="text-gray-400 leading-relaxed">For general questions, feature requests, or feedback, please use the contact form.</p>
 							</div>
-							<div>
-								<h3 className="text-lg font-semibold mb-2">Bug Reports</h3>
-								<p className="text-gray-400">Found a bug? Please include as much detail as possible in your message, including steps to reproduce.</p>
+							<div className="bg-card-bg/40 backdrop-blur-sm border border-gray-800/30 rounded-xl p-5 hover:border-primary/30 transition-all duration-300">
+								<h3 className="text-lg font-semibold mb-2 text-white">Bug Reports</h3>
+								<p className="text-gray-400 leading-relaxed">Found a bug? Please include as much detail as possible in your message, including steps to reproduce.</p>
 							</div>
-							<div>
-								<h3 className="text-lg font-semibold mb-2">Feature Requests</h3>
-								<p className="text-gray-400">Have an idea for a feature? We're always looking for ways to improve Fortify while staying true to our "no BS" philosophy.</p>
+							<div className="bg-card-bg/40 backdrop-blur-sm border border-gray-800/30 rounded-xl p-5 hover:border-primary/30 transition-all duration-300">
+								<h3 className="text-lg font-semibold mb-2 text-white">Feature Requests</h3>
+								<p className="text-gray-400 leading-relaxed">Have an idea for a feature? We're always looking for ways to improve Fortify while staying true to our "no BS" philosophy.</p>
 							</div>
 						</div>
 
-						<div className="mt-8 bg-card-bg border border-gray-800 rounded-xl p-6">
-							<h3 className="text-lg font-semibold mb-4">Response Time</h3>
-							<p className="text-gray-400 text-sm">We typically respond to all inquiries within 2-3 business days. For urgent issues, please mark your message as "Urgent" in the subject line.</p>
+						<div className="mt-8 bg-card-bg/60 backdrop-blur-sm border border-gray-800/50 rounded-xl p-6 shadow-xl">
+							<h3 className="text-lg font-semibold mb-4 text-primary">Response Time</h3>
+							<p className="text-gray-400 text-sm leading-relaxed">We typically respond to all inquiries within 2-3 business days. For urgent issues, please mark your message as "Urgent" in the subject line.</p>
 						</div>
 					</div>
 
 					{/* Contact Form */}
 					<div>
-						<form onSubmit={handleSubmit} className="bg-card-bg border border-gray-800 rounded-xl p-8 space-y-6">
+						<form onSubmit={handleSubmit} className="bg-card-bg/80 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8 space-y-6 shadow-2xl shadow-black/30">
 							<div>
 								<label htmlFor="name" className="block text-sm font-medium mb-2 text-gray-300">
 									Name <span className="text-red-400">*</span>
@@ -180,7 +180,7 @@ const ContactPage: React.FC = () => {
 
 							{submitStatus === 'error' && <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 text-red-400 text-sm">{errorMessage || 'Something went wrong. Please try again later or email us directly.'}</div>}
 
-							<button type="submit" disabled={isSubmitting} className="w-full bg-primary hover:bg-primary-hover text-dark-bg font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+							<button type="submit" disabled={isSubmitting} className="w-full bg-primary hover:bg-primary-hover text-dark-bg font-bold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
 								{isSubmitting ? 'Sending...' : 'Send Message'}
 							</button>
 						</form>

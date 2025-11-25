@@ -23,17 +23,26 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'md', className 
 
 	if (fullPage) {
 		return (
-			<div className={`min-h-screen bg-dark-bg flex flex-col items-center justify-center text-white ${className}`}>
-				{spinner}
-				{message && <p className="mt-4 text-gray-400">{message}</p>}
+			<div className={`min-h-screen bg-dark-bg flex flex-col items-center justify-center text-white relative overflow-hidden ${className}`}>
+				<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none"></div>
+				<div className="relative z-10">
+					<div className="relative">
+						{spinner}
+						<div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse"></div>
+					</div>
+					{message && <p className="mt-6 text-gray-400 font-medium">{message}</p>}
+				</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className={`flex items-center justify-center gap-2 ${className}`}>
-			{spinner}
-			{message && <span className="text-gray-400">{message}</span>}
+		<div className={`flex items-center justify-center gap-3 ${className}`}>
+			<div className="relative">
+				{spinner}
+				<div className="absolute inset-0 bg-primary/10 blur-md rounded-full"></div>
+			</div>
+			{message && <span className="text-gray-400 font-medium">{message}</span>}
 		</div>
 	);
 };

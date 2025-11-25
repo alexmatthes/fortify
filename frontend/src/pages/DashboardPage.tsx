@@ -1,5 +1,5 @@
 import { ArcElement, CategoryScale, Chart as ChartJS, ChartOptions, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
-import { Clock, Play, Plus, Trash2 } from 'lucide-react';
+import { Clock, Play, Plus, Trash2, X } from 'lucide-react';
 import posthog from 'posthog-js';
 import React, { useEffect, useState } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
@@ -136,12 +136,22 @@ function DashboardPage() {
 				label: 'Tempo (BPM)',
 				data: optimizedVelocityData.map((s) => s.tempo),
 				borderColor: '#00E5FF',
-				backgroundColor: 'rgba(0, 229, 255, 0.1)',
+				backgroundColor: (context: any) => {
+					const ctx = context.chart.ctx;
+					const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+					gradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)');
+					gradient.addColorStop(1, 'rgba(0, 229, 255, 0)');
+					return gradient;
+				},
 				tension: 0.4,
 				fill: true,
 				pointBackgroundColor: '#00E5FF',
-				pointBorderColor: '#fff',
-				pointRadius: optimizedVelocityData.length > 50 ? 2 : 4, // Smaller points for large datasets
+				pointBorderColor: '#0a0e17',
+				pointBorderWidth: 2,
+				pointRadius: optimizedVelocityData.length > 50 ? 2 : 4,
+				pointHoverRadius: optimizedVelocityData.length > 50 ? 4 : 6,
+				pointHoverBackgroundColor: '#00E5FF',
+				pointHoverBorderColor: '#fff',
 			},
 		],
 	};
@@ -173,8 +183,26 @@ function DashboardPage() {
 			...(optimizedVelocityData.length > 50 && { animation: false }),
 		},
 		scales: {
-			y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-			x: { grid: { display: false }, ticks: { display: false } },
+			y: {
+				grid: {
+					color: 'rgba(148, 163, 184, 0.05)',
+					drawBorder: false,
+				} as any,
+				ticks: {
+					color: 'rgba(148, 163, 184, 0.5)',
+					font: { family: 'JetBrains Mono', size: 11 },
+				},
+				border: { display: false },
+			},
+			x: {
+				grid: { display: false },
+				ticks: { display: false },
+				border: { display: false },
+			},
+		},
+		animation: {
+			duration: 1500,
+			easing: 'easeOutQuart' as any,
 		},
 	};
 
@@ -193,13 +221,13 @@ function DashboardPage() {
 		<div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto pb-32 relative">
 			<header className="mb-12 flex justify-between items-end">
 				<div>
-					<h1 className="text-5xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Dashboard</h1>
-					<p className="text-gray-400 font-mono text-sm">Good afternoon. Ready to grind?</p>
+					<h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">Dashboard</h1>
+					<p className="text-gray-400 font-mono text-sm mt-2">Good afternoon. Ready to grind?</p>
 				</div>
 				<button
 					onClick={() => setShowLogModal(true)}
 					aria-label="Log a new practice session"
-					className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
+					className="bg-white text-black hover:bg-gray-100 font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-2xl shadow-white/20 hover:shadow-2xl hover:shadow-white/30 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
 				>
 					+ Log Session
 				</button>
@@ -207,23 +235,28 @@ function DashboardPage() {
 
 			{/* Stats Grid */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-				<Card>
-					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Total Time</h3>
-					<div className="text-4xl font-mono font-bold text-white">
-						{Math.floor(stats.totalTime / 60)}
-						<span className="text-gray-600">h</span> {stats.totalTime % 60}
-						<span className="text-gray-600">m</span>
+				<Card className="relative overflow-hidden group">
+					<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+					<h3 className="premium-label mb-6 relative z-10">Total Time</h3>
+					<div className="text-6xl font-mono font-bold text-white relative z-10 leading-none">
+						<span className="tabular-nums">{Math.floor(stats.totalTime / 60)}</span>
+						<span className="text-2xl text-gray-500 font-normal align-baseline ml-1">h</span>
+						<span className="tabular-nums ml-2">{stats.totalTime % 60}</span>
+						<span className="text-2xl text-gray-500 font-normal align-baseline ml-1">m</span>
 					</div>
 				</Card>
-				<Card>
-					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Max Speed</h3>
-					<div className="text-4xl font-mono font-bold text-accent">
-						{stats.fastestTempo} <span className="text-sm text-gray-600 align-top">BPM</span>
+				<Card className="relative overflow-hidden group">
+					<div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+					<h3 className="premium-label mb-6 relative z-10">Max Speed</h3>
+					<div className="text-6xl font-mono font-bold text-accent relative z-10 leading-none">
+						<span className="tabular-nums">{stats.fastestTempo}</span>
+						<span className="text-xl text-gray-500 font-normal align-baseline ml-2">BPM</span>
 					</div>
 				</Card>
-				<Card className="md:col-span-2">
-					<h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-4">Focus Rudiment</h3>
-					<div className="text-3xl font-bold text-white truncate bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">{stats.mostPracticed}</div>
+				<Card className="md:col-span-2 relative overflow-hidden group">
+					<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+					<h3 className="premium-label mb-6 relative z-10">Focus Rudiment</h3>
+					<div className="text-4xl font-heading font-bold text-white truncate bg-gradient-to-r from-primary via-cyan-300 to-purple-500 bg-clip-text text-transparent relative z-10">{stats.mostPracticed}</div>
 				</Card>
 
 				{/* Routines Section */}
@@ -235,9 +268,17 @@ function DashboardPage() {
 						</button>
 					</div>
 					{routines.length === 0 ? (
-						<div className="border-2 border-dashed border-gray-800 rounded-2xl p-12 text-center bg-card-bg">
-							<p className="text-gray-500 mb-4">No routines found.</p>
-							<button onClick={() => navigate('/routines/new')} className="text-white font-bold underline">
+						<div className="border-2 border-dashed border-card-border rounded-2xl p-16 text-center bg-surface/40 backdrop-blur-sm hover:border-primary/30 transition-all duration-300 relative overflow-hidden">
+							<div className="absolute inset-0 opacity-10">
+								<svg className="w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+									<path d="M100 50 L120 90 L160 90 L130 120 L140 160 L100 140 L60 160 L70 120 L40 90 L80 90 Z" fill="currentColor" stroke="none" />
+								</svg>
+							</div>
+							<p className="text-gray-500 mb-6 relative z-10">No routines found.</p>
+							<button
+								onClick={() => navigate('/routines/new')}
+								className="bg-primary hover:bg-primary-hover text-dark-bg font-bold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 active:scale-95 relative z-10"
+							>
 								Build your first routine
 							</button>
 						</div>
@@ -246,25 +287,29 @@ function DashboardPage() {
 							{routines.map((routine) => {
 								const totalMins = routine.items.reduce((acc, i) => acc + i.duration, 0);
 								return (
-									<div key={routine.id} className="bg-card-bg border border-gray-800 rounded-xl p-6 hover:border-primary/50 transition-all group flex flex-col">
-										<div className="flex-1">
+									<div
+										key={routine.id}
+										className="bg-card-bg/80 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group flex flex-col relative overflow-hidden"
+									>
+										<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+										<div className="flex-1 relative z-10">
 											<h3 className="text-xl font-bold text-white mb-2">{routine.name}</h3>
 											<div className="flex items-center gap-2 text-xs text-gray-500 font-mono mb-6">
 												<Clock size={12} /> {totalMins} mins • {routine.items.length} Exercises
 											</div>
 										</div>
-										<div className="flex gap-3 mt-4">
+										<div className="flex gap-3 mt-4 relative z-10">
 											<button
 												onClick={() => navigate(`/session/${routine.id}`)}
 												aria-label={`Start routine: ${routine.name}`}
-												className="flex-1 bg-white/5 hover:bg-primary hover:text-black text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-card-bg"
+												className="flex-1 bg-white/5 hover:bg-primary hover:text-black text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-card-bg"
 											>
 												<Play size={16} fill="currentColor" aria-hidden="true" /> Start
 											</button>
 											<button
 												onClick={(e) => handleDeleteRoutine(e, routine.id)}
 												aria-label={`Delete routine: ${routine.name}`}
-												className="p-2.5 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-card-bg"
+												className="p-2.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-card-bg"
 											>
 												<Trash2 size={18} aria-hidden="true" />
 											</button>
@@ -277,8 +322,8 @@ function DashboardPage() {
 				</div>
 
 				<Card className="md:col-span-4 mt-8">
-					<div className="flex justify-between items-end mb-4">
-						<h3 className="text-gray-300 font-semibold">Consistency Streak</h3>
+					<div className="flex justify-between items-end mb-6">
+						<h3 className="premium-label">Consistency Streak</h3>
 						<span className="text-xs text-gray-500 font-mono">Last 365 Days</span>
 					</div>
 					<div className="w-full overflow-x-auto pb-2">
@@ -307,7 +352,7 @@ function DashboardPage() {
 			<button
 				onClick={() => setShowMetronome(true)}
 				aria-label="Open metronome"
-				className="fixed bottom-10 right-10 w-16 h-16 bg-black border border-gray-700 text-primary rounded-full shadow-[0_0_30px_rgba(59,130,246,0.4)] flex items-center justify-center hover:scale-110 hover:border-primary transition-all z-50 group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
+				className="fixed bottom-10 right-10 w-16 h-16 bg-black/80 backdrop-blur-sm border border-gray-700/50 text-primary rounded-full shadow-2xl shadow-primary/30 flex items-center justify-center hover:scale-110 hover:border-primary hover:shadow-primary/50 transition-all duration-300 z-50 group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 group-hover:animate-pulse" aria-hidden="true">
 					<path
@@ -320,12 +365,16 @@ function DashboardPage() {
 
 			{/* THE ORIGINAL METRONOME POPUP */}
 			{showMetronome && (
-				<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-sm shadow-2xl relative">
-						<button onClick={() => setShowMetronome(false)} aria-label="Close metronome" className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
-							<span aria-hidden="true">✕</span>
+				<div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50 animate-fade-in">
+					<div className="bg-card-bg/90 backdrop-blur-xl p-8 rounded-2xl border border-gray-800/50 w-full max-w-sm shadow-2xl shadow-black/50 relative">
+						<button
+							onClick={() => setShowMetronome(false)}
+							aria-label="Close metronome"
+							className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary rounded-lg p-2 transition-all duration-200 hover:bg-gray-800/50"
+						>
+							<X size={20} aria-hidden="true" />
 						</button>
-						<h2 className="text-xl font-bold text-white mb-6 text-center font-mono">METRONOME</h2>
+						<h2 className="text-xl font-bold text-white mb-6 text-center font-mono tracking-wider">METRONOME</h2>
 						<Metronome />
 					</div>
 				</div>
@@ -333,18 +382,27 @@ function DashboardPage() {
 
 			{/* Log Session Modal - Kept from your current implementation */}
 			{showLogModal && (
-				<div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-					<div className="bg-card-bg p-8 rounded-2xl border border-card-border w-full max-w-md shadow-2xl">
+				<div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50 animate-fade-in">
+					<div className="bg-card-bg/90 backdrop-blur-xl p-8 rounded-2xl border border-gray-800/50 w-full max-w-md shadow-2xl shadow-black/50">
 						<div className="flex justify-between items-center mb-6">
-							<h2 className="text-2xl font-bold text-white">Log Session</h2>
-							<button onClick={() => setShowLogModal(false)} aria-label="Close log session modal" className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
-								<span aria-hidden="true">✕</span>
+							<h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Log Session</h2>
+							<button
+								onClick={() => setShowLogModal(false)}
+								aria-label="Close log session modal"
+								className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary rounded-lg p-2 transition-all duration-200 hover:bg-gray-800/50"
+							>
+								<X size={20} aria-hidden="true" />
 							</button>
 						</div>
-						<form onSubmit={handleSubmit} className="space-y-4">
+						<form onSubmit={handleSubmit} className="space-y-5">
 							<div>
-								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Rudiment</label>
-								<select required className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:border-primary outline-none" value={formData.rudimentId} onChange={handleRudimentChange}>
+								<label className="premium-label mb-3 block">Rudiment</label>
+								<select
+									required
+									className="w-full bg-surface/60 backdrop-blur-sm border border-card-border rounded-lg px-4 h-[50px] text-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-surface/80 outline-none transition-all duration-200 cursor-pointer hover:border-primary/50"
+									value={formData.rudimentId}
+									onChange={handleRudimentChange}
+								>
 									<option value="">Select...</option>
 									{rudiments.map((r) => (
 										<option key={r.id} value={r.id}>
@@ -355,26 +413,26 @@ function DashboardPage() {
 							</div>
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Duration (min)</label>
+									<label className="premium-label mb-3 block">Duration (min)</label>
 									<input
 										type="number"
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:border-primary outline-none"
+										className="w-full bg-surface/60 backdrop-blur-sm border border-card-border rounded-lg px-4 h-[50px] text-white font-mono focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-surface/80 outline-none transition-all duration-200 hover:border-primary/50"
 										value={formData.duration}
 										onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
 									/>
 								</div>
 								<div>
-									<label className="block text-gray-400 text-xs uppercase font-bold mb-2">BPM</label>
+									<label className="premium-label mb-3 block">BPM</label>
 									<input
 										type="number"
-										className="w-full bg-dark-bg border border-gray-700 rounded-lg px-4 h-10 text-white focus:border-primary outline-none"
+										className="w-full bg-surface/60 backdrop-blur-sm border border-card-border rounded-lg px-4 h-[50px] text-white font-mono focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-surface/80 outline-none transition-all duration-200 hover:border-primary/50"
 										value={formData.tempo}
 										onChange={(e) => setFormData({ ...formData, tempo: e.target.value })}
 									/>
 								</div>
 							</div>
 							<div>
-								<label className="block text-gray-400 text-xs uppercase font-bold mb-2">Quality</label>
+								<label className="premium-label mb-3 block">Quality</label>
 								<div className="grid grid-cols-4 gap-3">
 									<button
 										type="button"
@@ -422,7 +480,10 @@ function DashboardPage() {
 									</button>
 								</div>
 							</div>
-							<button type="submit" className="w-full bg-primary text-black font-bold h-10 rounded-lg mt-2 hover:bg-cyan-300 transition-colors">
+							<button
+								type="submit"
+								className="w-full bg-primary text-black font-bold h-11 rounded-lg mt-2 hover:bg-cyan-300 transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
+							>
 								Save Log
 							</button>
 						</form>

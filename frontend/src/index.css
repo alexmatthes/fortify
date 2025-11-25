@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,6 +9,10 @@ body {
 	position: relative;
 	/* Ensure the body fills the screen for the overlay to work */
 	min-height: 100vh;
+	/* Premium smooth scrolling */
+	scroll-behavior: smooth;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 /* Creates the noise texture on a separate layer */
@@ -26,26 +30,59 @@ body::before {
 	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
 
 	/* Key to the "premium" look: */
-	opacity: 0.04;
+	opacity: 0.03;
 	mix-blend-mode: overlay;
 }
 
-/* Modern scrollbar */
+/* Subtle gradient overlay for depth */
+body::after {
+	content: '';
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 49;
+	background: radial-gradient(ellipse at top, rgba(0, 229, 255, 0.03) 0%, transparent 50%);
+}
+
+/* Premium scrollbar */
 ::-webkit-scrollbar {
-	width: 8px;
+	width: 10px;
 }
 ::-webkit-scrollbar-track {
 	@apply bg-dark-bg;
 }
 ::-webkit-scrollbar-thumb {
 	@apply bg-gray-800 rounded-full;
+	border: 2px solid transparent;
+	background-clip: padding-box;
+	transition: background-color 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-gray-700;
 }
 
-/* Make inputs feel structural */
+/* Premium input styling - Industrial Luxury */
 input[type='text'],
 input[type='number'],
-select {
-	@apply font-mono border-2 border-gray-800 bg-black text-white rounded-md focus:border-primary focus:ring-0 transition-colors duration-100;
+input[type='email'],
+input[type='password'],
+select,
+textarea {
+	@apply border border-card-border bg-surface/60 backdrop-blur-sm text-white rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200;
+	box-shadow: 0 0 0 0 rgba(0, 229, 255, 0);
+	min-height: 50px;
+}
+input[type='text']:focus,
+input[type='number']:focus,
+input[type='email']:focus,
+input[type='password']:focus,
+select:focus,
+textarea:focus {
+	box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1), 0 0 20px rgba(0, 229, 255, 0.15);
+	background-color: rgba(17, 22, 32, 0.8);
 }
 
 /* --- Heatmap Overrides --- */
@@ -60,27 +97,32 @@ select {
 /* Empty Days (Dark Grey) */
 .react-calendar-heatmap .color-empty {
 	fill: #1e293b; /* Tailwind slate-800 */
-	outline: 1px solid #0f172a; /* Tiny border for grid effect */
+	outline: 1px solid #0a0e17; /* Tiny border for grid effect */
 }
 
-/* Activity Levels (Cyan/Blue Gradient) */
+/* Activity Levels (Cyan/Blue Gradient) with glow */
 .react-calendar-heatmap .color-scale-1 {
 	fill: #0e7490;
+	filter: drop-shadow(0 0 2px rgba(14, 116, 144, 0.5));
 } /* 1-15 mins (Dark Cyan) */
 .react-calendar-heatmap .color-scale-2 {
 	fill: #06b6d4;
+	filter: drop-shadow(0 0 3px rgba(6, 182, 212, 0.6));
 } /* 16-30 mins */
 .react-calendar-heatmap .color-scale-3 {
 	fill: #22d3ee;
+	filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.7));
 } /* 31-45 mins */
 .react-calendar-heatmap .color-scale-4 {
 	fill: #67e8f9;
+	filter: drop-shadow(0 0 5px rgba(103, 232, 249, 0.8));
 } /* 45+ mins (Bright Cyan) */
 
 /* Hover State */
 .react-calendar-heatmap rect:hover {
-	stroke: #fff;
-	stroke-width: 1px;
+	stroke: #00E5FF;
+	stroke-width: 2px;
+	filter: brightness(1.2);
 }
 
 /* Screen reader only class for accessibility */
@@ -106,4 +148,97 @@ select {
 	overflow: visible;
 	clip: auto;
 	white-space: normal;
+}
+
+/* Premium animations */
+@keyframes fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes shimmer {
+	0% {
+		background-position: -1000px 0;
+	}
+	100% {
+		background-position: 1000px 0;
+	}
+}
+
+.animate-fade-in {
+	animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-up {
+	animation: slide-up 0.4s ease-out;
+}
+
+/* Premium glassmorphism utility */
+.glass {
+	background: rgba(17, 22, 32, 0.6);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Industrial luxury card gradient - subtle light source effect */
+.card-gradient {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(17, 22, 32, 1) 100%);
+}
+
+/* Premium glow effects */
+.glow-primary {
+	box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 40px rgba(0, 229, 255, 0.1);
+}
+
+.glow-primary-hover:hover {
+	box-shadow: 0 0 30px rgba(0, 229, 255, 0.4), 0 0 60px rgba(0, 229, 255, 0.15);
+	transition: box-shadow 0.3s ease;
+}
+
+/* Outer glow for premium buttons */
+.outer-glow {
+	box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.2), 0 0 20px rgba(0, 229, 255, 0.3), 0 0 40px rgba(0, 229, 255, 0.1);
+}
+
+/* Chart animation - draw from left to right */
+@keyframes drawLine {
+	from {
+		stroke-dashoffset: 1000;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+.chart-line {
+	stroke-dasharray: 1000;
+	stroke-dashoffset: 1000;
+	animation: drawLine 1.5s ease-out forwards;
+}
+
+/* Premium label styling */
+.premium-label {
+	font-size: 0.625rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.125rem;
+	color: rgba(255, 255, 255, 0.5);
 }

@@ -17,24 +17,24 @@ interface BlogPostWithSEO extends Omit<BlogPost, 'mainImage'> {
 
 const portableTextComponents: PortableTextComponents = {
 	block: {
-		h1: ({ children }) => <h1 className="text-4xl font-semibold mt-12 mb-6 text-white">{children}</h1>,
-		h2: ({ children }) => <h2 className="text-3xl font-semibold mt-10 mb-4 text-white">{children}</h2>,
-		h3: ({ children }) => <h3 className="text-2xl font-semibold mt-8 mb-3 text-white">{children}</h3>,
-		normal: ({ children }) => <p className="text-gray-200 leading-relaxed mb-6">{children}</p>,
-		blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-4 italic text-gray-300 my-8">{children}</blockquote>,
+		h1: ({ children }) => <h1 className="text-4xl font-heading font-semibold mt-12 mb-6 text-white">{children}</h1>,
+		h2: ({ children }) => <h2 className="text-3xl font-heading font-semibold mt-10 mb-4 text-white">{children}</h2>,
+		h3: ({ children }) => <h3 className="text-2xl font-heading font-semibold mt-8 mb-3 text-white">{children}</h3>,
+		normal: ({ children }) => <p className="text-gray-200 leading-[1.6] mb-6 text-lg">{children}</p>,
+		blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-6 italic text-gray-300 my-8 text-lg leading-[1.6]">{children}</blockquote>,
 	},
 	list: {
-		bullet: ({ children }) => <ul className="list-disc pl-6 space-y-2 text-gray-200 mb-6">{children}</ul>,
-		number: ({ children }) => <ol className="list-decimal pl-6 space-y-2 text-gray-200 mb-6">{children}</ol>,
+		bullet: ({ children }) => <ul className="list-disc pl-6 space-y-2 text-gray-200 mb-6 text-lg leading-[1.6]">{children}</ul>,
+		number: ({ children }) => <ol className="list-decimal pl-6 space-y-2 text-gray-200 mb-6 text-lg leading-[1.6]">{children}</ol>,
 	},
 	marks: {
 		link: ({ children, value }) => (
-			<a href={value?.href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary-hover">
+			<a href={value?.href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-cyan-300 transition-colors duration-200">
 				{children}
 			</a>
 		),
-		strong: ({ children }) => <strong className="text-white">{children}</strong>,
-		em: ({ children }) => <em className="text-gray-100">{children}</em>,
+		strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+		em: ({ children }) => <em className="text-gray-100 italic">{children}</em>,
 	},
 };
 
@@ -105,15 +105,15 @@ const BlogPostPage: React.FC = () => {
 				</div>
 			</header>
 
-			<article className="max-w-3xl mx-auto px-6 py-12">
-				<p className="text-primary text-sm mb-4 text-center">{new Date(post.publishedAt).toLocaleDateString()}</p>
-				<h1 className="text-4xl md:text-5xl font-bold mb-8 text-center leading-tight">{post.title}</h1>
+			<article className="max-w-[700px] mx-auto px-6 py-16">
+				<p className="text-primary text-sm mb-4 text-center font-mono">{new Date(post.publishedAt).toLocaleDateString()}</p>
+				<h1 className="text-4xl md:text-5xl font-heading font-bold mb-10 text-center leading-tight">{post.title}</h1>
 
 				{post.mainImage && (
 					<img
 						src={post.mainImage.asset.url}
-						alt={post.mainImage.alt || post.title} // <--- Use the new Alt text
-						className="w-full h-auto rounded-xl mb-10 border border-gray-800"
+						alt={post.mainImage.alt || post.title}
+						className="w-full h-auto rounded-xl mb-12 border border-card-border shadow-xl"
 					/>
 				)}
 

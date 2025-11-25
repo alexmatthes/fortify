@@ -53,7 +53,26 @@ function App() {
 				<Toaster
 					position="top-center"
 					toastOptions={{
-						style: { background: '#1C2834', color: '#fff' },
+						style: { 
+							background: 'rgba(10, 10, 10, 0.95)',
+							color: '#fff',
+							border: '1px solid rgba(255, 255, 255, 0.1)',
+							backdropFilter: 'blur(12px)',
+							borderRadius: '12px',
+							boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2)',
+						},
+						success: {
+							iconTheme: {
+								primary: '#00E5FF',
+								secondary: '#0f172a',
+							},
+						},
+						error: {
+							iconTheme: {
+								primary: '#ef4444',
+								secondary: '#0f172a',
+							},
+						},
 					}}
 				/>
 

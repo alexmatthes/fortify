@@ -28,8 +28,8 @@ export function SortableRoutineItem({ item, onUpdate, onRemove }: Props) {
 				ref={setNodeRef}
 				style={style}
 				className={`
-                    group relative border rounded-xl overflow-hidden transition-all select-none
-                    ${isDragging ? 'bg-card-bg border-primary shadow-[0_0_30px_rgba(0,229,255,0.15)] scale-[1.02]' : 'bg-[#111827] border-gray-800 hover:border-gray-700'}
+                    group relative border rounded-2xl overflow-hidden transition-all duration-300 select-none backdrop-blur-sm
+                    ${isDragging ? 'bg-card-bg/90 border-primary shadow-2xl shadow-primary/30 scale-[1.02] z-50' : 'bg-card-bg/60 border-gray-800/50 hover:border-gray-700/50 hover:shadow-xl hover:shadow-black/20'}
                     ${isSmart ? 'border-l-4 border-l-primary' : ''}
                 `}
 			>

@@ -35,16 +35,18 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				// Modern web relies heavily on variable sans-serifs
+				// Premium heading font with technical character
 				sans: ['Inter', 'system-ui', 'sans-serif'],
-				// Use mono for numbers (BPM, Timers) for that "technical" feel
-				mono: ['JetBrains Mono', 'monospace'],
+				heading: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+				// Use mono for ALL data/metrics for engineering precision
+				mono: ['JetBrains Mono', 'IBM Plex Mono', 'monospace'],
 			},
 			colors: {
-				// Slate-900 background for "No BS" Dark Mode aesthetic
-				'dark-bg': '#0f172a',
-				'card-bg': '#0A0A0A',
-				'card-border': '#202020',
+				// Industrial luxury dark mode - refined color system
+				'dark-bg': '#0a0e17', // Base background
+				'surface': '#111620', // Card surface (lighter than background)
+				'card-bg': '#111620', // Alias for surface
+				'card-border': 'rgba(255, 255, 255, 0.1)', // 10% opacity borders
 				// Cyan primary color for "No BS" aesthetic
 				primary: '#00E5FF',
 				'primary-hover': '#00BCD4',

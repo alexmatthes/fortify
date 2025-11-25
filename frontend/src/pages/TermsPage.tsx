@@ -18,13 +18,17 @@ const TermsPage: React.FC = () => {
 				</div>
 			</header>
 
-			<main className="max-w-4xl mx-auto px-6 py-12 flex-grow">
+			<main className="max-w-[700px] mx-auto px-6 py-16 flex-grow">
 				<div className="mb-12">
-					<h1 className="text-5xl font-bold mb-6 text-center">Terms of Service</h1>
-					<p className="text-gray-400 text-center text-sm">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+					<h1 className="text-5xl font-heading font-bold mb-6 text-center bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Terms of Service</h1>
+					<p className="text-gray-400 text-center text-sm font-mono">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 				</div>
 
 				<div className="prose prose-invert prose-lg max-w-none space-y-8">
+					<style>{`
+						.prose p { font-size: 18px; line-height: 1.6; }
+						.prose ul li, .prose ol li { font-size: 18px; line-height: 1.6; }
+					`}</style>
 					<section className="bg-card-bg border border-gray-800 rounded-xl p-8">
 						<h2 className="text-2xl font-bold mb-4 text-primary">Agreement to Terms</h2>
 						<p className="text-gray-300 leading-relaxed mb-4">

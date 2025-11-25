@@ -1,3 +1,4 @@
+import { Pause, Play } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const Metronome: React.FC = () => {
@@ -96,15 +97,15 @@ const Metronome: React.FC = () => {
 	return (
 		<div className="flex flex-col items-center w-full">
 			{/* BPM Display */}
-			<div className="mb-8 text-center">
-				<span className="text-6xl font-bold text-white tracking-tighter block">{bpm}</span>
-				<span className="text-gray-400 text-sm uppercase tracking-widest">BPM</span>
+			<div className="mb-10 text-center">
+				<span className="text-7xl font-black text-white tracking-tighter block bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent">{bpm}</span>
+				<span className="text-gray-400 text-sm uppercase tracking-widest font-bold mt-2">BPM</span>
 			</div>
 
 			{/* Slider */}
-			<div className="w-full px-4 mb-10">
-				<input type="range" min="40" max="240" value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-hover" />
-				<div className="flex justify-between text-xs text-gray-500 mt-2">
+			<div className="w-full px-4 mb-12">
+				<input type="range" min="40" max="240" value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full h-2.5 bg-gray-800/50 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-hover transition-all duration-200" />
+				<div className="flex justify-between text-xs text-gray-500 mt-3 font-mono">
 					<span>40</span>
 					<span>140</span>
 					<span>240</span>
@@ -115,11 +116,11 @@ const Metronome: React.FC = () => {
 			<button
 				onClick={startStop}
 				className={`
-					w-24 h-24 rounded-full border-4 flex items-center justify-center transition-all duration-300 shadow-2xl
-					${isPlaying ? 'border-red-500 bg-red-500/20 text-red-500 animate-pulse shadow-red-500/30' : 'border-primary bg-transparent text-primary hover:bg-primary/10 hover:scale-105'}
+					w-28 h-28 rounded-full border-4 flex items-center justify-center transition-all duration-300 shadow-2xl backdrop-blur-sm
+					${isPlaying ? 'border-red-500/80 bg-red-500/20 text-red-400 animate-pulse shadow-red-500/40 hover:scale-110 active:scale-95' : 'border-primary bg-transparent text-primary hover:bg-primary/10 hover:scale-110 active:scale-95 shadow-primary/30 hover:shadow-primary/50'}
 				`}
 			>
-				{isPlaying ? <span className="material-symbols-outlined text-3xl font-bold">■</span> : <span className="material-symbols-outlined text-3xl font-bold">▶</span>}
+				{isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
 			</button>
 		</div>
 	);
