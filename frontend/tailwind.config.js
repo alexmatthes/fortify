@@ -1,6 +1,37 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
 	content: ['./src/**/*.{js,jsx,ts,tsx}'],
+	safelist: [
+		// Blog post typography classes that are dynamically used in PortableText components
+		// These classes are in component objects, so Tailwind's purge might miss them in production
+		'text-4xl',
+		'text-3xl',
+		'text-2xl',
+		'font-semibold',
+		'mt-12',
+		'mt-10',
+		'mt-8',
+		'mb-6',
+		'mb-4',
+		'mb-3',
+		'text-white',
+		'text-gray-200',
+		'text-gray-300',
+		'text-gray-100',
+		'leading-relaxed',
+		'border-l-4',
+		'border-primary',
+		'pl-4',
+		'pl-6',
+		'italic',
+		'my-8',
+		'list-disc',
+		'list-decimal',
+		'space-y-2',
+		'text-primary',
+		'underline',
+		'hover:text-primary-hover',
+	],
 	theme: {
 		extend: {
 			fontFamily: {
