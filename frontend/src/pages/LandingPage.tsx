@@ -74,12 +74,12 @@ const LandingPage: React.FC = () => {
 				<section className="bg-card-bg/50 backdrop-blur-sm border-y border-gray-800/50 py-24 relative overflow-hidden">
 					<div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 pointer-events-none"></div>
 					<div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
-						<div className="glass border border-card-border rounded-2xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 card-gradient">
-							<h3 className="text-2xl font-heading font-bold mb-4 bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">Math, Not Magic.</h3>
+						<div className="glass border border-card-border rounded-2xl p-10 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 card-gradient">
+							<h3 className="text-2xl font-heading font-bold mb-5 bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">Math, Not Magic.</h3>
 							<p className="text-gray-400 leading-relaxed">We use linear regression and progressive overload principles to calculate your exact next step.</p>
 						</div>
-						<div className="glass border border-card-border rounded-2xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 card-gradient">
-							<h3 className="text-2xl font-heading font-bold mb-4 bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">Always Ready.</h3>
+						<div className="glass border border-card-border rounded-2xl p-10 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 card-gradient">
+							<h3 className="text-2xl font-heading font-bold mb-5 bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">Always Ready.</h3>
 							<p className="text-gray-400 leading-relaxed">Internet down? Server offline? Fortify works offline as a PWA so your practice never stops.</p>
 						</div>
 					</div>
@@ -88,7 +88,7 @@ const LandingPage: React.FC = () => {
 				{/* NEW: Latest News Section */}
 				{latestPosts.length > 0 && (
 					<section className="py-24 px-6 max-w-6xl mx-auto">
-						<div className="flex justify-between items-end mb-10">
+						<div className="flex justify-between items-center mb-10">
 							<h2 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Latest Updates</h2>
 							<Link to="/blog" className="text-primary hover:text-cyan-300 font-semibold transition-all duration-200 hover:scale-105 flex items-center gap-1">
 								View all articles <span className="text-lg">→</span>
