@@ -1,7 +1,8 @@
 # START_SAFE.ps1
 # Starts Fortify WITHOUT wiping the database. Use this for daily work.
 
-$RootPath = $PSScriptRoot
+# FIX: Go up one level from the 'scripts' folder to find the project root
+$RootPath = Split-Path -Parent $PSScriptRoot
 $BackendPath = Join-Path $RootPath "backend"
 $FrontendPath = Join-Path $RootPath "frontend"
 
@@ -11,6 +12,8 @@ Write-Host "============================================" -ForegroundColor Cyan
 
 # 1. Ensure Docker DB is running
 Write-Host "Checking Database..." -ForegroundColor Yellow
+# FIX: Ensure we run docker-compose from the root where docker-compose.yml lives
+Set-Location $RootPath
 docker-compose up -d
 Write-Host "Database is UP." -ForegroundColor Green
 

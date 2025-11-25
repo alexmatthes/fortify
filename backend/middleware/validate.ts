@@ -1,23 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
-import { AnyZodObject, ZodError } from 'zod';
+import { AnyZodObject } from 'zod';
 
-const validate = (schema: AnyZodObject) => async (req: Request, res: Response, next: NextFunction) => {
+export const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: NextFunction) => {
 	try {
-		// FIX: Assign the parsed/transformed data back to req.body
-		req.body = await schema.parseAsync(req.body);
+		schema.parse({
+			body: req.body,
+			query: req.query,
+			params: req.params,
+		});
 		next();
-	} catch (error) {
-		if (error instanceof ZodError) {
-			res.status(400).json({
-				message: 'Validation failed',
-				errors: error.errors.map((e) => ({
-					field: e.path.join('.'),
-					message: e.message,
-				})),
-			});
-			return;
-		}
-		next(error);
+	} catch (error: any) {
+		return res.status(400).json(error.errors);
 	}
 };
 

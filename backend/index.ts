@@ -2,6 +2,8 @@ import cors from 'cors';
 import express, { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -13,6 +15,9 @@ import rudimentRoutes from './routes/rudimentRoutes';
 import sessionRoutes from './routes/sessionRoutes';
 
 const app = express();
+
+const swaggerDocument = YAML.load('./swagger.yaml');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.set('trust proxy', 1);
 
