@@ -7,7 +7,8 @@
 		"dev": "nodemon index.ts",
 		"build": "tsc && copyfiles swagger.yaml dist",
 		"start": "node dist/index.js",
-		"seed": "ts-node prisma/seed.ts"
+		"seed": "ts-node prisma/seed.ts",
+		"test": "jest"
 	},
 	"keywords": [],
 	"author": "",
@@ -15,8 +16,6 @@
 	"type": "commonjs",
 	"dependencies": {
 		"@prisma/client": "^6.19.0",
-		"@types/swagger-ui-express": "^4.1.8",
-		"@types/yamljs": "^0.2.34",
 		"bcryptjs": "^3.0.3",
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
@@ -27,9 +26,9 @@
 		"nodemon": "^3.1.10",
 		"prisma": "^6.19.0",
 		"swagger-ui-express": "^5.0.1",
-		"winston": "^3.18.3",
+		"winston": "^3.17.0",
 		"yamljs": "^0.3.0",
-		"zod": "^3.25.76"
+		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@types/bcryptjs": "^2.4.6",
@@ -39,6 +38,8 @@
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^24.10.1",
 		"@types/supertest": "^6.0.3",
+		"@types/swagger-ui-express": "^4.1.7",
+		"@types/yamljs": "^0.2.34",
 		"copyfiles": "^2.4.1",
 		"jest": "^30.2.0",
 		"supertest": "^7.1.4",
