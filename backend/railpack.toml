@@ -8,6 +8,7 @@ aptPackages = [
   "librsvg2-dev",
   "libpixman-1-dev",
   "pkg-config",
-  "python3"
+  "python3",
+  "python3-dev"
 ]
 
