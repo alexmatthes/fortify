@@ -1,17 +1,5 @@
 [phases.setup]
-nixPkgs = ['nodejs-22_x', 'npm']
-
-[phases.install]
-cmds = ['npm ci']
-
-[phases.build]
-cmds = ['npm run build']
-
-[start]
-cmd = 'npm run start'
-
-[providers.apt]
-packages = [
+aptPkgs = [
   'build-essential',
   'libcairo2-dev',
   'libpango1.0-dev',
