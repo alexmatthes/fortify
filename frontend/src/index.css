@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-	@apply bg-dark-bg text-white antialiased font-sans selection:bg-primary/30;
+	@apply bg-dark-bg text-signal antialiased font-sans;
 	position: relative;
 	/* Ensure the body fills the screen for the overlay to work */
 	min-height: 100vh;
@@ -13,9 +13,11 @@ body {
 	scroll-behavior: smooth;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	/* Tabular figures for all numbers to prevent jitter */
+	font-variant-numeric: tabular-nums;
 }
 
-/* Creates the noise texture on a separate layer */
+/* Subtle noise texture for matte finish */
 body::before {
 	content: '';
 	position: fixed;
@@ -23,57 +25,52 @@ body::before {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	pointer-events: none; /* Let clicks pass through */
-	z-index: 50; /* Sits on top of everything */
+	pointer-events: none;
+	z-index: 50;
 
-	/* High-frequency noise texture */
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+	/* Low-frequency noise texture for matte surface */
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
 
-	/* Key to the "premium" look: */
-	opacity: 0.03;
+	/* Very subtle matte texture */
+	opacity: 0.015;
 	mix-blend-mode: overlay;
 }
 
-/* Subtle gradient overlay for depth */
-body::after {
-	content: '';
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-	z-index: 49;
-	background: radial-gradient(ellipse at top, rgba(0, 229, 255, 0.03) 0%, transparent 50%);
-}
-
-/* Premium scrollbar */
+/* Matte scrollbar */
 ::-webkit-scrollbar {
 	width: 10px;
 }
 ::-webkit-scrollbar-track {
-	@apply bg-dark-bg;
+	background: #282427;
 }
 ::-webkit-scrollbar-thumb {
-	@apply bg-gray-800 rounded-full;
-	border: 2px solid transparent;
+	background: rgba(238, 235, 217, 0.2);
+	border-radius: 5px;
+	border: 2px solid #282427;
 	background-clip: padding-box;
 	transition: background-color 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
-	@apply bg-gray-700;
+	background: rgba(238, 235, 217, 0.3);
 }
 
-/* Premium input styling - Industrial Luxury */
+/* Matte input styling */
 input[type='text'],
 input[type='number'],
 input[type='email'],
 input[type='password'],
 select,
 textarea {
-	@apply border border-card-border bg-surface/60 backdrop-blur-sm text-white rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200;
-	box-shadow: 0 0 0 0 rgba(0, 229, 255, 0);
+	border: 1px solid rgba(238, 235, 217, 0.1);
+	background: rgba(40, 36, 39, 0.7);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	color: #EEEBD9;
+	border-radius: 8px;
+	font-variant-numeric: tabular-nums;
+	transition: all 0.2s ease;
 	min-height: 50px;
+	padding: 0.75rem 1rem;
 }
 input[type='text']:focus,
 input[type='number']:focus,
@@ -81,48 +78,44 @@ input[type='email']:focus,
 input[type='password']:focus,
 select:focus,
 textarea:focus {
-	box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1), 0 0 20px rgba(0, 229, 255, 0.15);
-	background-color: rgba(17, 22, 32, 0.8);
+	border-color: rgba(238, 235, 217, 0.5);
+	outline: none;
+	background-color: rgba(40, 36, 39, 0.9);
 }
 
-/* --- Heatmap Overrides --- */
+/* --- Heatmap Overrides - Monochromatic --- */
 
 /* Labels (Mon, Wed, Fri, Jan, Feb...) */
 .react-calendar-heatmap text {
 	font-size: 10px;
-	fill: #64748b; /* Tailwind slate-500 */
-	font-family: monospace;
+	fill: rgba(238, 235, 217, 0.4);
+	font-family: 'JetBrains Mono', monospace;
 }
 
-/* Empty Days (Dark Grey) */
+/* Empty Days (The Void) */
 .react-calendar-heatmap .color-empty {
-	fill: #1e293b; /* Tailwind slate-800 */
-	outline: 1px solid #0a0e17; /* Tiny border for grid effect */
+	fill: rgba(40, 36, 39, 0.8);
+	outline: 1px solid rgba(238, 235, 217, 0.05);
 }
 
-/* Activity Levels (Cyan/Blue Gradient) with glow */
+/* Activity Levels - Cream opacity variations */
 .react-calendar-heatmap .color-scale-1 {
-	fill: #0e7490;
-	filter: drop-shadow(0 0 2px rgba(14, 116, 144, 0.5));
-} /* 1-15 mins (Dark Cyan) */
+	fill: rgba(238, 235, 217, 0.2);
+} /* 1-15 mins */
 .react-calendar-heatmap .color-scale-2 {
-	fill: #06b6d4;
-	filter: drop-shadow(0 0 3px rgba(6, 182, 212, 0.6));
+	fill: rgba(238, 235, 217, 0.4);
 } /* 16-30 mins */
 .react-calendar-heatmap .color-scale-3 {
-	fill: #22d3ee;
-	filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.7));
+	fill: rgba(238, 235, 217, 0.6);
 } /* 31-45 mins */
 .react-calendar-heatmap .color-scale-4 {
-	fill: #67e8f9;
-	filter: drop-shadow(0 0 5px rgba(103, 232, 249, 0.8));
-} /* 45+ mins (Bright Cyan) */
+	fill: rgba(238, 235, 217, 0.9);
+} /* 45+ mins */
 
 /* Hover State */
 .react-calendar-heatmap rect:hover {
-	stroke: #00E5FF;
-	stroke-width: 2px;
-	filter: brightness(1.2);
+	stroke: rgba(238, 235, 217, 0.8);
+	stroke-width: 1px;
 }
 
 /* Screen reader only class for accessibility */
@@ -150,7 +143,7 @@ textarea:focus {
 	white-space: normal;
 }
 
-/* Premium animations */
+/* Animations */
 @keyframes fade-in {
 	from {
 		opacity: 0;
@@ -173,12 +166,13 @@ textarea:focus {
 	}
 }
 
-@keyframes shimmer {
-	0% {
-		background-position: -1000px 0;
+/* Flash effect for hardware-style feedback */
+@keyframes flash {
+	0%, 100% {
+		border-color: rgba(238, 235, 217, 0.1);
 	}
-	100% {
-		background-position: 1000px 0;
+	50% {
+		border-color: rgba(238, 235, 217, 1);
 	}
 }
 
@@ -190,32 +184,21 @@ textarea:focus {
 	animation: slide-up 0.4s ease-out;
 }
 
-/* Premium glassmorphism utility */
+.animate-flash {
+	animation: flash 0.3s ease-out;
+}
+
+/* Smoked matte glass utility */
 .glass {
-	background: rgba(17, 22, 32, 0.6);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: rgba(40, 36, 39, 0.7);
+	backdrop-filter: blur(24px);
+	-webkit-backdrop-filter: blur(24px);
+	border: 1px solid rgba(238, 235, 217, 0.1);
 }
 
-/* Industrial luxury card gradient - subtle light source effect */
-.card-gradient {
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(17, 22, 32, 1) 100%);
-}
-
-/* Premium glow effects */
-.glow-primary {
-	box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 40px rgba(0, 229, 255, 0.1);
-}
-
-.glow-primary-hover:hover {
-	box-shadow: 0 0 30px rgba(0, 229, 255, 0.4), 0 0 60px rgba(0, 229, 255, 0.15);
-	transition: box-shadow 0.3s ease;
-}
-
-/* Outer glow for premium buttons */
-.outer-glow {
-	box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.2), 0 0 20px rgba(0, 229, 255, 0.3), 0 0 40px rgba(0, 229, 255, 0.1);
+/* Deep diffuse shadows for depth */
+.shadow-matte {
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Chart animation - draw from left to right */
@@ -237,8 +220,9 @@ textarea:focus {
 /* Premium label styling */
 .premium-label {
 	font-size: 0.625rem;
-	font-weight: 700;
+	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.125rem;
-	color: rgba(255, 255, 255, 0.5);
+	color: rgba(238, 235, 217, 0.6);
+	font-family: 'Space Grotesk', sans-serif;
 }

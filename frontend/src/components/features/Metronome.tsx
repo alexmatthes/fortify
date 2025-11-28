@@ -98,14 +98,21 @@ const Metronome: React.FC = () => {
 		<div className="flex flex-col items-center w-full">
 			{/* BPM Display */}
 			<div className="mb-10 text-center">
-				<span className="text-7xl font-black text-white tracking-tighter block bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent">{bpm}</span>
-				<span className="text-gray-400 text-sm uppercase tracking-widest font-bold mt-2">BPM</span>
+				<span className="text-7xl font-black text-signal tracking-tighter block tabular-nums">{bpm}</span>
+				<span className="text-[rgba(238,235,217,0.6)] text-sm uppercase tracking-widest font-semibold mt-2">BPM</span>
 			</div>
 
 			{/* Slider */}
 			<div className="w-full px-4 mb-12">
-				<input type="range" min="40" max="240" value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full h-2.5 bg-gray-800/50 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-hover transition-all duration-200" />
-				<div className="flex justify-between text-xs text-gray-500 mt-3 font-mono">
+				<input 
+					type="range" 
+					min="40" 
+					max="240" 
+					value={bpm} 
+					onChange={(e) => setBpm(Number(e.target.value))} 
+					className="w-full h-2.5 bg-[rgba(238,235,217,0.1)] rounded-lg appearance-none cursor-pointer transition-all duration-200 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-signal [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-signal [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer" 
+				/>
+				<div className="flex justify-between text-xs text-[rgba(238,235,217,0.6)] mt-3 font-mono tabular-nums">
 					<span>40</span>
 					<span>140</span>
 					<span>240</span>
@@ -116,8 +123,11 @@ const Metronome: React.FC = () => {
 			<button
 				onClick={startStop}
 				className={`
-					w-28 h-28 rounded-full border-4 flex items-center justify-center transition-all duration-300 shadow-2xl backdrop-blur-sm
-					${isPlaying ? 'border-red-500/80 bg-red-500/20 text-red-400 animate-pulse shadow-red-500/40 hover:scale-110 active:scale-95' : 'border-primary bg-transparent text-primary hover:bg-primary/10 hover:scale-110 active:scale-95 shadow-primary/30 hover:shadow-primary/50'}
+					w-28 h-28 rounded-full border-4 flex items-center justify-center transition-all duration-200 shadow-[0_8px_32px_rgba(0,0,0,0.4)]
+					${isPlaying 
+						? 'border-signal/80 bg-transparent text-signal hover:border-signal hover:scale-105 active:scale-95 active:animate-flash' 
+						: 'border-[rgba(238,235,217,0.3)] bg-transparent text-[rgba(238,235,217,0.8)] hover:border-signal/60 hover:text-signal hover:scale-105 active:scale-95 active:animate-flash'
+					}
 				`}
 			>
 				{isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}

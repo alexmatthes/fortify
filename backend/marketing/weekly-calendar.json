@@ -1,0 +1,22 @@
+{
+	"monday": {
+		"theme": "Motivation Monday",
+		"postTypes": ["stats"],
+		"time": "10:00",
+		"description": "Community stats and progress highlights"
+	},
+	"wednesday": {
+		"theme": "Wisdom Wednesday",
+		"postTypes": ["tip", "rudimentSpotlight"],
+		"time": "18:00",
+		"description": "Educational content - tips and rudiment spotlights",
+		"alternate": true
+	},
+	"friday": {
+		"theme": "Feature Friday",
+		"postTypes": ["velocity", "rudiments"],
+		"time": "10:00",
+		"description": "Data visualizations and charts",
+		"alternate": true
+	}
+}

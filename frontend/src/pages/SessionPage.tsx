@@ -203,31 +203,30 @@ const SessionPage = () => {
 
 	if (phase === 'FINISHED') {
 		return (
-			<div className="h-screen bg-[#0B1219] flex flex-col items-center justify-center text-white p-6 text-center relative overflow-hidden">
-				<div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none"></div>
+			<div className="h-screen bg-dark-bg flex flex-col items-center justify-center text-signal p-6 text-center relative overflow-hidden">
 				{saveStatus === 'SAVING' ? (
 					<>
-						<div className="animate-spin rounded-full h-20 w-20 border-4 border-primary/30 border-t-primary mb-8 relative z-10"></div>
-						<h1 className="text-3xl font-bold mb-2 relative z-10 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Saving Progress...</h1>
+						<div className="animate-spin rounded-full h-20 w-20 border-4 border-[rgba(238,235,217,0.2)] border-t-signal mb-8 relative z-10"></div>
+						<h1 className="text-3xl font-heading font-semibold mb-2 relative z-10 text-signal">Saving Progress...</h1>
 					</>
 				) : (
 					<>
-						<CheckCircle2 size={80} className="text-primary mb-8 relative z-10 animate-fade-in" />
-						<h1 className="text-4xl md:text-5xl font-black mb-4 relative z-10 bg-gradient-to-r from-primary via-cyan-300 to-primary bg-clip-text text-transparent">SESSION COMPLETE</h1>
-						<div className="text-gray-400 mb-10 max-w-md relative z-10">
+						<CheckCircle2 size={80} className="text-signal mb-8 relative z-10 animate-fade-in" />
+						<h1 className="text-4xl md:text-5xl font-heading font-bold mb-4 relative z-10 text-signal tracking-tight">SESSION COMPLETE</h1>
+						<div className="text-[rgba(238,235,217,0.6)] mb-10 max-w-md relative z-10">
 							<p className="mb-6 text-lg">Great work! Your consistency score is up.</p>
 							{sessionSummary.length > 0 && (
-								<div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 text-left text-sm space-y-3 shadow-xl">
+								<div className="bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-xl p-6 text-left text-sm space-y-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
 									{sessionSummary.map((s, i) => (
 										<div key={i} className="flex items-center gap-3">
-											<div className="w-2 h-2 rounded-full bg-green-400 shadow-lg shadow-green-400/50" />
-											<span className="text-gray-300">{s}</span>
+											<div className="w-2 h-2 rounded-full bg-signal/60" />
+											<span className="text-[rgba(238,235,217,0.8)]">{s}</span>
 										</div>
 									))}
 								</div>
 							)}
 						</div>
-						<button onClick={() => navigate('/dashboard')} className="bg-primary hover:bg-cyan-300 text-black font-bold py-3.5 px-10 rounded-xl transition-all duration-300 shadow-2xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:scale-105 active:scale-95 relative z-10">
+						<button onClick={() => navigate('/dashboard')} className="bg-signal text-dark-bg font-semibold py-3.5 px-10 rounded-lg transition-all duration-200 hover:bg-signal/95 active:scale-95 relative z-10">
 							Back to Dashboard
 						</button>
 					</>
@@ -242,20 +241,20 @@ const SessionPage = () => {
 	const progress = ((totalDuration - timeRemaining) / totalDuration) * 100;
 
 	return (
-		<div className="h-screen bg-[#0B1219] flex flex-col relative overflow-hidden text-white font-sans">
+		<div className="h-screen bg-dark-bg flex flex-col relative overflow-hidden text-signal font-sans">
 			{/* Progress Bar */}
-			<div className="absolute top-0 left-0 w-full h-1.5 bg-gray-900/50 z-10">
-				<div className={`h-full transition-all duration-1000 ease-linear ${isRest ? 'bg-gradient-to-r from-green-500 to-green-400 shadow-lg shadow-green-500/50' : 'bg-gradient-to-r from-primary to-cyan-300 shadow-lg shadow-primary/50'}`} style={{ width: `${progress}%` }} />
+			<div className="absolute top-0 left-0 w-full h-1.5 bg-[rgba(238,235,217,0.05)] z-10">
+				<div className="h-full bg-signal transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }} />
 			</div>
 
 			{/* Header */}
-			<header className="p-6 flex items-center justify-between z-20 bg-[#0B1219]/80 backdrop-blur-sm border-b border-gray-800/30">
-				<button onClick={() => navigate('/dashboard')} className="text-gray-500 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 p-2 rounded-lg hover:bg-gray-800/30">
+			<header className="p-6 flex items-center justify-between z-20 bg-[rgba(40,36,39,0.8)] backdrop-blur-[24px] border-b border-[rgba(238,235,217,0.1)]">
+				<button onClick={() => navigate('/dashboard')} className="text-[rgba(238,235,217,0.6)] hover:text-signal transition-colors duration-200 active:scale-95 p-2 rounded-lg">
 					<ArrowLeft size={20} />
 				</button>
 				<div className="text-center">
-					<h2 className="text-xs font-bold text-gray-400 tracking-widest uppercase">{routine.name}</h2>
-					<p className="text-xs text-gray-600 font-mono mt-1">
+					<h2 className="text-xs font-heading font-semibold text-[rgba(238,235,217,0.6)] tracking-widest uppercase">{routine.name}</h2>
+					<p className="text-xs text-[rgba(238,235,217,0.4)] font-mono mt-1 tabular-nums">
 						ITEM {currentIndex + 1} / {routine.items.length}
 					</p>
 				</div>
@@ -264,10 +263,11 @@ const SessionPage = () => {
 
 			{/* Main Content */}
 			<main id="main-content" className="flex-1 flex flex-col items-center justify-center z-20 pb-20 relative" aria-live="polite" aria-atomic="true">
-				<div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none"></div>
 				<div
-					className={`mb-10 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-sm relative z-10 ${
-						isRest ? 'border-green-500/40 bg-green-500/10 text-green-400 shadow-lg shadow-green-500/20' : 'border-primary/40 bg-primary/10 text-primary shadow-lg shadow-primary/20'
+					className={`mb-10 px-5 py-2 rounded-full text-[10px] font-heading font-semibold uppercase tracking-widest border backdrop-blur-sm relative z-10 ${
+						isRest 
+							? 'border-[rgba(238,235,217,0.3)] bg-[rgba(238,235,217,0.05)] text-[rgba(238,235,217,0.8)]' 
+							: 'border-[rgba(238,235,217,0.4)] bg-[rgba(238,235,217,0.05)] text-signal'
 					}`}
 					role="status"
 					aria-label={isRest ? 'Rest period' : 'Active practice'}
@@ -275,15 +275,15 @@ const SessionPage = () => {
 					{isRest ? 'Rest & Recover' : 'Focus Mode'}
 				</div>
 
-				<div className="text-[120px] md:text-[140px] font-black leading-none font-mono mb-8 tabular-nums tracking-tighter relative z-10 bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent" aria-live="polite" aria-label={`Time remaining: ${formatTime(timeRemaining)}`}>
+				<div className="text-[120px] md:text-[140px] font-black leading-none font-mono mb-8 tabular-nums tracking-tighter relative z-10 text-signal" aria-live="polite" aria-label={`Time remaining: ${formatTime(timeRemaining)}`}>
 					{formatTime(timeRemaining)}
 				</div>
 
 				<div className="text-center space-y-3 mb-14 relative z-10">
-					<h1 className="text-3xl md:text-5xl font-bold text-white">{isRest ? `Up Next: ${routine.items[currentIndex + 1]?.rudiment.name || 'Finish'}` : currentItem.rudiment.name}</h1>
+					<h1 className="text-3xl md:text-5xl font-heading font-bold text-signal">{isRest ? `Up Next: ${routine.items[currentIndex + 1]?.rudiment.name || 'Finish'}` : currentItem.rudiment.name}</h1>
 					{!isRest && (
-						<p className="text-xl text-gray-400 font-mono">
-							Target: <span className="text-primary font-bold bg-gradient-to-r from-primary to-cyan-300 bg-clip-text text-transparent">{currentItem.targetTempo} BPM</span>
+						<p className="text-xl text-[rgba(238,235,217,0.6)] font-mono tabular-nums">
+							Target: <span className="text-signal font-bold">{currentItem.targetTempo} BPM</span>
 						</p>
 					)}
 				</div>
@@ -293,10 +293,10 @@ const SessionPage = () => {
 						onClick={() => setIsPlaying(!isPlaying)}
 						aria-label={isPlaying ? 'Pause session' : 'Start session'}
 						aria-pressed={isPlaying}
-						className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg ${
+						className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-signal/50 ${
 							isPlaying
-								? 'bg-gray-800/80 backdrop-blur-sm text-white border-2 border-gray-700 shadow-xl hover:scale-105 active:scale-95'
-								: 'bg-primary text-black hover:scale-110 active:scale-95 shadow-2xl shadow-primary/50 hover:shadow-primary/70'
+								? 'bg-transparent border-4 border-[rgba(238,235,217,0.4)] text-[rgba(238,235,217,0.8)] hover:border-signal hover:text-signal active:scale-95 active:animate-flash'
+								: 'bg-signal text-dark-bg hover:bg-signal/95 active:scale-95'
 						}`}
 					>
 						{isPlaying ? <Pause size={36} fill="currentColor" aria-hidden="true" /> : <Play size={36} fill="currentColor" className="ml-1" aria-hidden="true" />}
@@ -305,7 +305,7 @@ const SessionPage = () => {
 					<button
 						onClick={advanceNext}
 						aria-label="Skip to next exercise"
-						className="w-16 h-16 rounded-full bg-gray-800/80 backdrop-blur-sm border-2 border-gray-700/50 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700/50 hover:border-gray-600 transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark-bg"
+						className="w-16 h-16 rounded-full bg-transparent border-2 border-[rgba(238,235,217,0.2)] flex items-center justify-center text-[rgba(238,235,217,0.6)] hover:text-signal hover:border-[rgba(238,235,217,0.4)] transition-all duration-200 active:scale-95 active:animate-flash focus:outline-none focus:ring-2 focus:ring-signal/50"
 					>
 						<SkipForward size={26} aria-hidden="true" />
 					</button>

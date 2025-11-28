@@ -27,29 +27,28 @@ const LoginPage: React.FC = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-dark-bg flex flex-col justify-center items-center p-4 text-white relative overflow-hidden">
-			<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none"></div>
-			<div className="max-w-md w-full bg-card-bg/80 backdrop-blur-xl p-10 rounded-2xl border border-gray-800/50 shadow-2xl shadow-black/50 relative z-10">
+		<div className="min-h-screen bg-dark-bg flex flex-col justify-center items-center p-4 text-signal relative overflow-hidden">
+			<div className="max-w-md w-full bg-[rgba(40,36,39,0.95)] backdrop-blur-[24px] p-10 rounded-2xl border border-[rgba(238,235,217,0.1)] shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative z-10">
 				<div className="text-center mb-8">
-					<h2 className="text-3xl font-extrabold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Login to Fortify</h2>
-					<p className="text-gray-500 text-sm">Welcome back</p>
+					<h2 className="text-3xl font-heading font-semibold mb-2 text-signal">Login to Fortify</h2>
+					<p className="text-[rgba(238,235,217,0.6)] text-sm">Welcome back</p>
 				</div>
 				<form onSubmit={handleSubmit} className="space-y-5">
 					<div>
-						<label className="block text-sm font-semibold text-gray-300 mb-2">Email</label>
-						<input type="email" required className="w-full bg-surface/60 backdrop-blur-sm border border-card-border rounded-lg px-4 h-[50px] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-surface/80 outline-none transition-all duration-200" value={email} onChange={(e) => setEmail(e.target.value)} />
+						<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Email</label>
+						<input type="email" required className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 h-[50px] text-signal focus:border-[rgba(238,235,217,0.5)] outline-none transition-all duration-200" value={email} onChange={(e) => setEmail(e.target.value)} />
 					</div>
 					<div>
-						<label className="block text-sm font-semibold text-gray-300 mb-2">Password</label>
-						<input type="password" required className="w-full bg-surface/60 backdrop-blur-sm border border-card-border rounded-lg px-4 h-[50px] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-surface/80 outline-none transition-all duration-200" value={password} onChange={(e) => setPassword(e.target.value)} />
+						<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Password</label>
+						<input type="password" required className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 h-[50px] text-signal focus:border-[rgba(238,235,217,0.5)] outline-none transition-all duration-200" value={password} onChange={(e) => setPassword(e.target.value)} />
 					</div>
 					<Button type="submit" isLoading={isLoading} className="w-full">
 						Log In
 					</Button>
 				</form>
-				<p className="mt-8 text-center text-gray-400">
+				<p className="mt-8 text-center text-[rgba(238,235,217,0.6)]">
 					Don't have an account?{' '}
-					<Link to="/signup" className="text-primary hover:text-cyan-300 font-semibold transition-colors duration-200">
+					<Link to="/signup" className="text-signal hover:opacity-80 font-semibold transition-opacity duration-200">
 						Sign Up
 					</Link>
 				</p>

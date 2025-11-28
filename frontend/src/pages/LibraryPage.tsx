@@ -61,14 +61,14 @@ function LibraryPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-dark-bg p-8 text-white font-sans">
+		<div className="min-h-screen bg-dark-bg p-8 text-signal font-sans">
 			{/* Header */}
 			<div className="flex justify-between items-center mb-10">
 				<div>
-					<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Rudiment Library</h1>
-					<p className="text-gray-400 mt-2">Manage your collection of drum rudiments.</p>
+					<h1 className="text-3xl md:text-4xl font-heading font-semibold tracking-tight text-signal">Rudiment Library</h1>
+					<p className="text-[rgba(238,235,217,0.6)] mt-2">Manage your collection of drum rudiments.</p>
 				</div>
-				<button onClick={() => setIsModalOpen(true)} className="bg-primary hover:bg-primary-hover text-dark-bg font-bold py-2.5 px-6 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 active:scale-95">
+				<button onClick={() => setIsModalOpen(true)} className="bg-signal text-dark-bg font-semibold py-2.5 px-6 rounded-lg transition-all duration-200 flex items-center gap-2 hover:bg-signal/95 active:scale-95">
 					<span className="text-lg">+</span> Add New Rudiment
 				</button>
 			</div>
@@ -76,7 +76,7 @@ function LibraryPage() {
 			{/* Filters */}
 			<div className="flex gap-3 mb-6 flex-wrap">
 				{['All', 'Roll', 'Diddle', 'Flam', 'Drag'].map((filter) => (
-					<button key={filter} className="px-5 py-2 rounded-full bg-card-bg/60 backdrop-blur-sm border border-gray-700/50 text-sm font-semibold text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-600 transition-all duration-200 hover:scale-105 active:scale-95">
+					<button key={filter} className="px-5 py-2 rounded-lg bg-transparent border border-[rgba(238,235,217,0.2)] text-sm font-semibold text-[rgba(238,235,217,0.8)] hover:bg-[rgba(238,235,217,0.05)] hover:border-[rgba(238,235,217,0.4)] hover:text-signal transition-all duration-200 active:scale-95 active:animate-flash">
 						{filter}
 					</button>
 				))}
@@ -84,7 +84,7 @@ function LibraryPage() {
 
 			<div className="relative w-full sm:max-w-xs mb-8">
 				{/* Search Icon */}
-				<span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+				<span className="absolute left-4 top-1/2 -translate-y-1/2 text-[rgba(238,235,217,0.6)]">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
 						<path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
 					</svg>
@@ -93,7 +93,7 @@ function LibraryPage() {
 				{/* The Search Input */}
 				<input
 					type="text"
-					className="w-full rounded-xl border border-gray-700/50 bg-dark-bg/60 backdrop-blur-sm text-white focus:border-primary focus:ring-2 focus:ring-primary/20 pl-11 pr-4 py-3 outline-none transition-all duration-200"
+					className="w-full rounded-lg border border-[rgba(238,235,217,0.1)] bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] text-signal focus:border-[rgba(238,235,217,0.5)] pl-11 pr-4 py-3 outline-none transition-all duration-200"
 					placeholder="Search rudiments..."
 					value={searchTerm}
 					onChange={(e) => setSearchTerm(e.target.value)}
@@ -101,13 +101,13 @@ function LibraryPage() {
 			</div>
 
 			{/* Table */}
-			<div className="bg-surface/80 backdrop-blur-sm rounded-2xl border border-card-border overflow-hidden shadow-2xl shadow-black/30">
+			<div className="bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] rounded-2xl border border-[rgba(238,235,217,0.1)] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
 				{isLoading ? (
 					<LoadingSpinner message="Loading your rudiments..." className="p-8" />
 				) : (
 					<table className="w-full text-left border-collapse">
 						<thead>
-							<tr className="bg-gray-900/20 border-b border-card-border">
+							<tr className="border-b border-[rgba(238,235,217,0.1)]">
 								<th className="p-5 premium-label">Name</th>
 								<th className="p-5 premium-label w-1/2">Description</th>
 								<th className="p-5 premium-label">Category</th>
@@ -118,38 +118,30 @@ function LibraryPage() {
 							{rudiments
 								.filter((rudiment) => rudiment.name.toLowerCase().includes(searchTerm.toLowerCase()))
 								.map((rudiment) => (
-									<tr key={rudiment.id} className="hover:bg-surface/50 transition-all duration-200 group border-b border-card-border">
+									<tr key={rudiment.id} className="hover:bg-[rgba(238,235,217,0.02)] transition-all duration-200 group border-b border-[rgba(238,235,217,0.1)]">
 										<td className="p-5">
-											<div className="font-heading font-bold text-white text-lg">{rudiment.name}</div>
-											<div className="text-gray-500 text-sm mt-1 leading-relaxed">{rudiment.description}</div>
+											<div className="font-heading font-semibold text-signal text-lg">{rudiment.name}</div>
+											<div className="text-[rgba(238,235,217,0.6)] text-sm mt-1 leading-relaxed">{rudiment.description}</div>
 										</td>
 										<td className="p-5"></td>
 										<td className="p-5">
-											<span
-												className={`px-4 py-2 rounded-full text-xs font-semibold border backdrop-blur-sm ${
-													rudiment.category === 'Roll'
-														? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-														: rudiment.category === 'Diddles'
-														? 'bg-green-500/20 text-green-300 border-green-500/30'
-														: 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-												}`}
-											>
+											<span className="px-4 py-2 rounded-lg text-xs font-semibold border border-[rgba(238,235,217,0.2)] bg-transparent text-[rgba(238,235,217,0.8)]">
 												{rudiment.category}
 											</span>
 										</td>
 										<td className="p-5 text-right">
 											<div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-												<button className="p-2.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95" title="Play Audio">
+												<button className="p-2.5 text-[rgba(238,235,217,0.6)] hover:text-signal hover:bg-[rgba(238,235,217,0.05)] rounded-lg transition-all duration-200 active:scale-95" title="Play Audio">
 													<Play size={16} />
 												</button>
 
 												{/* Logic: If isStandard is TRUE, show Lock. If FALSE, show Delete. */}
 												{!rudiment.isStandard ? (
-													<button onClick={() => handleDelete(rudiment.id)} className="p-2.5 text-gray-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95" title="Delete Rudiment">
+													<button onClick={() => handleDelete(rudiment.id)} className="p-2.5 text-[rgba(238,235,217,0.6)] hover:text-signal hover:bg-[rgba(238,235,217,0.05)] rounded-lg transition-all duration-200 active:scale-95" title="Delete Rudiment">
 														<X size={16} />
 													</button>
 												) : (
-													<span className="p-2.5 text-gray-600 cursor-not-allowed flex items-center" title="Standard rudiment (cannot be deleted)">
+													<span className="p-2.5 text-[rgba(238,235,217,0.3)] cursor-not-allowed flex items-center" title="Standard rudiment (cannot be deleted)">
 														<Lock size={16} />
 													</span>
 												)}
@@ -164,22 +156,22 @@ function LibraryPage() {
 
 			{/* Modal */}
 			{isModalOpen && (
-				<div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50 p-4 animate-fade-in">
-					<div className="bg-card-bg/95 backdrop-blur-xl w-full max-w-md rounded-2xl border border-gray-700/50 shadow-2xl shadow-black/50 overflow-hidden">
-						<div className="px-6 py-5 border-b border-gray-700/50 flex justify-between items-center bg-gray-900/20">
-							<h3 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Add Custom Rudiment</h3>
-							<button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-800/50 rounded-lg p-2">
+				<div className="fixed inset-0 bg-[rgba(0,0,0,0.7)] backdrop-blur-md flex justify-center items-center z-50 p-4 animate-fade-in">
+					<div className="bg-[rgba(40,36,39,0.95)] backdrop-blur-[24px] w-full max-w-md rounded-2xl border border-[rgba(238,235,217,0.1)] shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
+						<div className="px-6 py-5 border-b border-[rgba(238,235,217,0.1)] flex justify-between items-center">
+							<h3 className="text-xl font-heading font-semibold text-signal">Add Custom Rudiment</h3>
+							<button onClick={() => setIsModalOpen(false)} className="text-[rgba(238,235,217,0.6)] hover:text-signal transition-colors duration-200 rounded-lg p-2">
 								<X size={20} />
 							</button>
 						</div>
 
 						<form onSubmit={handleAddRudiment} className="p-6 space-y-5">
 							<div>
-								<label className="block text-sm font-semibold text-gray-300 mb-2">Name</label>
+								<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Name</label>
 								<input
 									type="text"
 									required
-									className="w-full bg-dark-bg/60 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200"
+									className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 py-3 text-signal focus:border-[rgba(238,235,217,0.5)] outline-none transition-all duration-200"
 									placeholder="e.g., Swiss Army Triplet"
 									value={newRudiment.name}
 									onChange={(e) => setNewRudiment({ ...newRudiment, name: e.target.value })}
@@ -187,9 +179,9 @@ function LibraryPage() {
 							</div>
 
 							<div>
-								<label className="block text-sm font-semibold text-gray-300 mb-2">Category</label>
+								<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Category</label>
 								<select
-									className="w-full bg-dark-bg/60 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none appearance-none transition-all duration-200"
+									className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 py-3 text-signal focus:border-[rgba(238,235,217,0.5)] outline-none appearance-none transition-all duration-200"
 									value={newRudiment.category}
 									onChange={(e) => setNewRudiment({ ...newRudiment, category: e.target.value })}
 								>
@@ -203,10 +195,10 @@ function LibraryPage() {
 							</div>
 
 							<div>
-								<label className="block text-sm font-semibold text-gray-300 mb-2">Description</label>
+								<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Description</label>
 								<textarea
 									rows={3}
-									className="w-full bg-dark-bg/60 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-none transition-all duration-200"
+									className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 py-3 text-signal focus:border-[rgba(238,235,217,0.5)] outline-none resize-none transition-all duration-200"
 									placeholder="Briefly describe the pattern..."
 									value={newRudiment.description}
 									onChange={(e) => setNewRudiment({ ...newRudiment, description: e.target.value })}
@@ -214,7 +206,7 @@ function LibraryPage() {
 							</div>
 
 							<div className="pt-2">
-								<button type="submit" className="w-full bg-primary hover:bg-primary-hover text-dark-bg font-bold py-3 rounded-lg transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]">
+								<button type="submit" className="w-full bg-signal text-dark-bg font-semibold py-3 rounded-lg transition-all duration-200 hover:bg-signal/95 active:scale-95">
 									Save to Library
 								</button>
 							</div>

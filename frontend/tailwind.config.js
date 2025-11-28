@@ -35,39 +35,36 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				// Premium heading font with technical character
-				sans: ['Inter', 'system-ui', 'sans-serif'],
-				heading: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+				// Body text: DM Sans with tabular figures for precision
+				sans: ['DM Sans', 'system-ui', 'sans-serif'],
+				// Headings: Space Grotesk - technical, idiosyncratic, retro-future
+				heading: ['Space Grotesk', 'system-ui', 'sans-serif'],
 				// Use mono for ALL data/metrics for engineering precision
 				mono: ['JetBrains Mono', 'IBM Plex Mono', 'monospace'],
 			},
 			colors: {
-				// Industrial luxury dark mode - refined color system
-				'dark-bg': '#0a0e17', // Base background
-				'surface': '#111620', // Card surface (lighter than background)
-				'card-bg': '#111620', // Alias for surface
-				'card-border': 'rgba(255, 255, 255, 0.1)', // 10% opacity borders
-				// Cyan primary color for "No BS" aesthetic
-				primary: '#00E5FF',
-				'primary-hover': '#00BCD4',
-				'primary-glow': 'rgba(0, 229, 255, 0.5)',
-				// Accent for "success" or "active" states
-				accent: '#10B981',
-			},
-			backgroundImage: {
-				// subtle mesh gradient for backgrounds
-				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'hero-glow': 'conic-gradient(from 180deg at 50% 50%, #2a8af6 0deg, #a853ba 180deg, #e92a67 360deg)',
+				// Matte Noir / Soft Tech Edition - Warm Monolith
+				// The Void (Background)
+				'dark-bg': '#282427', // Matte charcoal - never pure black
+				'void': '#282427',
+				// The Signal (Foreground)
+				'signal': '#EEEBD9', // Warm bone/cream - represents light/active information
+				'signal-faded': 'rgba(238, 235, 217, 0.6)', // 60% opacity for secondary text
+				// Legacy aliases for compatibility during transition
+				'surface': 'rgba(40, 36, 39, 0.7)', // Smoked matte glass surfaces
+				'card-bg': 'rgba(40, 36, 39, 0.7)',
+				'card-border': 'rgba(238, 235, 217, 0.1)', // Razor-thin cream border at 10% opacity
+				// Primary actions use signal color
+				primary: '#EEEBD9',
+				'primary-hover': '#EEEBD9',
 			},
 			animation: {
-				'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-				'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear',
+				'flash': 'flash 0.3s ease-out',
 			},
 			keyframes: {
-				'border-beam': {
-					'100%': {
-						'offset-distance': '100%',
-					},
+				flash: {
+					'0%, 100%': { borderColor: 'rgba(238, 235, 217, 0.1)' },
+					'50%': { borderColor: 'rgba(238, 235, 217, 1)' },
 				},
 			},
 		},

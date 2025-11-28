@@ -17,24 +17,24 @@ interface BlogPostWithSEO extends Omit<BlogPost, 'mainImage'> {
 
 const portableTextComponents: PortableTextComponents = {
 	block: {
-		h1: ({ children }) => <h1 className="text-4xl font-heading font-semibold mt-12 mb-6 text-white">{children}</h1>,
-		h2: ({ children }) => <h2 className="text-3xl font-heading font-semibold mt-10 mb-4 text-white">{children}</h2>,
-		h3: ({ children }) => <h3 className="text-2xl font-heading font-semibold mt-8 mb-3 text-white">{children}</h3>,
-		normal: ({ children }) => <p className="text-gray-200 leading-[1.6] mb-6 text-lg">{children}</p>,
-		blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-6 italic text-gray-300 my-8 text-lg leading-[1.6]">{children}</blockquote>,
+		h1: ({ children }) => <h1 className="text-4xl font-heading font-semibold mt-12 mb-6 text-signal">{children}</h1>,
+		h2: ({ children }) => <h2 className="text-3xl font-heading font-semibold mt-10 mb-4 text-signal">{children}</h2>,
+		h3: ({ children }) => <h3 className="text-2xl font-heading font-semibold mt-8 mb-3 text-signal">{children}</h3>,
+		normal: ({ children }) => <p className="text-[rgba(238,235,217,0.8)] leading-[1.6] mb-6 text-lg">{children}</p>,
+		blockquote: ({ children }) => <blockquote className="border-l-4 border-[rgba(238,235,217,0.3)] pl-6 italic text-[rgba(238,235,217,0.6)] my-8 text-lg leading-[1.6]">{children}</blockquote>,
 	},
 	list: {
-		bullet: ({ children }) => <ul className="list-disc pl-6 space-y-2 text-gray-200 mb-6 text-lg leading-[1.6]">{children}</ul>,
-		number: ({ children }) => <ol className="list-decimal pl-6 space-y-2 text-gray-200 mb-6 text-lg leading-[1.6]">{children}</ol>,
+		bullet: ({ children }) => <ul className="list-disc pl-6 space-y-2 text-[rgba(238,235,217,0.8)] mb-6 text-lg leading-[1.6]">{children}</ul>,
+		number: ({ children }) => <ol className="list-decimal pl-6 space-y-2 text-[rgba(238,235,217,0.8)] mb-6 text-lg leading-[1.6]">{children}</ol>,
 	},
 	marks: {
 		link: ({ children, value }) => (
-			<a href={value?.href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-cyan-300 transition-colors duration-200">
+			<a href={value?.href} target="_blank" rel="noopener noreferrer" className="text-signal underline hover:opacity-80 transition-opacity duration-200">
 				{children}
 			</a>
 		),
-		strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
-		em: ({ children }) => <em className="text-gray-100 italic">{children}</em>,
+		strong: ({ children }) => <strong className="text-signal font-semibold">{children}</strong>,
+		em: ({ children }) => <em className="text-[rgba(238,235,217,0.8)] italic">{children}</em>,
 	},
 };
 
