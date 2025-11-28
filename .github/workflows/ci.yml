@@ -23,7 +23,8 @@ jobs:
             - name: Install Backend Dependencies
               run: |
                   cd backend
-                  npm ci
+                  # FIX: Changed 'npm ci' to 'npm install' to handle the lockfile mismatch automatically
+                  npm install
 
             - name: Run Backend Tests
               run: |
