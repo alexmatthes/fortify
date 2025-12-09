@@ -56,7 +56,51 @@ export const getUserFriendlyError = (error: unknown): string => {
 		return 'Unable to connect to the server. Please check your internet connection.';
 	}
 
-	return getErrorMessage(error);
+	const message = getErrorMessage(error);
+
+	// Map common error messages to user-friendly versions
+	const errorMappings: Record<string, string> = {
+		'Invalid email address': 'Please enter a valid email address',
+		'Password must be at least 8 characters': 'Password must be at least 8 characters long',
+		'Invalid Rudiment ID': 'Invalid exercise selected',
+		'Routine not found': 'This routine could not be found',
+		'Permission denied': 'You do not have permission to perform this action',
+		'Invalid credentials': 'Email or password is incorrect',
+		'User already exists': 'An account with this email already exists',
+		'Invalid token': 'Your session has expired. Please log in again.',
+		'Token expired': 'Your session has expired. Please log in again.',
+	};
+
+	// Check if we have a mapping for this error
+	for (const [key, value] of Object.entries(errorMappings)) {
+		if (message.toLowerCase().includes(key.toLowerCase())) {
+			return value;
+		}
+	}
+
+	return message;
+};
+
+/**
+ * Extract field-specific validation errors
+ */
+export const getFieldErrors = (error: unknown): Record<string, string> => {
+	const fieldErrors: Record<string, string> = {};
+
+	if (error instanceof Error && 'isAxiosError' in error) {
+		const axiosError = error as AxiosError<ApiErrorResponse>;
+		const responseData = axiosError.response?.data;
+
+		if (responseData?.errors) {
+			responseData.errors.forEach((err) => {
+				if (err.field) {
+					fieldErrors[err.field] = err.message;
+				}
+			});
+		}
+	}
+
+	return fieldErrors;
 };
 
 

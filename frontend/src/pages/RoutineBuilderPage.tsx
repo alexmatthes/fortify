@@ -3,13 +3,13 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { ArrowLeft, Plus, Save, Search, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../components/common/Button';
 import { Footer } from '../components/common/Footer';
 import { IntensitySparkline } from '../components/common/IntensitySparkline';
 import { SortableRoutineItem } from '../components/features/SortableRoutineItem';
 import api from '../services/api';
-import { Rudiment } from '../types/types';
+import { Routine, Rudiment } from '../types/types';
 import { getErrorMessage } from '../utils/errorHandler';
 
 // Local interface for the builder state
@@ -26,6 +26,8 @@ export interface BuilderItem {
 
 const RoutineBuilderPage = () => {
 	const navigate = useNavigate();
+	const { id } = useParams<{ id?: string }>();
+	const isEditMode = !!id;
 	const [library, setLibrary] = useState<Rudiment[]>([]);
 	const [routineName, setRoutineName] = useState('');
 	const [items, setItems] = useState<BuilderItem[]>([]);
@@ -33,6 +35,7 @@ const RoutineBuilderPage = () => {
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
+	const [isLoading, setIsLoading] = useState(isEditMode);
 
 	// Fetch Library
 	useEffect(() => {
@@ -40,6 +43,34 @@ const RoutineBuilderPage = () => {
 			.then((res) => setLibrary(res.data))
 			.catch((error) => toast.error(getErrorMessage(error)));
 	}, []);
+
+	// Load routine data if in edit mode
+	useEffect(() => {
+		if (isEditMode && id) {
+			api.get<Routine>(`/routines/${id}`)
+				.then((res) => {
+					const routine = res.data;
+					setRoutineName(routine.name);
+					setItems(
+						routine.items.map((item) => ({
+							id: item.id,
+							rudimentId: item.rudiment.id,
+							rudimentName: item.rudiment.name,
+							category: item.rudiment.category,
+							duration: item.duration,
+							targetTempo: item.targetTempo,
+							tempoMode: item.tempoMode,
+							restDuration: item.restDuration,
+						}))
+					);
+					setIsLoading(false);
+				})
+				.catch((error) => {
+					toast.error(getErrorMessage(error));
+					navigate('/dashboard');
+				});
+		}
+	}, [isEditMode, id, navigate]);
 
 	// Drag Sensors
 	const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -104,11 +135,19 @@ const RoutineBuilderPage = () => {
 
 		setIsSaving(true);
 		try {
-			await api.post('/routines', {
-				name: routineName,
-				items: items, // Backend now handles the extra fields
-			});
-			toast.success('Routine Created!');
+			if (isEditMode && id) {
+				await api.put(`/routines/${id}`, {
+					name: routineName,
+					items: items,
+				});
+				toast.success('Routine Updated!');
+			} else {
+				await api.post('/routines', {
+					name: routineName,
+					items: items, // Backend now handles the extra fields
+				});
+				toast.success('Routine Created!');
+			}
 			navigate('/dashboard');
 		} catch (error) {
 			toast.error(getErrorMessage(error));
@@ -123,6 +162,14 @@ const RoutineBuilderPage = () => {
 
 	const filteredRudiments = library.filter((r) => r.name.toLowerCase().includes(searchTerm.toLowerCase()));
 	const activeItemData = items.find((i) => i.id === activeId);
+
+	if (isLoading) {
+		return (
+			<div className="min-h-screen bg-dark-bg flex items-center justify-center">
+				<div className="animate-spin rounded-full h-12 w-12 border-4 border-[rgba(238,235,217,0.2)] border-t-signal"></div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen bg-dark-bg text-white font-sans flex flex-col h-screen overflow-hidden">
@@ -155,7 +202,7 @@ const RoutineBuilderPage = () => {
 					<div className="flex gap-3">
 						<Button onClick={handleSave} isLoading={isSaving} variant="primary" className="text-black font-black text-sm px-6 py-3 rounded-xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 flex items-center gap-2">
 							<Save size={18} />
-							SAVE ROUTINE
+							{isEditMode ? 'UPDATE ROUTINE' : 'SAVE ROUTINE'}
 						</Button>
 					</div>
 				</div>

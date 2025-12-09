@@ -1,5 +1,5 @@
 import { ArcElement, CategoryScale, Chart as ChartJS, ChartOptions, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
-import { Clock, Play, Plus, Trash2, X } from 'lucide-react';
+import { Clock, Copy, Edit, Play, Plus, Trash2, X } from 'lucide-react';
 import posthog from 'posthog-js';
 import React, { useEffect, useState } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
@@ -11,8 +11,9 @@ import Card from '../components/common/Card';
 import { Footer } from '../components/common/Footer';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Metronome from '../components/features/Metronome';
+import SessionHistory from '../components/features/SessionHistory';
 import api from '../services/api';
-import { DashboardStats, Routine, Rudiment, Session, SessionFormData, SessionHistory } from '../types/types';
+import { DashboardStats, Routine, Rudiment, Session, SessionFormData, SessionHistory as SessionHistoryType } from '../types/types';
 import { getErrorMessage } from '../utils/errorHandler';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
@@ -32,7 +33,7 @@ function DashboardPage() {
 	const [rudiments, setRudiments] = useState<Rudiment[]>([]);
 	const [chartData, setChartData] = useState<Session[]>([]);
 	const [routines, setRoutines] = useState<Routine[]>([]);
-	const [history, setHistory] = useState<SessionHistory[]>([]);
+	const [history, setHistory] = useState<SessionHistoryType[]>([]);
 	const [velocityData, setVelocityData] = useState<VelocityPoint[]>([]);
 
 	const [formData, setFormData] = useState<SessionFormData>({
@@ -119,6 +120,32 @@ function DashboardPage() {
 		}
 	};
 
+	const handleDuplicateRoutine = async (e: React.MouseEvent, routineId: string) => {
+		e.stopPropagation();
+		try {
+			const routine = routines.find((r) => r.id === routineId);
+			if (!routine) return;
+
+			const duplicatedRoutine = {
+				name: `${routine.name} (Copy)`,
+				description: routine.description,
+				items: routine.items.map((item) => ({
+					rudimentId: item.rudiment.id,
+					duration: item.duration,
+					tempoMode: item.tempoMode,
+					targetTempo: item.targetTempo,
+					restDuration: item.restDuration,
+				})),
+			};
+
+			const response = await api.post('/routines', duplicatedRoutine);
+			setRoutines((prev) => [response.data, ...prev]);
+			toast.success('Routine duplicated');
+		} catch (error) {
+			toast.error(getErrorMessage(error));
+		}
+	};
+
 	// --- Chart Prep ---
 	// Optimize chart data: sample large datasets to improve performance
 	const optimizeChartData = (data: VelocityPoint[], maxPoints: number = 100) => {
@@ -163,15 +190,8 @@ function DashboardPage() {
 	});
 
 	// Monochrome color variations using cream opacity
-	const creamColors = [
-		'rgba(238, 235, 217, 0.9)',
-		'rgba(238, 235, 217, 0.7)',
-		'rgba(238, 235, 217, 0.5)',
-		'rgba(238, 235, 217, 0.4)',
-		'rgba(238, 235, 217, 0.3)',
-		'rgba(238, 235, 217, 0.2)',
-	];
-	
+	const creamColors = ['rgba(238, 235, 217, 0.9)', 'rgba(238, 235, 217, 0.7)', 'rgba(238, 235, 217, 0.5)', 'rgba(238, 235, 217, 0.4)', 'rgba(238, 235, 217, 0.3)', 'rgba(238, 235, 217, 0.2)'];
+
 	const doughnutData = {
 		labels: Object.keys(sessionCounts),
 		datasets: [
@@ -282,10 +302,7 @@ function DashboardPage() {
 								</svg>
 							</div>
 							<p className="text-[rgba(238,235,217,0.6)] mb-6 relative z-10">No routines found.</p>
-							<button
-								onClick={() => navigate('/routines/new')}
-								className="bg-signal text-dark-bg font-semibold py-3 px-8 rounded-lg transition-all duration-200 hover:bg-signal/95 active:scale-95 relative z-10"
-							>
+							<button onClick={() => navigate('/routines/new')} className="bg-signal text-dark-bg font-semibold py-3 px-8 rounded-lg transition-all duration-200 hover:bg-signal/95 active:scale-95 relative z-10">
 								Build your first routine
 							</button>
 						</div>
@@ -304,13 +321,27 @@ function DashboardPage() {
 												<Clock size={12} /> {totalMins} mins • {routine.items.length} Exercises
 											</div>
 										</div>
-										<div className="flex gap-3 mt-4 relative z-10">
+										<div className="flex gap-2 mt-4 relative z-10">
 											<button
 												onClick={() => navigate(`/session/${routine.id}`)}
 												aria-label={`Start routine: ${routine.name}`}
 												className="flex-1 bg-signal hover:bg-signal/95 text-dark-bg font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-signal/50"
 											>
 												<Play size={16} fill="currentColor" aria-hidden="true" /> Start
+											</button>
+											<button
+												onClick={() => navigate(`/routines/edit/${routine.id}`)}
+												aria-label={`Edit routine: ${routine.name}`}
+												className="p-2.5 text-[rgba(238,235,217,0.6)] hover:text-signal hover:bg-[rgba(238,235,217,0.05)] rounded-lg transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-signal/50"
+											>
+												<Edit size={18} aria-hidden="true" />
+											</button>
+											<button
+												onClick={(e) => handleDuplicateRoutine(e, routine.id)}
+												aria-label={`Duplicate routine: ${routine.name}`}
+												className="p-2.5 text-[rgba(238,235,217,0.6)] hover:text-signal hover:bg-[rgba(238,235,217,0.05)] rounded-lg transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-signal/50"
+											>
+												<Copy size={18} aria-hidden="true" />
 											</button>
 											<button
 												onClick={(e) => handleDeleteRoutine(e, routine.id)}
@@ -350,8 +381,15 @@ function DashboardPage() {
 				</Card>
 
 				<Card className="md:col-span-1 md:row-span-2 flex flex-col justify-center">
-					<div className="h-64 relative">{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex h-full items-center justify-center text-[rgba(238,235,217,0.6)]">No data</div>}</div>
+					<div className="h-64 relative">
+						{Object.keys(sessionCounts).length > 0 ? <Doughnut data={doughnutData} options={doughnutOptions} /> : <div className="flex h-full items-center justify-center text-[rgba(238,235,217,0.6)]">No data</div>}
+					</div>
 				</Card>
+			</div>
+
+			{/* Session History Section */}
+			<div className="mt-12">
+				<SessionHistory rudiments={rudiments} />
 			</div>
 
 			{/* FLOATING METRONOME BUTTON */}
@@ -380,7 +418,7 @@ function DashboardPage() {
 						>
 							<X size={20} aria-hidden="true" />
 						</button>
-						<h2 className="text-xl font-heading font-semibold text-signal mb-6 text-center font-mono tracking-wider">METRONOME</h2>
+						<h2 className="text-xl font-heading font-semibold text-signal mb-6 text-center tracking-wider">METRONOME</h2>
 						<Metronome />
 					</div>
 				</div>
@@ -486,10 +524,7 @@ function DashboardPage() {
 									</button>
 								</div>
 							</div>
-							<button
-								type="submit"
-								className="w-full bg-signal text-dark-bg font-semibold h-11 rounded-lg mt-2 hover:bg-signal/95 transition-all duration-200 active:scale-95"
-							>
+							<button type="submit" className="w-full bg-signal text-dark-bg font-semibold h-11 rounded-lg mt-2 hover:bg-signal/95 transition-all duration-200 active:scale-95">
 								Save Log
 							</button>
 						</form>

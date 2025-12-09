@@ -55,4 +55,63 @@ export const AuthService = {
 			user: { id: user.id, email: user.email },
 		};
 	},
+
+	/**
+	 * Change user password
+	 */
+	async changePassword(userId: string, currentPassword: string, newPassword: string) {
+		const user = await prisma.user.findUnique({ where: { id: userId } });
+		if (!user) {
+			throw new ValidationError('User not found.');
+		}
+
+		const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+		if (!isPasswordCorrect) {
+			throw new ValidationError('Current password is incorrect.');
+		}
+
+		const hashedPassword = await bcrypt.hash(newPassword, 10);
+		await prisma.user.update({
+			where: { id: userId },
+			data: { password: hashedPassword },
+		});
+
+		return { message: 'Password changed successfully' };
+	},
+
+	/**
+	 * Delete user account and all associated data
+	 */
+	async deleteAccount(userId: string, password: string) {
+		const user = await prisma.user.findUnique({ where: { id: userId } });
+		if (!user) {
+			throw new ValidationError('User not found.');
+		}
+
+		const isPasswordCorrect = await bcrypt.compare(password, user.password);
+		if (!isPasswordCorrect) {
+			throw new ValidationError('Password is incorrect.');
+		}
+
+		// Delete user (cascade will handle related data)
+		await prisma.user.delete({ where: { id: userId } });
+
+		return { message: 'Account deleted successfully' };
+	},
+
+	/**
+	 * Get user profile
+	 */
+	async getProfile(userId: string) {
+		const user = await prisma.user.findUnique({
+			where: { id: userId },
+			select: { id: true, email: true },
+		});
+
+		if (!user) {
+			throw new ValidationError('User not found.');
+		}
+
+		return user;
+	},
 };

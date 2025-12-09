@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import HeadlessMetronome from '../components/features/HeadlessMetronome';
+import QualityRatingModal from '../components/features/QualityRatingModal';
 import api from '../services/api';
 import { Routine } from '../types/types';
 import { getErrorMessage } from '../utils/errorHandler';
@@ -23,6 +24,12 @@ const SessionPage = () => {
 	const [saveStatus, setSaveStatus] = useState<'IDLE' | 'SAVING' | 'SUCCESS' | 'ERROR'>('IDLE');
 	const [sessionSummary, setSessionSummary] = useState<string[]>([]);
 	const completedItemsRef = useRef<Routine['items'][0][]>([]);
+	const itemRatingsRef = useRef<Map<string, number>>(new Map()); // Track quality ratings by item ID
+	const [showQualityModal, setShowQualityModal] = useState(false);
+	const [pendingItemId, setPendingItemId] = useState<string | null>(null);
+	const [pendingRudimentName, setPendingRudimentName] = useState<string>('');
+	const [beatFlash, setBeatFlash] = useState(false);
+	const [ghostMode, setGhostMode] = useState(false);
 	const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
 	// Wake Lock API to prevent screen sleep during practice
@@ -81,12 +88,14 @@ const SessionPage = () => {
 		try {
 			await Promise.all(
 				items.map((item) => {
+					// Get rating for this item, default to 4 if not rated
+					const rating = itemRatingsRef.current.get(item.id) || 4;
 					return api
 						.post('/sessions', {
 							rudimentId: item.rudiment.id,
 							duration: item.duration, // minutes
 							tempo: item.targetTempo,
-							quality: 4, // Default to 4 ("Great") since we don't have a rating UI yet
+							quality: rating,
 						})
 						.then(() => {
 							summaries.push(`Logged ${item.duration}m of ${item.rudiment.name} at ${item.targetTempo} BPM`);
@@ -141,21 +150,69 @@ const SessionPage = () => {
 		return () => window.removeEventListener('keydown', handleKeyPress);
 	}, [isPlaying, phase, advanceNext]);
 
-	// Fetch Data
+	// Fetch Data and resolve smart tempos
 	useEffect(() => {
-		api.get(`/routines/${routineId}`)
-			.then((res) => {
-				setRoutine(res.data);
-				if (res.data.items.length > 0) {
-					setTimeRemaining(res.data.items[0].duration * 60);
+		const fetchRoutine = async () => {
+			try {
+				// First get the routine
+				const routineRes = await api.get<Routine>(`/routines/${routineId}`);
+				const routine = routineRes.data;
+
+				// Resolve smart tempos at runtime
+				const resolvedRes = await api.get<Routine>(`/routines/${routineId}/resolve-tempos`);
+				const resolvedRoutine = resolvedRes.data;
+
+				setRoutine(resolvedRoutine);
+				if (resolvedRoutine.items.length > 0) {
+					setTimeRemaining(resolvedRoutine.items[0].duration * 60);
 				}
 				setLoading(false);
-			})
-			.catch((error) => {
+			} catch (error) {
 				toast.error(getErrorMessage(error));
 				navigate('/dashboard');
-			});
+			}
+		};
+
+		fetchRoutine();
 	}, [routineId, navigate]);
+
+	// Handle quality rating
+	const handleQualityRate = useCallback((rating: number) => {
+		if (pendingItemId) {
+			itemRatingsRef.current.set(pendingItemId, rating);
+		}
+		setShowQualityModal(false);
+		setPendingItemId(null);
+		setPendingRudimentName('');
+		// Continue with rest or next item
+		if (!routine) return;
+		const currentItem = routine.items[currentIndex];
+		if (currentItem.restDuration > 0) {
+			setPhase('REST');
+			setTimeRemaining(currentItem.restDuration);
+		} else {
+			advanceNext();
+		}
+	}, [pendingItemId, routine, currentIndex, advanceNext]);
+
+	const handleQualitySkip = useCallback(() => {
+		// Default to 4 if skipped
+		if (pendingItemId) {
+			itemRatingsRef.current.set(pendingItemId, 4);
+		}
+		setShowQualityModal(false);
+		setPendingItemId(null);
+		setPendingRudimentName('');
+		// Continue with rest or next item
+		if (!routine) return;
+		const currentItem = routine.items[currentIndex];
+		if (currentItem.restDuration > 0) {
+			setPhase('REST');
+			setTimeRemaining(currentItem.restDuration);
+		} else {
+			advanceNext();
+		}
+	}, [pendingItemId, routine, currentIndex, advanceNext]);
 
 	// 2. Wrap handlePhaseComplete in useCallback
 	const handlePhaseComplete = useCallback(() => {
@@ -166,12 +223,11 @@ const SessionPage = () => {
 			// Mark item as completed
 			completedItemsRef.current.push(currentItem);
 
-			if (currentItem.restDuration > 0) {
-				setPhase('REST');
-				setTimeRemaining(currentItem.restDuration);
-			} else {
-				advanceNext();
-			}
+			// Show quality rating modal
+			setPendingItemId(currentItem.id);
+			setPendingRudimentName(currentItem.rudiment.name);
+			setShowQualityModal(true);
+			setIsPlaying(false); // Pause while rating
 		} else if (phase === 'REST') {
 			advanceNext();
 		}
@@ -189,6 +245,12 @@ const SessionPage = () => {
 		}
 		return () => clearInterval(interval);
 	}, [isPlaying, timeRemaining, phase, handlePhaseComplete]);
+
+	// Handle metronome beat for visual feedback
+	const handleMetronomeBeat = useCallback(() => {
+		setBeatFlash(true);
+		setTimeout(() => setBeatFlash(false), 100); // Flash duration
+	}, []);
 
 	// --- Render Helpers ---
 	const formatTime = (seconds: number) => {
@@ -249,7 +311,7 @@ const SessionPage = () => {
 
 			{/* Header */}
 			<header className="p-6 flex items-center justify-between z-20 bg-[rgba(40,36,39,0.8)] backdrop-blur-[24px] border-b border-[rgba(238,235,217,0.1)]">
-				<button onClick={() => navigate('/dashboard')} className="text-[rgba(238,235,217,0.6)] hover:text-signal transition-colors duration-200 active:scale-95 p-2 rounded-lg">
+				<button onClick={() => navigate('/dashboard')} className="text-[rgba(238,235,217,0.6)] hover:text-signal transition-colors duration-200 active:scale-95 p-2 rounded-lg" aria-label="Back to dashboard">
 					<ArrowLeft size={20} />
 				</button>
 				<div className="text-center">
@@ -258,7 +320,18 @@ const SessionPage = () => {
 						ITEM {currentIndex + 1} / {routine.items.length}
 					</p>
 				</div>
-				<div className="w-6" />
+				<button
+					onClick={() => setGhostMode(!ghostMode)}
+					className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+						ghostMode
+							? 'bg-signal/20 text-signal border border-signal/30'
+							: 'bg-[rgba(238,235,217,0.05)] text-[rgba(238,235,217,0.6)] border border-[rgba(238,235,217,0.1)] hover:border-[rgba(238,235,217,0.3)]'
+					}`}
+					aria-label={ghostMode ? 'Disable ghost mode' : 'Enable ghost mode'}
+					title="Ghost Mode: Randomly silence beats to train internal timing"
+				>
+					{ghostMode ? '👻 ON' : '👻 OFF'}
+				</button>
 			</header>
 
 			{/* Main Content */}
@@ -275,7 +348,13 @@ const SessionPage = () => {
 					{isRest ? 'Rest & Recover' : 'Focus Mode'}
 				</div>
 
-				<div className="text-[120px] md:text-[140px] font-black leading-none font-mono mb-8 tabular-nums tracking-tighter relative z-10 text-signal" aria-live="polite" aria-label={`Time remaining: ${formatTime(timeRemaining)}`}>
+				<div 
+					className={`text-[120px] md:text-[140px] font-black leading-none font-mono mb-8 tabular-nums tracking-tighter relative z-10 text-signal transition-all duration-100 ${
+						beatFlash && !isRest ? 'scale-105 text-signal drop-shadow-[0_0_20px_rgba(238,235,217,0.5)]' : ''
+					}`}
+					aria-live="polite" 
+					aria-label={`Time remaining: ${formatTime(timeRemaining)}`}
+				>
 					{formatTime(timeRemaining)}
 				</div>
 
@@ -313,7 +392,22 @@ const SessionPage = () => {
 			</main>
 
 			{/* Metronome (Hidden Audio Engine) */}
-			<HeadlessMetronome bpm={isRest ? 0 : currentItem.targetTempo} isPlaying={isPlaying && !isRest} mute={isRest} />
+			<HeadlessMetronome 
+				bpm={isRest ? 0 : currentItem.targetTempo} 
+				isPlaying={isPlaying && !isRest} 
+				mute={isRest}
+				onBeat={handleMetronomeBeat}
+				ghostMode={ghostMode && !isRest}
+				ghostFrequency={0.1}
+			/>
+
+			{/* Quality Rating Modal */}
+			<QualityRatingModal
+				isOpen={showQualityModal}
+				rudimentName={pendingRudimentName}
+				onRate={handleQualityRate}
+				onSkip={handleQualitySkip}
+			/>
 		</div>
 	);
 };

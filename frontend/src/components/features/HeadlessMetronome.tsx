@@ -4,9 +4,12 @@ interface HeadlessMetronomeProps {
 	bpm: number;
 	isPlaying: boolean;
 	mute?: boolean;
+	onBeat?: () => void; // Callback for visual feedback
+	ghostMode?: boolean; // Randomly silence beats
+	ghostFrequency?: number; // Probability of ghosting (0-1, default 0.1)
 }
 
-const HeadlessMetronome: React.FC<HeadlessMetronomeProps> = ({ bpm, isPlaying, mute = false }) => {
+const HeadlessMetronome: React.FC<HeadlessMetronomeProps> = ({ bpm, isPlaying, mute = false, onBeat, ghostMode = false, ghostFrequency = 0.1 }) => {
 	const audioContext = useRef<AudioContext | null>(null);
 	const nextNoteTime = useRef(0.0);
 	const worker = useRef<Worker | null>(null);
@@ -20,6 +23,16 @@ const HeadlessMetronome: React.FC<HeadlessMetronomeProps> = ({ bpm, isPlaying, m
 	const scheduleNote = useCallback(
 		(time: number) => {
 			if (!audioContext.current || mute) return;
+
+			// Ghost mode: randomly silence beats
+			const shouldGhost = ghostMode && Math.random() < ghostFrequency;
+			if (shouldGhost) {
+				// Still trigger visual feedback for ghosted beats
+				if (onBeat) {
+					onBeat();
+				}
+				return; // Don't play audio
+			}
 
 			const osc = audioContext.current.createOscillator();
 			const envelope = audioContext.current.createGain();
@@ -35,7 +48,7 @@ const HeadlessMetronome: React.FC<HeadlessMetronomeProps> = ({ bpm, isPlaying, m
 			osc.start(time);
 			osc.stop(time + 0.03);
 		},
-		[mute]
+		[mute, ghostMode, ghostFrequency, onBeat]
 	);
 
 	const nextNote = useCallback(() => {
@@ -47,9 +60,13 @@ const HeadlessMetronome: React.FC<HeadlessMetronomeProps> = ({ bpm, isPlaying, m
 		if (!audioContext.current) return;
 		while (nextNoteTime.current < audioContext.current.currentTime + scheduleAheadTime) {
 			scheduleNote(nextNoteTime.current);
+			// Trigger visual feedback callback
+			if (onBeat) {
+				onBeat();
+			}
 			nextNote();
 		}
-	}, [nextNote, scheduleNote]);
+	}, [nextNote, scheduleNote, onBeat]);
 
 	useEffect(() => {
 		worker.current = new Worker(new URL('./metronome.worker.ts', import.meta.url));

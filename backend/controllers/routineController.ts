@@ -20,6 +20,19 @@ export const getRoutineById = async (req: AuthRequest, res: Response) => {
 	res.status(200).json(routine);
 };
 
+export const updateRoutine = async (req: AuthRequest, res: Response) => {
+	const routine = await RoutineService.update(req.params.id, {
+		...req.body,
+		userId: req.userId!,
+	});
+	res.status(200).json(routine);
+};
+
+export const resolveSmartTempos = async (req: AuthRequest, res: Response) => {
+	const routine = await RoutineService.resolveSmartTempos(req.params.id, req.userId!);
+	res.status(200).json(routine);
+};
+
 export const deleteRoutine = async (req: AuthRequest, res: Response) => {
 	await RoutineService.delete(req.params.id, req.userId!);
 	res.status(200).json({ message: 'Routine deleted' });

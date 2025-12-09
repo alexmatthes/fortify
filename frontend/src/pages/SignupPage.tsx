@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
+import FormField from '../components/common/FormField';
 import api from '../services/api';
-import { getErrorMessage } from '../utils/errorHandler';
+import { getErrorMessage, getFieldErrors } from '../utils/errorHandler';
 
 const SignupPage: React.FC = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
-	const [error, setError] = useState<string | null>(null);
+	const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
@@ -30,18 +31,23 @@ const SignupPage: React.FC = () => {
 		e.preventDefault();
 		const passwordError = validatePassword();
 		if (passwordError) {
-			setError(passwordError);
+			setErrors({ password: passwordError });
 			toast.error(passwordError);
 			return;
 		}
-		setError(null);
+		setErrors({});
 		setIsLoading(true);
 		try {
 			await api.post('/auth/signup', { email, password });
 			toast.success('Account created! Please log in.');
 			navigate('/login');
 		} catch (error) {
-			toast.error(getErrorMessage(error));
+			const fieldErrors = getFieldErrors(error);
+			if (Object.keys(fieldErrors).length > 0) {
+				setErrors(fieldErrors);
+			} else {
+				toast.error(getErrorMessage(error));
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -55,37 +61,54 @@ const SignupPage: React.FC = () => {
 					<p className="text-[rgba(238,235,217,0.6)] text-sm">Start your journey today</p>
 				</div>
 				<form onSubmit={handleSubmit} className="space-y-5">
-					<div>
-						<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Email</label>
+					<FormField label="Email" error={errors.email} required>
 						<input
 							type="email"
 							required
-							className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 h-[50px] text-signal focus:border-[rgba(238,235,217,0.5)] outline-none transition-all duration-200"
+							className={`w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border rounded-lg px-4 h-[50px] text-signal focus:outline-none transition-all duration-200 ${
+								errors.email ? 'border-red-400 focus:border-red-400' : 'border-[rgba(238,235,217,0.1)] focus:border-[rgba(238,235,217,0.5)]'
+							}`}
 							value={email}
-							onChange={(e) => setEmail(e.target.value)}
+							onChange={(e) => {
+								setEmail(e.target.value);
+								if (errors.email) setErrors({ ...errors, email: undefined });
+							}}
+							aria-invalid={!!errors.email}
+							aria-describedby={errors.email ? 'email-error' : undefined}
 						/>
-					</div>
-					<div>
-						<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Password</label>
+					</FormField>
+					<FormField label="Password" error={errors.password} required>
 						<input
 							type="password"
 							required
-							className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 h-[50px] text-signal focus:border-[rgba(238,235,217,0.5)] outline-none transition-all duration-200"
+							className={`w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border rounded-lg px-4 h-[50px] text-signal focus:outline-none transition-all duration-200 ${
+								errors.password ? 'border-red-400 focus:border-red-400' : 'border-[rgba(238,235,217,0.1)] focus:border-[rgba(238,235,217,0.5)]'
+							}`}
 							value={password}
-							onChange={(e) => setPassword(e.target.value)}
+							onChange={(e) => {
+								setPassword(e.target.value);
+								if (errors.password) setErrors({ ...errors, password: undefined });
+							}}
+							aria-invalid={!!errors.password}
+							aria-describedby={errors.password ? 'password-error' : undefined}
 						/>
-					</div>
-					<div>
-						<label className="block text-sm font-semibold text-[rgba(238,235,217,0.8)] mb-2">Confirm Password</label>
+					</FormField>
+					<FormField label="Confirm Password" error={errors.confirmPassword} required>
 						<input
 							type="password"
 							required
-							className="w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border border-[rgba(238,235,217,0.1)] rounded-lg px-4 h-[50px] text-signal focus:border-[rgba(238,235,217,0.5)] outline-none transition-all duration-200"
+							className={`w-full bg-[rgba(40,36,39,0.7)] backdrop-blur-[24px] border rounded-lg px-4 h-[50px] text-signal focus:outline-none transition-all duration-200 ${
+								errors.confirmPassword ? 'border-red-400 focus:border-red-400' : 'border-[rgba(238,235,217,0.1)] focus:border-[rgba(238,235,217,0.5)]'
+							}`}
 							value={confirmPassword}
-							onChange={(e) => setConfirmPassword(e.target.value)}
+							onChange={(e) => {
+								setConfirmPassword(e.target.value);
+								if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+							}}
+							aria-invalid={!!errors.confirmPassword}
+							aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
 						/>
-					</div>
-					{error && <p className="text-[rgba(238,235,217,0.8)] text-sm bg-[rgba(238,235,217,0.05)] border border-[rgba(238,235,217,0.2)] rounded-lg p-3">{error}</p>}
+					</FormField>
 					<Button type="submit" isLoading={isLoading} className="w-full">
 						Create Account
 					</Button>

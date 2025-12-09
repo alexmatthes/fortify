@@ -135,6 +135,14 @@ function App() {
 							}
 						/>
 						<Route
+							path="/routines/edit/:id"
+							element={
+								<ProtectedRoute>
+									<RoutineBuilderPage />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
 							path="/session/:routineId"
 							element={
 								<ProtectedRoute>

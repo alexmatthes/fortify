@@ -23,9 +23,28 @@ const createRoutineSchema = z.object({
 		.min(1, 'Routine must have at least one item'),
 });
 
+const updateRoutineSchema = z.object({
+	name: z.string().min(1, 'Name is required').optional(),
+	description: z.string().optional(),
+	items: z
+		.array(
+			z.object({
+				rudimentId: z.string(),
+				duration: z.number().positive(),
+				tempoMode: z.enum(['MANUAL', 'SMART']).optional().default('MANUAL'),
+				targetTempo: z.number().int().positive().optional(),
+				restDuration: z.number().int().min(0).optional().default(0),
+			})
+		)
+		.min(1, 'Routine must have at least one item')
+		.optional(),
+});
+
 router.post('/', auth, validate(createRoutineSchema), routineController.createRoutine);
 router.get('/', auth, routineController.getRoutines);
 router.get('/:id', auth, routineController.getRoutineById);
+router.get('/:id/resolve-tempos', auth, routineController.resolveSmartTempos);
+router.put('/:id', auth, validate(updateRoutineSchema), routineController.updateRoutine);
 router.delete('/:id', auth, routineController.deleteRoutine);
 
 export default router;

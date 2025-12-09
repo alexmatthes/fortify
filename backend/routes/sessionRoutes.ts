@@ -20,5 +20,6 @@ router.get('/history', auth, asyncHandler(sessionController.getConsistencyData))
 router.get('/velocity', auth, asyncHandler(sessionController.getVelocityData)); // NEW ROUTE
 router.post('/', auth, validate(sessionSchema), asyncHandler(sessionController.logSession));
 router.get('/', auth, asyncHandler(sessionController.getAllSessions));
+router.get('/export', auth, asyncHandler(sessionController.exportSessions));
 
 export default router;

@@ -156,6 +156,15 @@ cd frontend
 npm run type-check
 ```
 
+### CI/CD
+
+The project includes GitHub Actions workflows for continuous integration:
+- Automated testing on pull requests
+- Linting and type checking
+- Build verification
+
+Workflows are located in `.github/workflows/ci.yml`.
+
 ## 🏗️ Architecture Overview
 
 ### Project Structure

@@ -1,44 +1,87 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
-    build-and-test:
-        runs-on: ubuntu-latest
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
 
-        steps:
-            - uses: actions/checkout@v3
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fortify_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
-            - name: Use Node.js
-              uses: actions/setup-node@v3
-              with:
-                  # FIX: Upgraded to 20.x to match your dependencies (@sanity/client, etc.)
-                  node-version: '20.x'
+    steps:
+      - uses: actions/checkout@v4
 
-            # Backend Setup & Test
-            - name: Install Backend Dependencies
-              run: |
-                  cd backend
-                  # FIX: Changed 'npm ci' to 'npm install' to handle the lockfile mismatch automatically
-                  npm install
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
-            - name: Run Backend Tests
-              run: |
-                  cd backend
-                  npm test
+      - name: Install dependencies
+        run: npm ci
 
-            # Frontend Setup (Build Check)
-            - name: Install Frontend Dependencies
-              run: |
-                  cd frontend
-                  # FIX: Changed 'npm ci' to 'npm install' to handle the lockfile mismatch automatically
-                  npm install
+      - name: Run linter
+        run: npm run lint
 
-            - name: Build Frontend
-              run: |
-                  cd frontend
-                  npm run build
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Setup test database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fortify_test
+        run: |
+          npx prisma migrate deploy
+          npx prisma generate
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fortify_test
+          JWT_SECRET: test-secret-key-for-ci
+        run: npm test
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
+        run: npm run build
+        env:
+          CI: false
