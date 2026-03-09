@@ -15,6 +15,7 @@ const errorHandler_1 = require("./middleware/errorHandler");
 const logger_1 = __importDefault(require("./utils/logger"));
 // Import Routes
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const contactRoutes_1 = __importDefault(require("./routes/contactRoutes"));
 const dashboardRoutes_1 = __importDefault(require("./routes/dashboardRoutes"));
 const routineRoutes_1 = __importDefault(require("./routes/routineRoutes"));
 const rudimentRoutes_1 = __importDefault(require("./routes/rudimentRoutes"));
@@ -57,12 +58,20 @@ const authLimiter = (0, express_rate_limit_1.default)({
     standardHeaders: true,
     legacyHeaders: false,
 });
+const contactLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5, // 5 submissions per hour
+    message: 'Too many contact form submissions, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 app.use(globalLimiter);
 app.use(express_1.default.json());
 app.get('/', (req, res) => {
     res.json({ message: 'Fortify API is running', environment: config_1.config.nodeEnv });
 });
 app.use('/api/auth', authLimiter, authRoutes_1.default);
+app.use('/api/contact', contactLimiter, contactRoutes_1.default);
 app.use('/api/rudiments', rudimentRoutes_1.default);
 app.use('/api/sessions', sessionRoutes_1.default);
 app.use('/api/dashboard', dashboardRoutes_1.default);

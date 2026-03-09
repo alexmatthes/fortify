@@ -10,7 +10,11 @@ const logger_1 = __importDefault(require("../utils/logger"));
 // Helper function to check for Prisma's known request errors
 // This is a type guard which will inform TypeScript about the error's shape
 function isPrismaKnownError(error) {
-    return 'code' in error && typeof error.code === 'string' && error.code.startsWith('P');
+    return (typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        typeof error.code === 'string' && // TypeScript knows 'code' exists now
+        error.code.startsWith('P'));
 }
 const errorHandler = (err, req, res, next) => {
     if (res.headersSent) {

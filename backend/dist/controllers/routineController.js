@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteRoutine = exports.getRoutineById = exports.getRoutines = exports.createRoutine = void 0;
+exports.deleteRoutine = exports.resolveSmartTempos = exports.updateRoutine = exports.getRoutineById = exports.getRoutines = exports.createRoutine = void 0;
 const routineService_1 = require("../services/routineService");
 const createRoutine = async (req, res) => {
     const routine = await routineService_1.RoutineService.create({
@@ -20,6 +20,19 @@ const getRoutineById = async (req, res) => {
     res.status(200).json(routine);
 };
 exports.getRoutineById = getRoutineById;
+const updateRoutine = async (req, res) => {
+    const routine = await routineService_1.RoutineService.update(req.params.id, {
+        ...req.body,
+        userId: req.userId,
+    });
+    res.status(200).json(routine);
+};
+exports.updateRoutine = updateRoutine;
+const resolveSmartTempos = async (req, res) => {
+    const routine = await routineService_1.RoutineService.resolveSmartTempos(req.params.id, req.userId);
+    res.status(200).json(routine);
+};
+exports.resolveSmartTempos = resolveSmartTempos;
 const deleteRoutine = async (req, res) => {
     await routineService_1.RoutineService.delete(req.params.id, req.userId);
     res.status(200).json({ message: 'Routine deleted' });

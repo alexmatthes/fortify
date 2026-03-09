@@ -38,22 +38,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const zod_1 = require("zod");
-const sessionController = __importStar(require("../controllers/sessionController"));
-const auth_1 = __importDefault(require("../middleware/auth"));
+const contactController = __importStar(require("../controllers/contactController"));
 const validate_1 = __importDefault(require("../middleware/validate"));
 const asyncHandler_1 = require("../utils/asyncHandler");
 const router = express_1.default.Router();
-const sessionSchema = zod_1.z.object({
-    body: zod_1.z.object({
-        rudimentId: zod_1.z.string().trim().cuid('Invalid Rudiment ID'),
-        duration: zod_1.z.preprocess((val) => Number(val), zod_1.z.number().positive().max(1440)),
-        tempo: zod_1.z.preprocess((val) => Number(val), zod_1.z.number().min(30).max(300)),
-        quality: zod_1.z.preprocess((val) => Number(val), zod_1.z.number().int().min(1).max(4)),
+const contactSchema = zod_1.z.object({
+    name: zod_1.z.string().trim().min(1, 'Name is required').max(255, 'Name is too long'),
+    email: zod_1.z.string().trim().toLowerCase().email('Invalid email address').max(255, 'Email address is too long'),
+    subject: zod_1.z.enum(['general', 'bug', 'feature', 'support', 'other'], {
+        errorMap: () => ({ message: 'Invalid subject selection' }),
     }),
+    message: zod_1.z.string().trim().min(10, 'Message must be at least 10 characters').max(5000, 'Message is too long'),
 });
-router.get('/history', auth_1.default, (0, asyncHandler_1.asyncHandler)(sessionController.getConsistencyData));
-router.get('/velocity', auth_1.default, (0, asyncHandler_1.asyncHandler)(sessionController.getVelocityData)); // NEW ROUTE
-router.post('/', auth_1.default, (0, validate_1.default)(sessionSchema), (0, asyncHandler_1.asyncHandler)(sessionController.logSession));
-router.get('/', auth_1.default, (0, asyncHandler_1.asyncHandler)(sessionController.getAllSessions));
-router.get('/export', auth_1.default, (0, asyncHandler_1.asyncHandler)(sessionController.exportSessions));
+router.post('/submit', (0, validate_1.default)(contactSchema), (0, asyncHandler_1.asyncHandler)(contactController.submitContact));
 exports.default = router;

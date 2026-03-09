@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const zod_1 = require("zod");
 const authController = __importStar(require("../controllers/authController"));
+const auth_1 = __importDefault(require("../middleware/auth"));
 const validate_1 = __importDefault(require("../middleware/validate"));
 const asyncHandler_1 = require("../utils/asyncHandler");
 const router = express_1.default.Router();
@@ -55,6 +56,21 @@ const loginSchema = zod_1.z.object({
     email: zod_1.z.string().trim().toLowerCase().email('Invalid email address').max(255, 'Email address is too long'),
     password: zod_1.z.string().trim().max(128, 'Password is too long'),
 });
+const changePasswordSchema = zod_1.z.object({
+    currentPassword: zod_1.z.string().trim().min(1, 'Current password is required'),
+    newPassword: zod_1.z
+        .string()
+        .trim()
+        .min(8, 'Password must be at least 8 characters')
+        .max(128, 'Password is too long')
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+});
+const deleteAccountSchema = zod_1.z.object({
+    password: zod_1.z.string().trim().min(1, 'Password is required'),
+});
 router.post('/signup', (0, validate_1.default)(signupSchema), authController.signup);
 router.post('/login', (0, validate_1.default)(loginSchema), (0, asyncHandler_1.asyncHandler)(authController.login));
+router.get('/profile', auth_1.default, (0, asyncHandler_1.asyncHandler)(authController.getProfile));
+router.put('/change-password', auth_1.default, (0, validate_1.default)(changePasswordSchema), (0, asyncHandler_1.asyncHandler)(authController.changePassword));
+router.delete('/account', auth_1.default, (0, validate_1.default)(deleteAccountSchema), (0, asyncHandler_1.asyncHandler)(authController.deleteAccount));
 exports.default = router;
