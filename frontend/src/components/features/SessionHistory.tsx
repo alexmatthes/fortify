@@ -1,5 +1,5 @@
 import { Download, Search, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { Rudiment, Session } from '../../types/types';
@@ -24,11 +24,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ rudiments }) => {
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
 
-	useEffect(() => {
-		fetchSessions();
-	}, [page, filters]);
-
-	const fetchSessions = async () => {
+	const fetchSessions = useCallback(async () => {
 		setLoading(true);
 		try {
 			const params = new URLSearchParams({
@@ -49,7 +45,11 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ rudiments }) => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [page, filters, setLoading]);
+
+	useEffect(() => {
+		fetchSessions();
+	}, [fetchSessions]);
 
 	const handleExport = async (format: 'csv' | 'json') => {
 		try {

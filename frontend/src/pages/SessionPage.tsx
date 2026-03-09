@@ -155,8 +155,7 @@ const SessionPage = () => {
 		const fetchRoutine = async () => {
 			try {
 				// First get the routine
-				const routineRes = await api.get<Routine>(`/routines/${routineId}`);
-				const routine = routineRes.data;
+				await api.get<Routine>(`/routines/${routineId}`);
 
 				// Resolve smart tempos at runtime
 				const resolvedRes = await api.get<Routine>(`/routines/${routineId}/resolve-tempos`);
