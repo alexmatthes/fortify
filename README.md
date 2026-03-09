@@ -4,7 +4,7 @@
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 ![Stack](https://img.shields.io/badge/stack-PERN-orange.svg)
 
-> **Master your hands. Own your own data.**
+> **Master your hands. Own your data.**
 > A full-stack application using linear regression to track drumming velocity and apply progressive overload to practice routines.
 
 ## 📸 Screenshots
