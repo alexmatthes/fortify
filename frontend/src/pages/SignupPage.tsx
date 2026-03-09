@@ -38,64 +38,10 @@ const SignupPage: React.FC = () => {
 		setErrors({});
 		setIsLoading(true);
 		try {
-			// #region agent log
-			// Log signup attempt before API call (hypotheses H1, H2, H3, H4, H5)
-			if (typeof fetch !== 'undefined') {
-				fetch('http://127.0.0.1:7715/ingest/8d13aa7d-0203-4965-9be6-fc4d88683c89', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-Debug-Session-Id': '21fd50',
-					},
-					body: JSON.stringify({
-						sessionId: '21fd50',
-						runId: 'pre-fix',
-						hypothesisId: 'H4',
-						location: 'frontend/src/pages/SignupPage.tsx:handleSubmit',
-						message: 'Signup form submitted',
-						data: {
-							hasEmail: !!email,
-							passwordLength: password.length,
-							pathname: window.location.pathname,
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-			}
-			// #endregion
-
 			await api.post('/auth/signup', { email, password });
 			toast.success('Account created! Please log in.');
 			navigate('/login');
 		} catch (error) {
-			// #region agent log
-			// Capture signup failure details without sensitive data (hypotheses H3, H4, H5)
-			if (typeof fetch !== 'undefined') {
-				const anyError = error as any;
-				fetch('http://127.0.0.1:7715/ingest/8d13aa7d-0203-4965-9be6-fc4d88683c89', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-Debug-Session-Id': '21fd50',
-					},
-					body: JSON.stringify({
-						sessionId: '21fd50',
-						runId: 'pre-fix',
-						hypothesisId: 'H4',
-						location: 'frontend/src/pages/SignupPage.tsx:handleSubmit',
-						message: 'Signup failed',
-						data: {
-							status: anyError?.response?.status ?? null,
-							errorCode: anyError?.code ?? null,
-							hasResponse: !!anyError?.response,
-							userMessage: anyError?.userMessage ?? null,
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-			}
-			// #endregion
-
 			const fieldErrors = getFieldErrors(error);
 			if (Object.keys(fieldErrors).length > 0) {
 				setErrors(fieldErrors);

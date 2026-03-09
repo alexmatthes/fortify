@@ -18,65 +18,11 @@ const LoginPage: React.FC = () => {
 		setErrors({});
 		setIsLoading(true);
 		try {
-			// #region agent log
-			// Log login attempt before API call (hypotheses H1, H2, H3, H5)
-			if (typeof fetch !== 'undefined') {
-				fetch('http://127.0.0.1:7715/ingest/8d13aa7d-0203-4965-9be6-fc4d88683c89', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-Debug-Session-Id': '21fd50',
-					},
-					body: JSON.stringify({
-						sessionId: '21fd50',
-						runId: 'pre-fix',
-						hypothesisId: 'H1',
-						location: 'frontend/src/pages/LoginPage.tsx:handleSubmit',
-						message: 'Login form submitted',
-						data: {
-							hasEmail: !!email,
-							hasPassword: !!password,
-							pathname: window.location.pathname,
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-			}
-			// #endregion
-
 			const { data } = await api.post<{ token: string }>('/auth/login', { email, password });
 			localStorage.setItem('token', data.token);
 			toast.success('Welcome back!');
 			navigate('/dashboard');
 		} catch (error) {
-			// #region agent log
-			// Capture login failure details without sensitive data (hypotheses H1, H2, H3, H5)
-			if (typeof fetch !== 'undefined') {
-				const anyError = error as any;
-				fetch('http://127.0.0.1:7715/ingest/8d13aa7d-0203-4965-9be6-fc4d88683c89', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-Debug-Session-Id': '21fd50',
-					},
-					body: JSON.stringify({
-						sessionId: '21fd50',
-						runId: 'pre-fix',
-						hypothesisId: 'H3',
-						location: 'frontend/src/pages/LoginPage.tsx:handleSubmit',
-						message: 'Login failed',
-						data: {
-							status: anyError?.response?.status ?? null,
-							errorCode: anyError?.code ?? null,
-							hasResponse: !!anyError?.response,
-							userMessage: anyError?.userMessage ?? null,
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-			}
-			// #endregion
-
 			const fieldErrors = getFieldErrors(error);
 			if (Object.keys(fieldErrors).length > 0) {
 				setErrors(fieldErrors);

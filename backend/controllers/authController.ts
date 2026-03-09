@@ -6,32 +6,6 @@ export const signup = async (req: Request, res: Response) => {
 	// 1. Extract data
 	const { email, password } = req.body;
 
-	// #region agent log
-	// Backend signup entry (hypotheses H3, H4)
-	if (typeof fetch !== 'undefined') {
-		fetch('http://127.0.0.1:7715/ingest/8d13aa7d-0203-4965-9be6-fc4d88683c89', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-Debug-Session-Id': '21fd50',
-			},
-			body: JSON.stringify({
-				sessionId: '21fd50',
-				runId: 'pre-fix',
-				hypothesisId: 'H4',
-				location: 'backend/controllers/authController.ts:signup',
-				message: 'Signup request received',
-				data: {
-					hasEmail: !!email,
-					path: req.path,
-					method: req.method,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-	}
-	// #endregion
-
 	// 2. Call Service
 	const user = await AuthService.signup({ email, password });
 
@@ -42,32 +16,6 @@ export const signup = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
 	// 1. Extract data
 	const { email, password } = req.body;
-
-	// #region agent log
-	// Backend login entry (hypotheses H3, H5)
-	if (typeof fetch !== 'undefined') {
-		fetch('http://127.0.0.1:7715/ingest/8d13aa7d-0203-4965-9be6-fc4d88683c89', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-Debug-Session-Id': '21fd50',
-			},
-			body: JSON.stringify({
-				sessionId: '21fd50',
-				runId: 'pre-fix',
-				hypothesisId: 'H3',
-				location: 'backend/controllers/authController.ts:login',
-				message: 'Login request received',
-				data: {
-					hasEmail: !!email,
-					path: req.path,
-					method: req.method,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-	}
-	// #endregion
 
 	// 2. Call Service
 	const result = await AuthService.login({ email, password });
