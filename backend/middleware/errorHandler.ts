@@ -20,6 +20,34 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response,
 		return next(err);
 	}
 
+	// #region agent log
+	// Capture unexpected and known errors for debugging auth issues (hypotheses H3, H4)
+	if (typeof fetch !== 'undefined') {
+		fetch('http://127.0.0.1:7715/ingest/8d13aa7d-0203-4965-9be6-fc4d88683c89', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-Debug-Session-Id': '21fd50',
+			},
+			body: JSON.stringify({
+				sessionId: '21fd50',
+				runId: 'pre-fix',
+				hypothesisId: 'H3',
+				location: 'backend/middleware/errorHandler.ts:errorHandler',
+				message: 'Error handler invoked',
+				data: {
+					name: err.name,
+					isAppError: err instanceof AppError,
+					isZodError: err instanceof ZodError,
+					path: req.path,
+					method: req.method,
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+	}
+	// #endregion
+
 	// Handle known AppError instances
 	if (err instanceof AppError) {
 		return res.status(err.statusCode).json({
